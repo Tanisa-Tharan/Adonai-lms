@@ -1,0 +1,27 @@
+services:
+
+  db:
+    image: postgres:15
+    container_name: lms_db
+    restart: always
+    environment:
+      POSTGRES_DB: lms
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: lms_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  web:
+    build: .
+    container_name: lms_web
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

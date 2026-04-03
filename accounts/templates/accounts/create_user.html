@@ -1,0 +1,118 @@
+<h2>Create User</h2>
+
+{% if messages %}
+  {% for message in messages %}
+    <p style="color: green;"><strong>{{ message }}</strong></p>
+  {% endfor %}
+{% endif %}
+
+<a href="{% url 'dashboard' %}">
+  <button type="button">⬅ Back to Dashboard</button>
+</a>
+
+<form method="post">
+  {% csrf_token %}
+
+  <!-- USER INFO -->
+  <fieldset>
+    <legend><strong>User Information</strong></legend>
+
+    <p>
+      <label>Email:</label><br>
+      {{ form.email }}
+    </p>
+
+    <p>
+      <label>First Name:</label><br>
+      {{ form.first_name }}
+    </p>
+
+    <p>
+      <label>Last Name:</label><br>
+      {{ form.last_name }}
+    </p>
+
+    <p>
+      <label>Role:</label><br>
+      {{ form.role }}
+    </p>
+  </fieldset>
+
+  <br>
+
+  <!-- PROFILE -->
+  <fieldset>
+    <legend><strong>Profile Details</strong></legend>
+
+    <p>
+      <label>Phone:</label><br>
+      {{ form.phone }}
+    </p>
+
+    <p>
+      <label>Address:</label><br>
+      {{ form.address }}
+    </p>
+
+    <p>
+      <label>Date of Birth:</label><br>
+      {{ form.dob }}
+    </p>
+  </fieldset>
+
+  <br>
+
+  <!-- ENROLLMENT -->
+  <fieldset id="enrollment_section" style="display:none;">
+    <legend><strong>Enrollment (Only for Students)</strong></legend>
+
+    <p>
+      <label>Track:</label><br>
+      {{ form.track }}
+    </p>
+
+    <p>
+      <label>Start Date:</label><br>
+      {{ form.start_date }}
+    </p>
+
+    <p>
+      <label>Academic Year:</label><br>
+      {{ form.academic_year }}
+    </p>    
+
+    <p>
+      <label>Expected Completion Date:</label><br>
+      {{ form.expected_completion_date }}
+    </p>
+  </fieldset>
+
+  <br>
+
+  <button type="submit">Create User</button>
+</form>
+
+{% if generated_password %}
+  <hr>
+  <h3>✅ User Created Successfully</h3>
+  <p><strong>Generated Password:</strong> {{ generated_password }}</p>
+{% endif %}
+
+<script>
+  const roleField = document.getElementById("role_field");
+  const enrollmentSection = document.getElementById("enrollment_section");
+
+  function toggleEnrollment() {
+    if (roleField.value === "STUDENT") {
+      enrollmentSection.style.display = "block";
+    } else {
+      enrollmentSection.style.display = "none";
+    }
+  }
+
+  // Run on load
+  toggleEnrollment();
+
+  // Run on change
+  roleField.addEventListener("change", toggleEnrollment);
+</script>

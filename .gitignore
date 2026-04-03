@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Environment
+.env
+.env.*
+venv/
+env/
+
+# Mac
+.DS_Store
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Docker
+*.pid
+
+# Migrations (optional – keep if you want)
+# Uncomment below ONLY if you want to ignore migrations
+*/migrations/*
+!*/migrations/__init__.py
+
+# Bytecode
+*.pyc
+
+# Coverage
+.coverage
+htmlcov/
+
+# Pytest
+.pytest_cache/
+
+# Node (future UI)
+node_modules/
+
+# Temporary files
+*.swp
