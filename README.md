@@ -1,0 +1,284 @@
+# LMS Django App
+
+## Setup
+
+```bash
+docker compose up --build
+
+docker compose up -d
+
+docker compose down -v --remove-orphans
+docker system prune -af
+docker volume prune -f
+
+```
+
+### Create super user
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+### DB login
+
+```bash
+docker compose exec db psql -U lms_user -d lms
+```
+
+### DB migration
+
+```bash
+docker compose exec web python manage.py makemigrations
+docker compose exec web python manage.py migrate
+```
+
+### DB json file
+```json
+
+{
+  "tables": [
+
+    {
+      "name": "users",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "email", "type": "varchar", "unique": true},
+        {"name": "password", "type": "varchar"},
+        {"name": "first_name", "type": "varchar"},
+        {"name": "last_name", "type": "varchar"},
+        {"name": "role", "type": "enum", "values": ["ADMIN", "SUPERVISOR", "FACULTY", "STUDENT"]},
+        {"name": "is_active", "type": "boolean"},
+        {"name": "date_joined", "type": "datetime"},
+        {"name": "created_at", "type": "datetime"},
+        {"name": "updated_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "user_profiles",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "user_id", "type": "fk", "ref": "users.id"},
+        {"name": "phone", "type": "varchar"},
+        {"name": "address", "type": "text"},
+        {"name": "dob", "type": "date"},
+        {"name": "profile_image", "type": "varchar"}
+      ]
+    },
+
+    {
+      "name": "academic_years",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "name", "type": "varchar"},
+        {"name": "start_date", "type": "date"},
+        {"name": "end_date", "type": "date"},
+        {"name": "is_active", "type": "boolean"}
+      ]
+    },
+
+    {
+      "name": "quarters",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "academic_year_id", "type": "fk", "ref": "academic_years.id"},
+        {"name": "name", "type": "varchar"},
+        {"name": "quarter_number", "type": "int"},
+        {"name": "start_date", "type": "date"},
+        {"name": "end_date", "type": "date"},
+        {"name": "type", "type": "enum", "values": ["MODULE", "QUIZ"]}
+      ]
+    },
+
+    {
+      "name": "modules",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "title", "type": "varchar"},
+        {"name": "description", "type": "text"},
+        {"name": "order_number", "type": "int"},
+        {"name": "session_count", "type": "int", "default": 3},
+        {"name": "is_active", "type": "boolean"},
+        {"name": "created_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "module_runs",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_id", "type": "fk", "ref": "modules.id"},
+        {"name": "quarter_id", "type": "fk", "ref": "quarters.id"},
+        {"name": "faculty_id", "type": "fk", "ref": "users.id"},
+        {"name": "start_date", "type": "date"},
+        {"name": "end_date", "type": "date"},
+        {"name": "max_students", "type": "int"},
+        {"name": "status", "type": "enum", "values": ["SCHEDULED", "RUNNING", "COMPLETED"]},
+        {"name": "created_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "module_sessions",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_run_id", "type": "fk", "ref": "module_runs.id"},
+        {"name": "session_number", "type": "int"},
+        {"name": "session_date", "type": "date"}
+      ]
+    },
+
+    {
+      "name": "enrollments",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "student_id", "type": "fk", "ref": "users.id"},
+        {"name": "track", "type": "enum", "values": ["DIPLOMA", "CERTIFICATE", "INDIVIDUAL"]},
+        {"name": "academic_year_id", "type": "fk", "ref": "academic_years.id"},
+        {"name": "start_date", "type": "date"},
+        {"name": "expected_completion_date", "type": "date"},
+        {"name": "status", "type": "enum", "values": ["ACTIVE", "COMPLETED", "DROPPED"]},
+        {"name": "created_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "student_modules",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "enrollment_id", "type": "fk", "ref": "enrollments.id"},
+        {"name": "module_run_id", "type": "fk", "ref": "module_runs.id"},
+        {"name": "status", "type": "enum", "values": ["NOT_STARTED", "IN_PROGRESS", "COMPLETED"]},
+        {"name": "attendance_percentage", "type": "float"},
+        {"name": "final_grade", "type": "float"},
+        {"name": "completed_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "attendance_records",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_session_id", "type": "fk", "ref": "module_sessions.id"},
+        {"name": "student_module_id", "type": "fk", "ref": "student_modules.id"},
+        {"name": "status", "type": "enum", "values": ["PRESENT", "ABSENT", "LATE"]}
+      ]
+    },
+
+    {
+      "name": "course_materials",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_id", "type": "fk", "ref": "modules.id"},
+        {"name": "title", "type": "varchar"},
+        {"name": "file_url", "type": "varchar"},
+        {"name": "material_type", "type": "enum", "values": ["PDF", "VIDEO", "LINK", "PPT"]},
+        {"name": "uploaded_by", "type": "fk", "ref": "users.id"},
+        {"name": "created_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "assignments",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_id", "type": "fk", "ref": "modules.id"},
+        {"name": "module_run_id", "type": "fk", "ref": "module_runs.id"},
+        {"name": "title", "type": "varchar"},
+        {"name": "description", "type": "text"},
+        {"name": "due_date", "type": "datetime"},
+        {"name": "max_score", "type": "int"},
+        {"name": "created_by", "type": "fk", "ref": "users.id"}
+      ]
+    },
+
+    {
+      "name": "assignment_submissions",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "assignment_id", "type": "fk", "ref": "assignments.id"},
+        {"name": "student_module_id", "type": "fk", "ref": "student_modules.id"},
+        {"name": "file_url", "type": "varchar"},
+        {"name": "submitted_at", "type": "datetime"},
+        {"name": "score", "type": "float"},
+        {"name": "feedback", "type": "text"},
+        {"name": "graded_by", "type": "fk", "ref": "users.id"}
+      ]
+    },
+
+    {
+      "name": "exams",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "module_id", "type": "fk", "ref": "modules.id"},
+        {"name": "module_run_id", "type": "fk", "ref": "module_runs.id"},
+        {"name": "exam_date", "type": "datetime"},
+        {"name": "duration_minutes", "type": "int"},
+        {"name": "created_by", "type": "fk", "ref": "users.id"}
+      ]
+    },
+
+    {
+      "name": "exam_attempts",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "exam_id", "type": "fk", "ref": "exams.id"},
+        {"name": "student_module_id", "type": "fk", "ref": "student_modules.id"},
+        {"name": "answer_file_url", "type": "varchar"},
+        {"name": "submitted_at", "type": "datetime"},
+        {"name": "score", "type": "float"},
+        {"name": "status", "type": "enum", "values": ["IN_PROGRESS", "SUBMITTED", "GRADED"]},
+        {"name": "graded_by", "type": "fk", "ref": "users.id"}
+      ]
+    },
+
+    {
+      "name": "quizzes",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "quarter_id", "type": "fk", "ref": "quarters.id"},
+        {"name": "title", "type": "varchar"},
+        {"name": "due_date", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "certificates",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "student_id", "type": "fk", "ref": "users.id"},
+        {"name": "track", "type": "enum", "values": ["DIPLOMA", "CERTIFICATE"]},
+        {"name": "issued_date", "type": "date"},
+        {"name": "certificate_url", "type": "varchar"},
+        {"name": "remarks", "type": "text"}
+      ]
+    },
+
+    {
+      "name": "notifications",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "user_id", "type": "fk", "ref": "users.id"},
+        {"name": "title", "type": "varchar"},
+        {"name": "message", "type": "text"},
+        {"name": "is_read", "type": "boolean"},
+        {"name": "created_at", "type": "datetime"}
+      ]
+    },
+
+    {
+      "name": "audit_logs",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "user_id", "type": "fk", "ref": "users.id"},
+        {"name": "action", "type": "varchar"},
+        {"name": "entity_type", "type": "varchar"},
+        {"name": "entity_id", "type": "uuid"},
+        {"name": "timestamp", "type": "datetime"}
+      ]
+    }
+
+  ]
+}
+
+```
