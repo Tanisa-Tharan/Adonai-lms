@@ -1,0 +1,100 @@
+<h2>Create Quarter</h2>
+
+<a href="{% url 'dashboard' %}">
+  <button type="button">⬅ Back to Dashboard</button>
+</a>
+
+<hr>
+
+{% if messages %}
+  {% for message in messages %}
+    <p style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+      <strong>{{ message }}</strong>
+    </p>
+  {% endfor %}
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <fieldset>
+    <legend><strong>Quarter Details</strong></legend>
+
+    <p>
+      <label>Academic Year:</label><br>
+      <select name="academic_year" required>
+        <option value="">Select Academic Year</option>
+        {% for year in academic_years %}
+          <option value="{{ year.id }}"
+            {% if year.id|stringformat:"s" == selected_year_id %}selected{% endif %}>
+            {{ year.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </p>
+
+    <p>
+      <label>Quarter Name:</label><br>
+      <input type="text" name="name" placeholder="e.g. Quarter 1" required>
+    </p>
+
+    <p>
+      <label>Quarter Number:</label><br>
+      <input type="number" name="quarter_number" min="1" max="12" required>
+    </p>
+
+    <p>
+      <label>Quarter Type:</label><br>
+      <select name="type" required>
+        <option value="">Select Type</option>
+        <option value="MODULE">Module</option>
+        <option value="QUIZ">Quiz</option>
+      </select>
+    </p>
+
+    <p>
+      <label>Start Date:</label><br>
+      <input type="date" name="start_date" required>
+    </p>
+
+    <p>
+      <label>End Date:</label><br>
+      <input type="date" name="end_date" required>
+    </p>
+
+  </fieldset>
+
+  <br>
+
+  <button type="submit">Create Quarter</button>
+</form>
+
+<hr>
+
+<h3>Existing Quarters</h3>
+
+<table border="1" cellpadding="8">
+  <tr>
+    <th>Academic Year</th>
+    <th>Name</th>
+    <th>Quarter #</th>
+    <th>Type</th>
+    <th>Start</th>
+    <th>End</th>
+  </tr>
+
+  {% for q in academic_years.0.quarter_set.all %}
+  <tr>
+    <td>{{ q.academic_year.name }}</td>
+    <td>{{ q.name }}</td>
+    <td>{{ q.quarter_number }}</td>
+    <td>{{ q.type }}</td>
+    <td>{{ q.start_date }}</td>
+    <td>{{ q.end_date }}</td>
+  </tr>
+  {% empty %}
+  <tr>
+    <td colspan="6">No quarters found</td>
+  </tr>
+  {% endfor %}
+</table>

@@ -14,6 +14,8 @@ class AcademicYear(models.Model):
 
     start_date = models.DateField()
     end_date = models.DateField()
+    
+    max_quarters = models.IntegerField(default=5)
 
     is_active = models.BooleanField(default=True)
 

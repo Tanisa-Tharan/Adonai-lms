@@ -31,7 +31,8 @@
         <th>Name</th>
         <th>Start Date</th>
         <th>End Date</th>
-        <th>Action</th>
+        <th>Max Quarters</th>
+        <th>Actions</th>
     </tr>
 
   {% for year in academic_years %}
@@ -39,8 +40,19 @@
     <td>{{ year.name }}</td>
     <td>{{ year.start_date }}</td>
     <td>{{ year.end_date }}</td>
+    <td>{{ year.max_quarters }}</td>
+
     <td>
-      <form method="post" action="{% url 'delete_academic_year' year.id %}" onsubmit="return confirmDelete('academic year');">
+      <!-- Add Quarter Button -->
+      <a href="{% url 'create_quarter' %}?year_id={{ year.id }}">
+        <button type="button">➕ Add Quarter</button>
+      </a>
+
+      <!-- Delete -->
+      <form method="post"
+            action="{% url 'delete_academic_year' year.id %}"
+            style="display:inline;"
+            onsubmit="return confirmDelete('academic year');">
         {% csrf_token %}
         <button type="submit">❌ Delete</button>
       </form>
@@ -48,10 +60,9 @@
   </tr>
   {% empty %}
   <tr>
-    <td colspan="4">No academic year found</td>
+    <td colspan="5">No academic year found</td>
   </tr>
-  {% endfor %}    
-
+  {% endfor %}
 </table>
 
 <hr>
