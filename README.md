@@ -32,6 +32,13 @@ docker compose exec web python manage.py makemigrations
 docker compose exec web python manage.py migrate
 ```
 
+## DB
+
+### DB ER diagram
+
+<img width="1731" height="1457" alt="image" src="https://github.com/user-attachments/assets/21424db8-11fb-4607-880c-356f035cd3fa" />
+
+
 ### DB json file
 ```json
 
