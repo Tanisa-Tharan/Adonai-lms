@@ -24,7 +24,7 @@ def create_academic_year(request):
             is_active=True
         )
 
-        return redirect("dashboard")
+        return redirect("home")
 
     return render(request, "academics/create_academic_year.html")
 
@@ -37,7 +37,7 @@ def delete_academic_year(request, year_id):
     if request.method == "POST":
         year.delete()
 
-    return redirect("dashboard")
+    return redirect("home")
 
 @login_required
 @admin_required

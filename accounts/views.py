@@ -2,6 +2,7 @@ import secrets
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
+from django.db.models import Prefetch
 from .decorators import admin_required
 from django.contrib import messages
 
@@ -9,6 +10,19 @@ from django.contrib import messages
 from .forms import CreateUserForm
 from .models import User, UserProfile
 from academics.models import AcademicYear, Enrollment
+from academics.models import Quarter
+
+
+def _admin_home_context():
+    users = User.objects.all().order_by("-created_at")
+    academic_years = AcademicYear.objects.all().prefetch_related(
+        Prefetch("quarter_set", queryset=Quarter.objects.all().order_by("quarter_number"))
+    ).order_by("-start_date")
+
+    return {
+        "users": users,
+        "academic_years": academic_years,
+    }
 
 
 @login_required
@@ -74,22 +88,20 @@ def login_view(request):
 
             # Redirect after login
             if user.role == "ADMIN":
-                return redirect("dashboard")
+                return redirect("home")
 
     return render(request, "accounts/login.html")
+
+
+@login_required
+@admin_required
+def home(request):
+    return render(request, "accounts/home.html", _admin_home_context())
 
 @login_required
 @admin_required
 def dashboard(request):
-
-    users = User.objects.all().order_by("-created_at")
-    
-    academic_years = AcademicYear.objects.all().order_by("-start_date")
-
-    return render(request, "accounts/dashboard.html", {
-        "users": users,
-        "academic_years": academic_years,
-    })
+    return render(request, "accounts/dashboard.html", _admin_home_context())
 
 def logout_view(request):
     logout(request)
@@ -104,6 +116,6 @@ def delete_user(request, user_id):
         user.delete()
     
     if user == request.user:
-        return redirect("dashboard")
+        return redirect("home")
 
-    return redirect("dashboard")
+    return redirect("home")
