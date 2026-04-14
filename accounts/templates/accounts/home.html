@@ -787,7 +787,7 @@
                     {% else %}
                     <button type="button" class="action-menu-button" aria-label="User actions">...</button>
                     <div class="action-menu">
-                      <a href="{% url 'edit_user' user.id %}">Edit User</a>
+                      <a href="{% url 'home' %}?tab=users&mode=edit&user_id={{ user.id }}">Edit User</a>
                       <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
                         {% csrf_token %}
                         <button type="submit" class="danger-item">Delete User</button>
@@ -805,14 +805,13 @@
             </table>
             </div>
 
-            <div class="user-form-shell {% if user_panel_mode != 'create' %}hidden-panel{% endif %}">
-              <form method="post" action="{% url 'home' %}?tab=users&mode=create">
+            <div class="user-form-shell {% if user_panel_mode == 'table' %}hidden-panel{% endif %}">
+              <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=users&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=users&mode=create{% endif %}">
                 {% csrf_token %}
-                <input type="hidden" name="form_name" value="inline_create_user">
 
                 <div class="user-form-grid">
                   <section class="user-form-section">
-                    <h4>User Information</h4>
+                    <h4>{% if user_panel_mode == "edit" %}Edit User{% else %}User Information{% endif %}</h4>
 
                     <div class="field-group">
                       <label for="{{ user_form.email.id_for_label }}">Email</label>
@@ -892,7 +891,7 @@
 
                 <div class="form-actions">
                   <a href="{% url 'home' %}?tab=users" class="button button-secondary">Discard</a>
-                  <button type="submit" class="button button-primary">Create User</button>
+                  <button type="submit" class="button button-primary">{% if user_panel_mode == "edit" %}Update User{% else %}Create User{% endif %}</button>
                 </div>
               </form>
             </div>
