@@ -1,4 +1,4 @@
-<h2>Create User</h2>
+<h2>{{ page_title|default:"Create User" }}</h2>
 
 {% if messages %}
   {% for message in messages %}
@@ -6,8 +6,8 @@
   {% endfor %}
 {% endif %}
 
-<a href="{% url 'dashboard' %}">
-  <button type="button">⬅ Back to Dashboard</button>
+<a href="{% if back_url == 'dashboard' %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
+  <button type="button">⬅ Back</button>
 </a>
 
 <form method="post">
@@ -89,7 +89,7 @@
 
   <br>
 
-  <button type="submit">Create User</button>
+  <button type="submit">{{ submit_label|default:"Create User" }}</button>
 </form>
 
 {% if generated_password %}

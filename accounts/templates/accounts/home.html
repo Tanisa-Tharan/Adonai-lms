@@ -152,6 +152,12 @@
       color: var(--danger);
     }
 
+    .button-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
     .tab-panel {
       display: none;
     }
@@ -249,6 +255,119 @@
       flex-wrap: wrap;
     }
 
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 110px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .role-pill.student {
+      color: #ff8a34;
+      background: #fff4e8;
+    }
+
+    .role-pill.faculty {
+      color: #4a97e8;
+      background: #e9f4ff;
+    }
+
+    .role-pill.supervisor {
+      color: #42b86f;
+      background: #e8f9ec;
+    }
+
+    .role-pill.admin {
+      color: #7c3aed;
+      background: #f3e8ff;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 92px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .status-pill.active {
+      color: #42b86f;
+      background: #e8f9ec;
+    }
+
+    .status-pill.inactive {
+      color: #ef4444;
+      background: #fee2e2;
+    }
+
+    .actions-cell {
+      position: relative;
+      width: 88px;
+    }
+
+    .action-menu-button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      color: #8ba0c5;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .action-menu {
+      position: absolute;
+      top: calc(100% - 6px);
+      right: 12px;
+      min-width: 140px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.12);
+      display: none;
+      z-index: 5;
+    }
+
+    .action-menu.open {
+      display: block;
+    }
+
+    .action-menu a,
+    .action-menu button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px 12px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .action-menu a:hover,
+    .action-menu button:hover {
+      background: #f8fafc;
+    }
+
+    .action-menu .danger-item {
+      color: var(--danger);
+    }
+
     .quarter-row {
       display: none;
       background: #fbfdff;
@@ -273,6 +392,73 @@
       border-radius: 18px;
       padding: 28px;
       background: rgba(255, 255, 255, 0.8);
+    }
+
+    .user-form-shell {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .user-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .user-form-section {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .user-form-section h4 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+
+    .field-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .field-group ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .hidden-panel {
+      display: none;
     }
 
     .messages {
@@ -330,10 +516,14 @@
       .panel-actions {
         justify-content: flex-start;
       }
+
+      .user-form-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-<body>
+<body data-active-tab="{{ active_tab }}" data-user-panel-mode="{{ user_panel_mode }}">
   <div class="layout">
     <aside class="sidebar">
       <div class="brand">
@@ -342,10 +532,10 @@
       </div>
 
       <nav class="nav" aria-label="Main Navigation">
-        <button class="tab-link active" type="button" data-tab="dashboard">DASHBOARD</button>
-        <button class="tab-link" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
-        <button class="tab-link" type="button" data-tab="users">USERS</button>
-        <button class="tab-link" type="button" data-tab="modules">MODULES</button>
+        <button class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}" type="button" data-tab="dashboard">DASHBOARD</button>
+        <button class="tab-link {% if active_tab == 'academic-session' %}active{% endif %}" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
+        <button class="tab-link {% if active_tab == 'users' %}active{% endif %}" type="button" data-tab="users">USERS</button>
+        <button class="tab-link {% if active_tab == 'modules' %}active{% endif %}" type="button" data-tab="modules">MODULES</button>
       </nav>
     </aside>
 
@@ -371,7 +561,7 @@
         </div>
         {% endif %}
 
-        <section class="tab-panel active" id="dashboard-panel">
+        <section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
           <div class="hero-card">
             <h3 style="margin:0 0 8px;">Admin Dashboard</h3>
             <p style="margin:0; color:var(--muted);">This keeps the current dashboard information visible while the rest of the sections move into a tabbed home page.</p>
@@ -466,7 +656,7 @@
           </div>
         </section>
 
-        <section class="tab-panel" id="academic-session-panel">
+        <section class="tab-panel {% if active_tab == 'academic-session' %}active{% endif %}" id="academic-session-panel">
           <div class="panel-card">
             <div class="panel-header">
               <div>
@@ -476,7 +666,6 @@
 
               <div class="panel-actions">
                 <a href="{% url 'create_academic_year' %}" class="button button-secondary">Create Academic Year</a>
-                <a href="{% url 'create_user' %}" class="button button-primary">Add User</a>
               </div>
             </div>
 
@@ -551,13 +740,166 @@
           </div>
         </section>
 
-        <section class="tab-panel" id="users-panel">
-          <div class="placeholder">
-            Users tab is ready for the next screen. For now, the live user table remains available inside the Dashboard tab.
+        <section class="tab-panel {% if active_tab == 'users' %}active{% endif %}" id="users-panel">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h3>User Management</h3>
+                <p>Manage and monitor all users from one place.</p>
+              </div>
+
+              <div class="panel-actions">
+                <a href="{% url 'home' %}?tab=users&mode=create" class="button button-primary">Add User</a>
+              </div>
+            </div>
+
+            <div class="{% if user_panel_mode == 'create' %}hidden-panel{% endif %}">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Join Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.first_name }} {{ user.last_name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span class="role-pill {{ user.role|lower }}">
+                      {{ user.get_role_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
+                      {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                  <td class="actions-cell">
+                    {% if user.role == "ADMIN" %}
+                    <span style="color: var(--muted);">Protected</span>
+                    {% else %}
+                    <button type="button" class="action-menu-button" aria-label="User actions">...</button>
+                    <div class="action-menu">
+                      <a href="{% url 'edit_user' user.id %}">Edit User</a>
+                      <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+                        {% csrf_token %}
+                        <button type="submit" class="danger-item">Delete User</button>
+                      </form>
+                    </div>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6">No users found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            </div>
+
+            <div class="user-form-shell {% if user_panel_mode != 'create' %}hidden-panel{% endif %}">
+              <form method="post" action="{% url 'home' %}?tab=users&mode=create">
+                {% csrf_token %}
+                <input type="hidden" name="form_name" value="inline_create_user">
+
+                <div class="user-form-grid">
+                  <section class="user-form-section">
+                    <h4>User Information</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.email.id_for_label }}">Email</label>
+                      {{ user_form.email }}
+                      {{ user_form.email.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+                      {{ user_form.first_name }}
+                      {{ user_form.first_name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+                      {{ user_form.last_name }}
+                      {{ user_form.last_name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.role.id_for_label }}">Role</label>
+                      {{ user_form.role }}
+                      {{ user_form.role.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section">
+                    <h4>Profile Details</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.phone.id_for_label }}">Phone</label>
+                      {{ user_form.phone }}
+                      {{ user_form.phone.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.address.id_for_label }}">Address</label>
+                      {{ user_form.address }}
+                      {{ user_form.address.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
+                      {{ user_form.dob }}
+                      {{ user_form.dob.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section" id="inline-enrollment-section" style="display:none;">
+                    <h4>Enrollment (Only for Students)</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.track.id_for_label }}">Track</label>
+                      {{ user_form.track }}
+                      {{ user_form.track.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.start_date.id_for_label }}">Start Date</label>
+                      {{ user_form.start_date }}
+                      {{ user_form.start_date.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
+                      {{ user_form.academic_year }}
+                      {{ user_form.academic_year.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.expected_completion_date.id_for_label }}">Expected Completion Date</label>
+                      {{ user_form.expected_completion_date }}
+                      {{ user_form.expected_completion_date.errors }}
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-actions">
+                  <a href="{% url 'home' %}?tab=users" class="button button-secondary">Discard</a>
+                  <button type="submit" class="button button-primary">Create User</button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
 
-        <section class="tab-panel" id="modules-panel">
+        <section class="tab-panel {% if active_tab == 'modules' %}active{% endif %}" id="modules-panel">
           <div class="placeholder">
             Modules tab placeholder is now part of the new home layout and can be connected to module management next.
           </div>
@@ -573,6 +915,7 @@
 
     const tabButtons = document.querySelectorAll(".tab-link");
     const tabPanels = document.querySelectorAll(".tab-panel");
+    const initialActiveTab = document.body.dataset.activeTab || "dashboard";
 
     tabButtons.forEach((button) => {
       button.addEventListener("click", () => {
@@ -583,8 +926,25 @@
 
         button.classList.add("active");
         document.getElementById(target).classList.add("active");
+        if (window.history.replaceState) {
+          const nextUrl = new URL(window.location.href);
+          nextUrl.searchParams.set("tab", button.dataset.tab);
+          if (button.dataset.tab !== "users") {
+            nextUrl.searchParams.delete("mode");
+          }
+          window.history.replaceState({}, "", nextUrl);
+        }
       });
     });
+
+    tabButtons.forEach((item) => item.classList.remove("active"));
+    tabPanels.forEach((panel) => panel.classList.remove("active"));
+    const initialButton = document.querySelector(`.tab-link[data-tab="${initialActiveTab}"]`);
+    const initialPanel = document.getElementById(`${initialActiveTab}-panel`);
+    if (initialButton && initialPanel) {
+      initialButton.classList.add("active");
+      initialPanel.classList.add("active");
+    }
 
     document.querySelectorAll(".toggle-quarters").forEach((button) => {
       button.addEventListener("click", () => {
@@ -593,6 +953,37 @@
         button.textContent = isVisible ? "Hide Quarters" : "Show Quarters";
       });
     });
+
+    document.querySelectorAll(".action-menu-button").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const menu = button.nextElementSibling;
+        const isOpen = menu.classList.contains("open");
+
+        document.querySelectorAll(".action-menu").forEach((item) => item.classList.remove("open"));
+
+        if (!isOpen) {
+          menu.classList.add("open");
+        }
+      });
+    });
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
+    });
+
+    const inlineRoleField = document.getElementById("role_field");
+    const inlineEnrollmentSection = document.getElementById("inline-enrollment-section");
+    function toggleInlineEnrollment() {
+      if (!inlineRoleField || !inlineEnrollmentSection) {
+        return;
+      }
+      inlineEnrollmentSection.style.display = inlineRoleField.value === "STUDENT" ? "block" : "none";
+    }
+    if (inlineRoleField) {
+      toggleInlineEnrollment();
+      inlineRoleField.addEventListener("change", toggleInlineEnrollment);
+    }
   </script>
 </body>
 </html>
