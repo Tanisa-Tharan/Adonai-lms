@@ -43,3 +43,21 @@ class CreateUserForm(forms.Form):
         queryset=AcademicYear.objects.all(),
         required=False
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get("role")
+
+        if role == "STUDENT":
+            required_student_fields = {
+                "track": "Track is required for students.",
+                "start_date": "Start date is required for students.",
+                "expected_completion_date": "Expected completion date is required for students.",
+                "academic_year": "Academic year is required for students.",
+            }
+
+            for field_name, error_message in required_student_fields.items():
+                if not cleaned_data.get(field_name):
+                    self.add_error(field_name, error_message)
+
+        return cleaned_data

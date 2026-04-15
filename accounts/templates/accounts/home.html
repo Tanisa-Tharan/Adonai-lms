@@ -431,6 +431,16 @@
       color: var(--muted);
     }
 
+    .locked-role {
+      display: inline-flex;
+      align-items: center;
+      min-width: 140px;
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fbff;
+    }
+
     .field-group input,
     .field-group select,
     .field-group textarea {
@@ -534,7 +544,8 @@
       <nav class="nav" aria-label="Main Navigation">
         <button class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}" type="button" data-tab="dashboard">DASHBOARD</button>
         <button class="tab-link {% if active_tab == 'academic-session' %}active{% endif %}" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
-        <button class="tab-link {% if active_tab == 'users' %}active{% endif %}" type="button" data-tab="users">USERS</button>
+        <button class="tab-link {% if active_tab == 'faculty' %}active{% endif %}" type="button" data-tab="faculty">FACULTY</button>
+        <button class="tab-link {% if active_tab == 'students' %}active{% endif %}" type="button" data-tab="students">STUDENTS</button>
         <button class="tab-link {% if active_tab == 'modules' %}active{% endif %}" type="button" data-tab="modules">MODULES</button>
       </nav>
     </aside>
@@ -577,7 +588,7 @@
               </div>
               <div class="stat">
                 <span>Active Tabs</span>
-                <strong>4</strong>
+                <strong>5</strong>
               </div>
             </div>
           </div>
@@ -740,20 +751,20 @@
           </div>
         </section>
 
-        <section class="tab-panel {% if active_tab == 'users' %}active{% endif %}" id="users-panel">
+        <section class="tab-panel {% if active_tab == 'faculty' %}active{% endif %}" id="faculty-panel">
           <div class="panel-card">
             <div class="panel-header">
               <div>
-                <h3>User Management</h3>
-                <p>Manage and monitor all users from one place.</p>
+                <h3>Faculty Management</h3>
+                <p>Manage all faculty records and add new faculty or students from this pane.</p>
               </div>
 
               <div class="panel-actions">
-                <a href="{% url 'home' %}?tab=users&mode=create" class="button button-primary">Add User</a>
+                <a href="{% url 'home' %}?tab=faculty&mode=create&role=FACULTY" class="button button-primary">Add Faculty</a>
               </div>
             </div>
 
-            <div class="{% if user_panel_mode == 'create' %}hidden-panel{% endif %}">
+            <div class="{% if active_tab == 'faculty' and user_panel_mode != 'table' %}hidden-panel{% endif %}">
             <table>
               <thead>
                 <tr>
@@ -766,7 +777,7 @@
                 </tr>
               </thead>
               <tbody>
-                {% for user in users %}
+                {% for user in faculty_users %}
                 <tr>
                   <td>{{ user.first_name }} {{ user.last_name }}</td>
                   <td>{{ user.email }}</td>
@@ -782,36 +793,32 @@
                   </td>
                   <td>{{ user.date_joined|date:"Y-m-d" }}</td>
                   <td class="actions-cell">
-                    {% if user.role == "ADMIN" %}
-                    <span style="color: var(--muted);">Protected</span>
-                    {% else %}
                     <button type="button" class="action-menu-button" aria-label="User actions">...</button>
                     <div class="action-menu">
-                      <a href="{% url 'home' %}?tab=users&mode=edit&user_id={{ user.id }}">Edit User</a>
+                      <a href="{% url 'home' %}?tab=faculty&mode=edit&user_id={{ user.id }}">Edit Faculty</a>
                       <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
                         {% csrf_token %}
-                        <button type="submit" class="danger-item">Delete User</button>
+                        <button type="submit" class="danger-item">Delete Faculty</button>
                       </form>
                     </div>
-                    {% endif %}
                   </td>
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="6">No users found</td>
+                  <td colspan="6">No faculty found</td>
                 </tr>
                 {% endfor %}
               </tbody>
             </table>
             </div>
 
-            <div class="user-form-shell {% if user_panel_mode == 'table' %}hidden-panel{% endif %}">
-              <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=users&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=users&mode=create{% endif %}">
+            <div class="user-form-shell {% if active_tab != 'faculty' or user_panel_mode == 'table' %}hidden-panel{% endif %}">
+              <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=faculty&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=faculty&mode=create&role=FACULTY{% endif %}">
                 {% csrf_token %}
 
-                <div class="user-form-grid">
+                <div class="user-form-grid user-entry-form">
                   <section class="user-form-section">
-                    <h4>{% if user_panel_mode == "edit" %}Edit User{% else %}User Information{% endif %}</h4>
+                    <h4>{% if user_panel_mode == "edit" %}Edit Faculty{% else %}Add Faculty{% endif %}</h4>
 
                     <div class="field-group">
                       <label for="{{ user_form.email.id_for_label }}">Email</label>
@@ -833,7 +840,14 @@
 
                     <div class="field-group">
                       <label for="{{ user_form.role.id_for_label }}">Role</label>
+                      {% if user_panel_mode == "create" %}
+                      <input type="hidden" name="role" value="FACULTY">
+                      <span class="locked-role">
+                        <span class="role-pill faculty">Faculty</span>
+                      </span>
+                      {% else %}
                       {{ user_form.role }}
+                      {% endif %}
                       {{ user_form.role.errors }}
                     </div>
                   </section>
@@ -860,7 +874,7 @@
                     </div>
                   </section>
 
-                  <section class="user-form-section" id="inline-enrollment-section" style="display:none;">
+                  <section class="user-form-section inline-enrollment-section" style="display:none;">
                     <h4>Enrollment (Only for Students)</h4>
 
                     <div class="field-group">
@@ -890,8 +904,169 @@
                 </div>
 
                 <div class="form-actions">
-                  <a href="{% url 'home' %}?tab=users" class="button button-secondary">Discard</a>
-                  <button type="submit" class="button button-primary">{% if user_panel_mode == "edit" %}Update User{% else %}Create User{% endif %}</button>
+                  <a href="{% url 'home' %}?tab=faculty" class="button button-secondary">Discard</a>
+                  <button type="submit" class="button button-primary">{% if user_panel_mode == "edit" %}Update Faculty{% else %}Create Faculty{% endif %}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel {% if active_tab == 'students' %}active{% endif %}" id="students-panel">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h3>Student Management</h3>
+                <p>Review student details and add new students or faculty from this pane.</p>
+              </div>
+
+              <div class="panel-actions">
+                <a href="{% url 'home' %}?tab=students&mode=create&role=STUDENT" class="button button-primary">Add Student</a>
+              </div>
+            </div>
+
+            <div class="{% if active_tab == 'students' and user_panel_mode != 'table' %}hidden-panel{% endif %}">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Join Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in student_users %}
+                <tr>
+                  <td>{{ user.first_name }} {{ user.last_name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    <span class="role-pill {{ user.role|lower }}">
+                      {{ user.get_role_display }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
+                      {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                  <td class="actions-cell">
+                    <button type="button" class="action-menu-button" aria-label="User actions">...</button>
+                    <div class="action-menu">
+                      <a href="{% url 'home' %}?tab=students&mode=edit&user_id={{ user.id }}">Edit Student</a>
+                      <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+                        {% csrf_token %}
+                        <button type="submit" class="danger-item">Delete Student</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="6">No students found</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            </div>
+
+            <div class="user-form-shell {% if active_tab != 'students' or user_panel_mode == 'table' %}hidden-panel{% endif %}">
+              <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=students&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=students&mode=create&role=STUDENT{% endif %}">
+                {% csrf_token %}
+
+                <div class="user-form-grid user-entry-form">
+                  <section class="user-form-section">
+                    <h4>{% if user_panel_mode == "edit" %}Edit Student{% else %}Add Student{% endif %}</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.email.id_for_label }}">Email</label>
+                      {{ user_form.email }}
+                      {{ user_form.email.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+                      {{ user_form.first_name }}
+                      {{ user_form.first_name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+                      {{ user_form.last_name }}
+                      {{ user_form.last_name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.role.id_for_label }}">Role</label>
+                      {% if user_panel_mode == "create" %}
+                      <input type="hidden" name="role" value="STUDENT">
+                      <span class="locked-role">
+                        <span class="role-pill student">Student</span>
+                      </span>
+                      {% else %}
+                      {{ user_form.role }}
+                      {% endif %}
+                      {{ user_form.role.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section">
+                    <h4>Profile Details</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.phone.id_for_label }}">Phone</label>
+                      {{ user_form.phone }}
+                      {{ user_form.phone.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.address.id_for_label }}">Address</label>
+                      {{ user_form.address }}
+                      {{ user_form.address.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
+                      {{ user_form.dob }}
+                      {{ user_form.dob.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section inline-enrollment-section" style="display:none;">
+                    <h4>Enrollment (Only for Students)</h4>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.track.id_for_label }}">Track</label>
+                      {{ user_form.track }}
+                      {{ user_form.track.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.start_date.id_for_label }}">Start Date</label>
+                      {{ user_form.start_date }}
+                      {{ user_form.start_date.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
+                      {{ user_form.academic_year }}
+                      {{ user_form.academic_year.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ user_form.expected_completion_date.id_for_label }}">Expected Completion Date</label>
+                      {{ user_form.expected_completion_date }}
+                      {{ user_form.expected_completion_date.errors }}
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-actions">
+                  <a href="{% url 'home' %}?tab=students" class="button button-secondary">Discard</a>
+                  <button type="submit" class="button button-primary">{% if user_panel_mode == "edit" %}Update Student{% else %}Create Student{% endif %}</button>
                 </div>
               </form>
             </div>
@@ -928,8 +1103,10 @@
         if (window.history.replaceState) {
           const nextUrl = new URL(window.location.href);
           nextUrl.searchParams.set("tab", button.dataset.tab);
-          if (button.dataset.tab !== "users") {
+          if (button.dataset.tab !== "faculty" && button.dataset.tab !== "students") {
             nextUrl.searchParams.delete("mode");
+            nextUrl.searchParams.delete("role");
+            nextUrl.searchParams.delete("user_id");
           }
           window.history.replaceState({}, "", nextUrl);
         }
@@ -971,18 +1148,22 @@
       document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
     });
 
-    const inlineRoleField = document.getElementById("role_field");
-    const inlineEnrollmentSection = document.getElementById("inline-enrollment-section");
-    function toggleInlineEnrollment() {
-      if (!inlineRoleField || !inlineEnrollmentSection) {
-        return;
+    document.querySelectorAll(".user-entry-form").forEach((formGrid) => {
+      const roleField = formGrid.querySelector("#role_field");
+      const enrollmentSection = formGrid.querySelector(".inline-enrollment-section");
+
+      function toggleInlineEnrollment() {
+        if (!roleField || !enrollmentSection) {
+          return;
+        }
+        enrollmentSection.style.display = roleField.value === "STUDENT" ? "block" : "none";
       }
-      inlineEnrollmentSection.style.display = inlineRoleField.value === "STUDENT" ? "block" : "none";
-    }
-    if (inlineRoleField) {
-      toggleInlineEnrollment();
-      inlineRoleField.addEventListener("change", toggleInlineEnrollment);
-    }
+
+      if (roleField) {
+        toggleInlineEnrollment();
+        roleField.addEventListener("change", toggleInlineEnrollment);
+      }
+    });
   </script>
 </body>
 </html>

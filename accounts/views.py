@@ -13,10 +13,16 @@ from .models import User, UserProfile
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 
+ROLE_TABS = {
+    "faculty": "FACULTY",
+    "students": "STUDENT",
+}
 
-def _build_user_form(user=None):
+
+def _build_user_form(user=None, role=None):
     if not user:
-        return CreateUserForm()
+        initial = {"role": role} if role else None
+        return CreateUserForm(initial=initial)
 
     profile, _ = UserProfile.objects.get_or_create(user=user)
     enrollment = Enrollment.objects.filter(student=user).first()
@@ -70,12 +76,15 @@ def _save_user_from_form(form, user=None):
     profile.save()
 
     if user.role == "STUDENT":
-        enrollment, _ = Enrollment.objects.get_or_create(student=user)
-        enrollment.academic_year = form.cleaned_data.get("academic_year")
-        enrollment.track = form.cleaned_data.get("track")
-        enrollment.start_date = form.cleaned_data.get("start_date")
-        enrollment.expected_completion_date = form.cleaned_data.get("expected_completion_date")
-        enrollment.save()
+        Enrollment.objects.update_or_create(
+            student=user,
+            defaults={
+                "academic_year": form.cleaned_data.get("academic_year"),
+                "track": form.cleaned_data.get("track"),
+                "start_date": form.cleaned_data.get("start_date"),
+                "expected_completion_date": form.cleaned_data.get("expected_completion_date"),
+            },
+        )
     else:
         Enrollment.objects.filter(student=user).delete()
 
@@ -90,6 +99,8 @@ def _admin_home_context(user_form=None, active_tab="dashboard", user_panel_mode=
 
     return {
         "users": users,
+        "faculty_users": users.filter(role="FACULTY"),
+        "student_users": users.filter(role="STUDENT"),
         "academic_years": academic_years,
         "user_form": user_form or CreateUserForm(),
         "active_tab": active_tab,
@@ -120,24 +131,30 @@ def login_view(request):
 @admin_required
 def home(request):
     active_tab = request.GET.get("tab", "dashboard")
-    user_panel_mode = request.GET.get("mode", "table") if active_tab == "users" else "table"
+    selected_role = ROLE_TABS.get(active_tab, request.GET.get("role"))
+    user_panel_mode = request.GET.get("mode", "table") if active_tab in ROLE_TABS else "table"
     editing_user = None
 
-    if active_tab == "users" and user_panel_mode == "edit":
-        editing_user = get_object_or_404(User, id=request.GET.get("user_id"), role__in=["STUDENT", "FACULTY", "SUPERVISOR"])
+    if active_tab in ROLE_TABS and user_panel_mode == "edit":
+        editing_user = get_object_or_404(User, id=request.GET.get("user_id"), role__in=["STUDENT", "FACULTY"])
+        active_tab = "faculty" if editing_user.role == "FACULTY" else "students"
         user_form = _build_user_form(editing_user)
     else:
-        user_form = CreateUserForm()
+        user_form = _build_user_form(role=selected_role)
 
-    if request.method == "POST" and active_tab == "users":
+    if request.method == "POST" and active_tab in ROLE_TABS:
         user_panel_mode = request.GET.get("mode", "create")
         user_id = request.GET.get("user_id")
         editing_user = None
 
         if user_panel_mode == "edit" and user_id:
-            editing_user = get_object_or_404(User, id=user_id, role__in=["STUDENT", "FACULTY", "SUPERVISOR"])
+            editing_user = get_object_or_404(User, id=user_id, role__in=["STUDENT", "FACULTY"])
 
-        user_form = CreateUserForm(request.POST)
+        form_data = request.POST.copy()
+        if user_panel_mode == "create":
+            form_data["role"] = ROLE_TABS[active_tab]
+
+        user_form = CreateUserForm(form_data)
         if user_form.is_valid():
             saved_user, generated_password = _save_user_from_form(user_form, editing_user)
 
@@ -146,7 +163,8 @@ def home(request):
             else:
                 messages.success(request, f"User updated for {saved_user.first_name} {saved_user.last_name}.")
 
-            return redirect(f"{reverse('home')}?tab=users")
+            next_tab = "faculty" if saved_user.role == "FACULTY" else "students"
+            return redirect(f"{reverse('home')}?tab={next_tab}")
 
     return render(request, "accounts/home.html", _admin_home_context(
         user_form=user_form,
