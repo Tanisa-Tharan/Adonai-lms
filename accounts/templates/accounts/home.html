@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f4f7fb;
@@ -24,7 +27,7 @@
 
     body {
       margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "Plus Jakarta Sans", sans-serif;
       background:
         radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 30%),
         linear-gradient(180deg, #f9fbfd 0%, var(--bg) 100%);
@@ -1118,23 +1121,6 @@
 
     document.addEventListener("click", () => {
       document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
-    });
-
-    document.querySelectorAll(".user-entry-form").forEach((formGrid) => {
-      const roleField = formGrid.querySelector("#role_field");
-      const enrollmentSection = formGrid.querySelector(".inline-enrollment-section");
-
-      function toggleInlineEnrollment() {
-        if (!roleField || !enrollmentSection) {
-          return;
-        }
-        enrollmentSection.style.display = roleField.value === "STUDENT" ? "block" : "none";
-      }
-
-      if (roleField) {
-        toggleInlineEnrollment();
-        roleField.addEventListener("change", toggleInlineEnrollment);
-      }
     });
   </script>
 </body>
