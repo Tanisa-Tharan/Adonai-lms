@@ -683,6 +683,7 @@
               </div>
             </div>
 
+            <div class="{% if academic_panel_mode != 'table' %}hidden-panel{% endif %}">
             <table>
               <thead>
                 <tr>
@@ -703,7 +704,7 @@
                   <td>
                     <div class="table-actions">
                       <button type="button" class="button button-secondary toggle-quarters" data-target="quarters-{{ year.id }}">Show Quarters</button>
-                      <a href="{% url 'create_quarter' %}?year_id={{ year.id }}" class="button button-accent">Add Quarter</a>
+                      <a href="{% url 'home' %}?tab=academic-session&mode=create-quarter&year_id={{ year.id }}" class="button button-accent">Add Quarter</a>
                       <form method="post" action="{% url 'delete_academic_year' year.id %}" onsubmit="return confirmDelete('academic year');">
                         {% csrf_token %}
                         <button type="submit" class="button button-danger">Delete</button>
@@ -751,6 +752,64 @@
                 {% endfor %}
               </tbody>
             </table>
+            </div>
+
+            <div class="user-form-shell {% if academic_panel_mode == 'table' %}hidden-panel{% endif %}">
+              <form method="post" action="{% url 'home' %}?tab=academic-session&mode=create-quarter{% if request.GET.year_id %}&year_id={{ request.GET.year_id }}{% endif %}">
+                {% csrf_token %}
+
+                <div class="user-form-grid">
+                  <section class="user-form-section">
+                    <h4>Add Quarter</h4>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.academic_year.id_for_label }}">Academic Year</label>
+                      {{ quarter_form.academic_year }}
+                      {{ quarter_form.academic_year.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.name.id_for_label }}">Quarter Name</label>
+                      {{ quarter_form.name }}
+                      {{ quarter_form.name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.quarter_number.id_for_label }}">Quarter Number</label>
+                      {{ quarter_form.quarter_number }}
+                      {{ quarter_form.quarter_number.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section">
+                    <h4>Quarter Schedule</h4>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.type.id_for_label }}">Quarter Type</label>
+                      {{ quarter_form.type }}
+                      {{ quarter_form.type.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.start_date.id_for_label }}">Start Date</label>
+                      {{ quarter_form.start_date }}
+                      {{ quarter_form.start_date.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ quarter_form.end_date.id_for_label }}">End Date</label>
+                      {{ quarter_form.end_date }}
+                      {{ quarter_form.end_date.errors }}
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-actions">
+                  <a href="{% url 'home' %}?tab=academic-session" class="button button-secondary">Discard</a>
+                  <button type="submit" class="button button-primary">Create Quarter</button>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
 

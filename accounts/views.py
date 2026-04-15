@@ -10,6 +10,7 @@ from django.contrib import messages
 
 from .forms import CreateUserForm
 from .models import User, UserProfile
+from academics.forms import CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 
@@ -106,7 +107,29 @@ def _admin_home_context(user_form=None, active_tab="dashboard", user_panel_mode=
         "active_tab": active_tab,
         "user_panel_mode": user_panel_mode,
         "editing_user": editing_user,
+        "quarter_form": CreateQuarterForm(),
+        "academic_panel_mode": "table",
     }
+
+
+def _build_home_context(
+    *,
+    user_form=None,
+    quarter_form=None,
+    active_tab="dashboard",
+    user_panel_mode="table",
+    academic_panel_mode="table",
+    editing_user=None,
+):
+    context = _admin_home_context(
+        user_form=user_form,
+        active_tab=active_tab,
+        user_panel_mode=user_panel_mode,
+        editing_user=editing_user,
+    )
+    context["quarter_form"] = quarter_form or CreateQuarterForm()
+    context["academic_panel_mode"] = academic_panel_mode
+    return context
 
 def login_view(request):
 
@@ -133,7 +156,11 @@ def home(request):
     active_tab = request.GET.get("tab", "dashboard")
     selected_role = ROLE_TABS.get(active_tab, request.GET.get("role"))
     user_panel_mode = request.GET.get("mode", "table") if active_tab in ROLE_TABS else "table"
+    academic_panel_mode = request.GET.get("mode", "table") if active_tab == "academic-session" else "table"
     editing_user = None
+    quarter_form = CreateQuarterForm(initial={
+        "academic_year": request.GET.get("year_id"),
+    } if request.GET.get("year_id") else None)
 
     if active_tab in ROLE_TABS and user_panel_mode == "edit":
         editing_user = get_object_or_404(User, id=request.GET.get("user_id"), role__in=["STUDENT", "FACULTY"])
@@ -166,10 +193,28 @@ def home(request):
             next_tab = "faculty" if saved_user.role == "FACULTY" else "students"
             return redirect(f"{reverse('home')}?tab={next_tab}")
 
-    return render(request, "accounts/home.html", _admin_home_context(
+    if request.method == "POST" and active_tab == "academic-session":
+        academic_panel_mode = request.GET.get("mode", "create-quarter")
+        quarter_form = CreateQuarterForm(request.POST)
+
+        if quarter_form.is_valid():
+            Quarter.objects.create(
+                academic_year=quarter_form.cleaned_data["academic_year"],
+                name=quarter_form.cleaned_data["name"],
+                quarter_number=quarter_form.cleaned_data["quarter_number"],
+                start_date=quarter_form.cleaned_data["start_date"],
+                end_date=quarter_form.cleaned_data["end_date"],
+                type=quarter_form.cleaned_data["type"],
+            )
+            messages.success(request, "Quarter created successfully.")
+            return redirect(f"{reverse('home')}?tab=academic-session")
+
+    return render(request, "accounts/home.html", _build_home_context(
         user_form=user_form,
+        quarter_form=quarter_form,
         active_tab=active_tab,
         user_panel_mode=user_panel_mode,
+        academic_panel_mode=academic_panel_mode,
         editing_user=editing_user,
     ))
 
