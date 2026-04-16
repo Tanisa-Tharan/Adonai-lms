@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:15
+    container_name: lms_db
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: lms_web
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
