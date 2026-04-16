@@ -3,6 +3,13 @@ from django import forms
 from academics.models import AcademicYear, Quarter
 
 
+class CreateAcademicYearForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    start_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    end_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    max_quarters = forms.IntegerField(min_value=1, max_value=12, initial=5)
+
+
 class CreateQuarterForm(forms.Form):
     academic_year = forms.ModelChoiceField(
         queryset=AcademicYear.objects.all(),

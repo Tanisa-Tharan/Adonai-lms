@@ -10,7 +10,7 @@ from django.contrib import messages
 
 from .forms import CreateUserForm
 from .models import User, UserProfile
-from academics.forms import CreateQuarterForm
+from academics.forms import CreateAcademicYearForm, CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 
@@ -107,6 +107,7 @@ def _admin_home_context(user_form=None, active_tab="dashboard", user_panel_mode=
         "active_tab": active_tab,
         "user_panel_mode": user_panel_mode,
         "editing_user": editing_user,
+        "academic_year_form": CreateAcademicYearForm(),
         "quarter_form": CreateQuarterForm(),
         "academic_panel_mode": "table",
     }
@@ -115,6 +116,7 @@ def _admin_home_context(user_form=None, active_tab="dashboard", user_panel_mode=
 def _build_home_context(
     *,
     user_form=None,
+    academic_year_form=None,
     quarter_form=None,
     active_tab="dashboard",
     user_panel_mode="table",
@@ -127,6 +129,7 @@ def _build_home_context(
         user_panel_mode=user_panel_mode,
         editing_user=editing_user,
     )
+    context["academic_year_form"] = academic_year_form or CreateAcademicYearForm()
     context["quarter_form"] = quarter_form or CreateQuarterForm()
     context["academic_panel_mode"] = academic_panel_mode
     return context
@@ -158,6 +161,7 @@ def home(request):
     user_panel_mode = request.GET.get("mode", "table") if active_tab in ROLE_TABS else "table"
     academic_panel_mode = request.GET.get("mode", "table") if active_tab == "academic-session" else "table"
     editing_user = None
+    academic_year_form = CreateAcademicYearForm()
     quarter_form = CreateQuarterForm(initial={
         "academic_year": request.GET.get("year_id"),
     } if request.GET.get("year_id") else None)
@@ -194,23 +198,40 @@ def home(request):
             return redirect(f"{reverse('home')}?tab={next_tab}")
 
     if request.method == "POST" and active_tab == "academic-session":
-        academic_panel_mode = request.GET.get("mode", "create-quarter")
-        quarter_form = CreateQuarterForm(request.POST)
+        academic_panel_mode = request.GET.get("mode", "create-academic-year")
 
-        if quarter_form.is_valid():
-            Quarter.objects.create(
-                academic_year=quarter_form.cleaned_data["academic_year"],
-                name=quarter_form.cleaned_data["name"],
-                quarter_number=quarter_form.cleaned_data["quarter_number"],
-                start_date=quarter_form.cleaned_data["start_date"],
-                end_date=quarter_form.cleaned_data["end_date"],
-                type=quarter_form.cleaned_data["type"],
-            )
-            messages.success(request, "Quarter created successfully.")
-            return redirect(f"{reverse('home')}?tab=academic-session")
+        if academic_panel_mode == "create-academic-year":
+            academic_year_form = CreateAcademicYearForm(request.POST)
+
+            if academic_year_form.is_valid():
+                AcademicYear.objects.create(
+                    name=academic_year_form.cleaned_data["name"],
+                    start_date=academic_year_form.cleaned_data["start_date"],
+                    end_date=academic_year_form.cleaned_data["end_date"],
+                    max_quarters=academic_year_form.cleaned_data["max_quarters"],
+                    is_active=True,
+                )
+                messages.success(request, "Academic year created successfully.")
+                return redirect(f"{reverse('home')}?tab=academic-session")
+
+        elif academic_panel_mode == "create-quarter":
+            quarter_form = CreateQuarterForm(request.POST)
+
+            if quarter_form.is_valid():
+                Quarter.objects.create(
+                    academic_year=quarter_form.cleaned_data["academic_year"],
+                    name=quarter_form.cleaned_data["name"],
+                    quarter_number=quarter_form.cleaned_data["quarter_number"],
+                    start_date=quarter_form.cleaned_data["start_date"],
+                    end_date=quarter_form.cleaned_data["end_date"],
+                    type=quarter_form.cleaned_data["type"],
+                )
+                messages.success(request, "Quarter created successfully.")
+                return redirect(f"{reverse('home')}?tab=academic-session")
 
     return render(request, "accounts/home.html", _build_home_context(
         user_form=user_form,
+        academic_year_form=academic_year_form,
         quarter_form=quarter_form,
         active_tab=active_tab,
         user_panel_mode=user_panel_mode,

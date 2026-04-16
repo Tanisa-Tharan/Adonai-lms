@@ -1,30 +1,7 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from academics.models import AcademicYear
 from accounts.decorators import admin_required
 from django.contrib.auth.decorators import login_required
-
-# Create your views here.
-@admin_required
-def create_academic_year(request):
-
-    if request.method == "POST":
-
-        name = request.POST.get("name")
-        start_date = request.POST.get("start_date")
-        end_date = request.POST.get("end_date")
-        max_quarters = int(request.POST.get("max_quarters"))
-
-        AcademicYear.objects.create(
-            name=name,
-            start_date=start_date,
-            end_date=end_date,
-            max_quarters=max_quarters,
-            is_active=True
-        )
-
-        return redirect("home")
-
-    return render(request, "academics/create_academic_year.html")
 
 @login_required
 @admin_required

@@ -41,9 +41,17 @@
     }
 
     .sidebar {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       padding: 32px 20px;
       background: linear-gradient(180deg, #103c45 0%, #1d4850 100%);
       color: #f8fafc;
+    }
+
+    .sidebar-main {
+      display: grid;
+      gap: 28px;
     }
 
     .brand {
@@ -121,6 +129,27 @@
 
     .logout-form {
       margin: 0;
+    }
+
+    .sidebar-footer {
+      margin: 0 -20px -32px;
+      padding: 24px 20px 28px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(8, 24, 29, 0.22);
+    }
+
+    .sidebar-footer .logout-form button {
+      width: 100%;
+      justify-content: flex-start;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .sidebar-footer .logout-form button:hover {
+      background: rgba(255, 255, 255, 0.14);
     }
 
     .button,
@@ -539,34 +568,31 @@
 <body data-active-tab="{{ active_tab }}" data-user-panel-mode="{{ user_panel_mode }}">
   <div class="layout">
     <aside class="sidebar">
-      <div class="brand">
-        <h1>LMS</h1>
-        <p>Welcome {{ request.user.first_name }}</p>
+      <div class="sidebar-main">
+        <div class="brand">
+          <h1>LMS</h1>
+          <p>Welcome {{ request.user.first_name }}</p>
+        </div>
+
+        <nav class="nav" aria-label="Main Navigation">
+          <button class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}" type="button" data-tab="dashboard">DASHBOARD</button>
+          <button class="tab-link {% if active_tab == 'academic-session' %}active{% endif %}" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
+          <button class="tab-link {% if active_tab == 'faculty' %}active{% endif %}" type="button" data-tab="faculty">FACULTY</button>
+          <button class="tab-link {% if active_tab == 'students' %}active{% endif %}" type="button" data-tab="students">STUDENTS</button>
+          <button class="tab-link {% if active_tab == 'modules' %}active{% endif %}" type="button" data-tab="modules">MODULES</button>
+        </nav>
       </div>
 
-      <nav class="nav" aria-label="Main Navigation">
-        <button class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}" type="button" data-tab="dashboard">DASHBOARD</button>
-        <button class="tab-link {% if active_tab == 'academic-session' %}active{% endif %}" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
-        <button class="tab-link {% if active_tab == 'faculty' %}active{% endif %}" type="button" data-tab="faculty">FACULTY</button>
-        <button class="tab-link {% if active_tab == 'students' %}active{% endif %}" type="button" data-tab="students">STUDENTS</button>
-        <button class="tab-link {% if active_tab == 'modules' %}active{% endif %}" type="button" data-tab="modules">MODULES</button>
-      </nav>
+      <div class="sidebar-footer">
+        <form method="post" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit">Logout</button>
+        </form>
+      </div>
     </aside>
 
     <main class="content">
       <div class="shell">
-        <div class="topbar">
-          <div>
-            <h2>Home</h2>
-            <p>Manage academic years, users, and the rest of the learning workflow from one place.</p>
-          </div>
-
-          <form method="post" action="{% url 'logout' %}" class="logout-form">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-          </form>
-        </div>
-
         {% if messages %}
         <div class="messages">
           {% for message in messages %}
@@ -679,7 +705,7 @@
               </div>
 
               <div class="panel-actions">
-                <a href="{% url 'create_academic_year' %}" class="button button-secondary">Create Academic Year</a>
+                <a href="{% url 'home' %}?tab=academic-session&mode=create-academic-year" class="button button-secondary">Create Academic Year</a>
               </div>
             </div>
 
@@ -754,7 +780,52 @@
             </table>
             </div>
 
-            <div class="user-form-shell {% if academic_panel_mode == 'table' %}hidden-panel{% endif %}">
+            <div class="user-form-shell {% if academic_panel_mode != 'create-academic-year' %}hidden-panel{% endif %}">
+              <form method="post" action="{% url 'home' %}?tab=academic-session&mode=create-academic-year">
+                {% csrf_token %}
+
+                <div class="user-form-grid">
+                  <section class="user-form-section">
+                    <h4>Create Academic Year</h4>
+
+                    <div class="field-group">
+                      <label for="{{ academic_year_form.name.id_for_label }}">Name</label>
+                      {{ academic_year_form.name }}
+                      {{ academic_year_form.name.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ academic_year_form.max_quarters.id_for_label }}">Maximum Quarters</label>
+                      {{ academic_year_form.max_quarters }}
+                      {{ academic_year_form.max_quarters.errors }}
+                    </div>
+                  </section>
+
+                  <section class="user-form-section">
+                    <h4>Academic Year Schedule</h4>
+
+                    <div class="field-group">
+                      <label for="{{ academic_year_form.start_date.id_for_label }}">Start Date</label>
+                      {{ academic_year_form.start_date }}
+                      {{ academic_year_form.start_date.errors }}
+                    </div>
+
+                    <div class="field-group">
+                      <label for="{{ academic_year_form.end_date.id_for_label }}">End Date</label>
+                      {{ academic_year_form.end_date }}
+                      {{ academic_year_form.end_date.errors }}
+                    </div>
+                  </section>
+                </div>
+
+                <div class="form-actions">
+                  <a href="{% url 'home' %}?tab=academic-session" class="button button-secondary">Discard</a>
+                  <button type="submit" class="button button-primary">Create Academic Year</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="user-form-shell {% if academic_panel_mode != 'create-quarter' %}hidden-panel{% endif %}">
               <form method="post" action="{% url 'home' %}?tab=academic-session&mode=create-quarter{% if request.GET.year_id %}&year_id={{ request.GET.year_id }}{% endif %}">
                 {% csrf_token %}
 
