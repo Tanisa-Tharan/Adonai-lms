@@ -1,14 +1,131 @@
 
-<h2>Login</h2>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --border: rgba(255, 255, 255, 0.08);
+    --text-primary: #f5f7fb;
+    --text-secondary: #9da7b5;
+    --accent: #7cc6ff;
+    --accent-strong: #59aef0;
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  }
 
-<form method="post">
-  {% csrf_token %}
+  * {
+    box-sizing: border-box;
+  }
 
-  <label>Email:</label><br>
-  <input type="email" name="email"><br><br>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(124, 198, 255, 0.12), transparent 35%),
+      linear-gradient(160deg, #05070b 0%, #0d1117 55%, #11161d 100%);
+    color: var(--text-primary);
+  }
 
-  <label>Password:</label><br>
-  <input type="password" name="password"><br><br>
+  .login-card {
+    width: min(100%, 380px);
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: rgba(22, 27, 34, 0.92);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+  }
 
-  <button type="submit">Login</button>
-</form>
+  .login-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .login-card p {
+    margin: 0 0 24px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .form-field {
+    margin-bottom: 18px;
+  }
+
+  .form-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+  }
+
+  .form-field input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    font-size: 0.98rem;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .form-field input:focus {
+    border-color: rgba(124, 198, 255, 0.7);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 4px rgba(124, 198, 255, 0.12);
+  }
+
+  .login-card button {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+    color: #071018;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+
+  .login-card button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px rgba(89, 174, 240, 0.22);
+    filter: brightness(1.03);
+  }
+
+  @media (max-width: 480px) {
+    .login-card {
+      padding: 24px;
+      border-radius: 16px;
+    }
+  }
+</style>
+
+<div class="login-card">
+  <h2>Welcome back</h2>
+  <p>Sign in to continue to your account.</p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-field">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" placeholder="you@example.com">
+    </div>
+
+    <div class="form-field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" placeholder="Enter your password">
+    </div>
+
+    <button type="submit">Login</button>
+  </form>
+</div>
