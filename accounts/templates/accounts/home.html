@@ -727,13 +727,14 @@
                   <td>{{ year.start_date }}</td>
                   <td>{{ year.end_date }}</td>
                   <td>{{ year.max_quarters }}</td>
-                  <td>
-                    <div class="table-actions">
-                      <button type="button" class="button button-secondary toggle-quarters" data-target="quarters-{{ year.id }}">Show Quarters</button>
-                      <a href="{% url 'home' %}?tab=academic-session&mode=create-quarter&year_id={{ year.id }}" class="button button-accent">Add Quarter</a>
+                  <td class="actions-cell">
+                    <button type="button" class="action-menu-button" aria-label="Academic year actions">...</button>
+                    <div class="action-menu">
+                      <button type="button" class="toggle-quarters" data-target="quarters-{{ year.id }}">Show Quarters</button>
+                      <a href="{% url 'home' %}?tab=academic-session&mode=create-quarter&year_id={{ year.id }}">Add Quarter</a>
                       <form method="post" action="{% url 'delete_academic_year' year.id %}" onsubmit="return confirmDelete('academic year');">
                         {% csrf_token %}
-                        <button type="submit" class="button button-danger">Delete</button>
+                        <button type="submit" class="danger-item">Delete Academic Year</button>
                       </form>
                     </div>
                   </td>
