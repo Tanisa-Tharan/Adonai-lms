@@ -1,0 +1,132 @@
+<section class="tab-panel {% if active_tab == 'faculty' %}active{% endif %}" id="faculty-panel">
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>Faculty Management</h3>
+        <p>Manage all faculty records and add new faculty or students from this pane.</p>
+      </div>
+
+      <div class="panel-actions">
+        <a href="{% url 'home' %}?tab=faculty&mode=create&role=FACULTY" class="button button-primary">Add Faculty</a>
+      </div>
+    </div>
+
+    <div class="{% if active_tab == 'faculty' and user_panel_mode != 'table' %}hidden-panel{% endif %}">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Join Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in faculty_users %}
+          <tr>
+            <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="role-pill {{ user.role|lower }}">
+                {{ user.get_role_display }}
+              </span>
+            </td>
+            <td>
+              <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
+                {% if user.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+            <td class="actions-cell">
+              <button type="button" class="action-menu-button" aria-label="User actions">...</button>
+              <div class="action-menu">
+                <a href="{% url 'home' %}?tab=faculty&mode=edit&user_id={{ user.id }}">Edit Faculty</a>
+                <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+                  {% csrf_token %}
+                  <button type="submit" class="danger-item">Delete Faculty</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">No faculty found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="user-form-shell {% if active_tab != 'faculty' or user_panel_mode == 'table' %}hidden-panel{% endif %}">
+      <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=faculty&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=faculty&mode=create&role=FACULTY{% endif %}">
+        {% csrf_token %}
+
+        <div class="user-form-grid user-entry-form">
+          <section class="user-form-section">
+            <h4>{% if user_panel_mode == "edit" %}Edit Faculty{% else %}Add Faculty{% endif %}</h4>
+
+            <div class="field-group">
+              <label for="{{ user_form.email.id_for_label }}">Email</label>
+              {{ user_form.email }}
+              {{ user_form.email.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+              {{ user_form.first_name }}
+              {{ user_form.first_name.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+              {{ user_form.last_name }}
+              {{ user_form.last_name.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ user_form.role.id_for_label }}">Role</label>
+              {% if user_panel_mode == "create" %}
+              <input type="hidden" name="role" value="FACULTY">
+              <span class="locked-role">
+                <span class="role-pill faculty">Faculty</span>
+              </span>
+              {% else %}
+              {{ user_form.role }}
+              {% endif %}
+              {{ user_form.role.errors }}
+            </div>
+          </section>
+
+          <section class="user-form-section">
+            <h4>Profile Details</h4>
+
+            <div class="field-group">
+              <label for="{{ user_form.phone.id_for_label }}">Phone</label>
+              {{ user_form.phone }}
+              {{ user_form.phone.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ user_form.address.id_for_label }}">Address</label>
+              {{ user_form.address }}
+              {{ user_form.address.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
+              {{ user_form.dob }}
+              {{ user_form.dob.errors }}
+            </div>
+          </section>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'home' %}?tab=faculty" class="button button-secondary">Discard</a>
+          <button type="submit" class="button button-primary">{% if user_panel_mode == "edit" %}Update Faculty{% else %}Create Faculty{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>

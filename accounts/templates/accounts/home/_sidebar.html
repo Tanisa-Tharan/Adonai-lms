@@ -1,0 +1,23 @@
+<aside class="sidebar">
+  <div class="sidebar-main">
+    <div class="brand">
+      <h1>LMS</h1>
+      <p>Welcome {{ request.user.first_name }}</p>
+    </div>
+
+    <nav class="nav" aria-label="Main Navigation">
+      <button class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}" type="button" data-tab="dashboard">DASHBOARD</button>
+      <button class="tab-link {% if active_tab == 'academic-session' %}active{% endif %}" type="button" data-tab="academic-session">ACADEMIC SESSION</button>
+      <button class="tab-link {% if active_tab == 'faculty' %}active{% endif %}" type="button" data-tab="faculty">FACULTY</button>
+      <button class="tab-link {% if active_tab == 'students' %}active{% endif %}" type="button" data-tab="students">STUDENTS</button>
+      <button class="tab-link {% if active_tab == 'modules' %}active{% endif %}" type="button" data-tab="modules">MODULES</button>
+    </nav>
+  </div>
+
+  <div class="sidebar-footer">
+    <form method="post" action="{% url 'logout' %}" class="logout-form">
+      {% csrf_token %}
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+</aside>

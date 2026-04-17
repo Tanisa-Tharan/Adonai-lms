@@ -1,0 +1,66 @@
+<script>
+  function confirmDelete(type) {
+    return confirm("Are you sure you want to delete this " + type + "? This action cannot be undone.");
+  }
+
+  const tabButtons = document.querySelectorAll(".tab-link");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+  const initialActiveTab = document.body.dataset.activeTab || "dashboard";
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = button.dataset.tab + "-panel";
+
+      tabButtons.forEach((item) => item.classList.remove("active"));
+      tabPanels.forEach((panel) => panel.classList.remove("active"));
+
+      button.classList.add("active");
+      document.getElementById(target).classList.add("active");
+      if (window.history.replaceState) {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set("tab", button.dataset.tab);
+        if (button.dataset.tab !== "faculty" && button.dataset.tab !== "students") {
+          nextUrl.searchParams.delete("mode");
+          nextUrl.searchParams.delete("role");
+          nextUrl.searchParams.delete("user_id");
+        }
+        window.history.replaceState({}, "", nextUrl);
+      }
+    });
+  });
+
+  tabButtons.forEach((item) => item.classList.remove("active"));
+  tabPanels.forEach((panel) => panel.classList.remove("active"));
+  const initialButton = document.querySelector(`.tab-link[data-tab="${initialActiveTab}"]`);
+  const initialPanel = document.getElementById(`${initialActiveTab}-panel`);
+  if (initialButton && initialPanel) {
+    initialButton.classList.add("active");
+    initialPanel.classList.add("active");
+  }
+
+  document.querySelectorAll(".toggle-quarters").forEach((button) => {
+    button.addEventListener("click", () => {
+      const target = document.getElementById(button.dataset.target);
+      const isVisible = target.classList.toggle("visible");
+      button.textContent = isVisible ? "Hide Quarters" : "Show Quarters";
+    });
+  });
+
+  document.querySelectorAll(".action-menu-button").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const menu = button.nextElementSibling;
+      const isOpen = menu.classList.contains("open");
+
+      document.querySelectorAll(".action-menu").forEach((item) => item.classList.remove("open"));
+
+      if (!isOpen) {
+        menu.classList.add("open");
+      }
+    });
+  });
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
+  });
+</script>

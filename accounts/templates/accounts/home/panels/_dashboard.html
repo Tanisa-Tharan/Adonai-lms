@@ -1,0 +1,94 @@
+<section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
+  <div class="hero-card">
+    <h3 style="margin:0 0 8px;">Admin Dashboard</h3>
+    <p style="margin:0; color:var(--muted);">This keeps the current dashboard information visible while the rest of the sections move into a tabbed home page.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <span>Total Users</span>
+        <strong>{{ users|length }}</strong>
+      </div>
+      <div class="stat">
+        <span>Academic Years</span>
+        <strong>{{ academic_years|length }}</strong>
+      </div>
+      <div class="stat">
+        <span>Active Tabs</span>
+        <strong>5</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>Existing Academic Years</h3>
+        <p>Overview of all academic years currently configured.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Max Quarters</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for year in academic_years %}
+        <tr>
+          <td>{{ year.name }}</td>
+          <td>{{ year.start_date }}</td>
+          <td>{{ year.end_date }}</td>
+          <td>{{ year.max_quarters }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No academic year found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>Existing Users</h3>
+        <p>Current user list from the existing dashboard.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.first_name }} {{ user.last_name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>
+            <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+              {% csrf_token %}
+              <button type="submit" class="button button-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">No users found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

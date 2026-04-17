@@ -1,0 +1,188 @@
+<section class="tab-panel {% if active_tab == 'modules' %}active{% endif %}" id="modules-panel">
+  <div class="stats" style="margin-bottom: 22px;">
+    <div class="stat">
+      <span>Total Course</span>
+      <strong>{{ module_stats.total_courses }}</strong>
+    </div>
+    <div class="stat">
+      <span>Active</span>
+      <strong>{{ module_stats.active_courses }}</strong>
+    </div>
+    <div class="stat">
+      <span>Total Student</span>
+      <strong>{{ module_stats.total_students }}</strong>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>Module Management</h3>
+        <p>Review all modules and schedule a new module run from this pane.</p>
+      </div>
+
+      <div class="panel-actions">
+        <a href="{% url 'home' %}?tab=modules&mode=create" class="button button-primary">Add Module</a>
+      </div>
+    </div>
+
+    <div class="{% if active_tab == 'modules' and module_panel_mode != 'table' %}hidden-panel{% endif %}">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Quarter</th>
+            <th>Faculty</th>
+            <th>Sessions</th>
+            <th>Status</th>
+            <th>Active</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for module in modules %}
+          {% with latest_run=module.runs.all|first %}
+          <tr>
+            <td>
+              <strong>{{ module.title }}</strong><br>
+              <span class="mini-meta">Order {{ module.order_number }}</span>
+            </td>
+            <td>
+              {% if latest_run %}
+                {{ latest_run.quarter.name }}<br>
+                <span class="mini-meta">{{ latest_run.quarter.academic_year.name }}</span>
+              {% else %}
+                <span class="mini-meta">Not scheduled</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if latest_run %}
+                {{ latest_run.faculty.first_name }} {{ latest_run.faculty.last_name }}
+              {% else %}
+                <span class="mini-meta">Not assigned</span>
+              {% endif %}
+            </td>
+            <td>{{ module.session_count }}</td>
+            <td>
+              {% if latest_run %}
+                <span class="status-pill active">{{ latest_run.get_status_display }}</span>
+              {% else %}
+                <span class="status-pill inactive">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="status-pill {% if module.is_active %}active{% else %}inactive{% endif %}">
+                {% if module.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+            <td>{{ module.created_at|date:"Y-m-d" }}</td>
+            <td class="actions-cell">
+              <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
+              <div class="action-menu">
+                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
+                <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
+                  {% csrf_token %}
+                  <button type="submit" class="danger-item">Delete Module</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endwith %}
+          {% empty %}
+          <tr>
+            <td colspan="8">No modules found</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="user-form-shell {% if active_tab != 'modules' or module_panel_mode == 'table' %}hidden-panel{% endif %}">
+      <form method="post" action="{% if module_panel_mode == 'edit' and editing_module %}{% url 'home' %}?tab=modules&mode=edit&module_id={{ editing_module.id }}{% else %}{% url 'home' %}?tab=modules&mode=create{% endif %}">
+        {% csrf_token %}
+
+        <div class="user-form-grid">
+          <section class="user-form-section">
+            <h4>{% if module_panel_mode == "edit" %}Edit Module{% else %}Add Module{% endif %}</h4>
+
+            <div class="field-group">
+              <label for="{{ module_form.title.id_for_label }}">Module Title</label>
+              {{ module_form.title }}
+              {{ module_form.title.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.description.id_for_label }}">Description</label>
+              {{ module_form.description }}
+              {{ module_form.description.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.order_number.id_for_label }}">Order Number</label>
+              {{ module_form.order_number }}
+              {{ module_form.order_number.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.session_count.id_for_label }}">Session Count</label>
+              {{ module_form.session_count }}
+              {{ module_form.session_count.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.is_active.id_for_label }}">Active Module</label>
+              {{ module_form.is_active }}
+              {{ module_form.is_active.errors }}
+            </div>
+          </section>
+
+          <section class="user-form-section">
+            <h4>Run Details</h4>
+
+            <div class="field-group">
+              <label for="{{ module_form.quarter.id_for_label }}">Quarter</label>
+              {{ module_form.quarter }}
+              {{ module_form.quarter.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.faculty.id_for_label }}">Faculty</label>
+              {{ module_form.faculty }}
+              {{ module_form.faculty.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.start_date.id_for_label }}">Start Date</label>
+              {{ module_form.start_date }}
+              {{ module_form.start_date.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.end_date.id_for_label }}">End Date</label>
+              {{ module_form.end_date }}
+              {{ module_form.end_date.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.max_students.id_for_label }}">Max Students</label>
+              {{ module_form.max_students }}
+              {{ module_form.max_students.errors }}
+            </div>
+
+            <div class="field-group">
+              <label for="{{ module_form.status.id_for_label }}">Run Status</label>
+              {{ module_form.status }}
+              {{ module_form.status.errors }}
+            </div>
+          </section>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'home' %}?tab=modules" class="button button-secondary">Discard</a>
+          <button type="submit" class="button button-primary">{% if module_panel_mode == "edit" %}Update Module{% else %}Create Module{% endif %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
