@@ -18,6 +18,8 @@ from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 from modules.forms import CreateModuleForm
 from modules.models import Module, ModuleRun, ModuleSession
+from django.core.mail import send_mail
+from django.conf import settings
 
 ROLE_TABS = {
     "faculty": "FACULTY",
@@ -66,6 +68,29 @@ def _save_user_from_form(form, user=None):
         )
         generated_password = secrets.token_urlsafe(8)
         user.set_password(generated_password)
+
+        # SEND EMAIL
+        send_mail(
+            subject="Your LMS Account Created",
+            message=f"""
+        Hello {user.first_name},
+
+        Your LMS account has been created.
+
+        Login Details:
+        Email: {user.email}
+        Password: {generated_password}
+
+        Please login and change your password.
+
+        Regards,
+        LMS Team
+        """,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+
     else:
         generated_password = None
         user.email = form.cleaned_data["email"]
