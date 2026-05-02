@@ -124,6 +124,7 @@
         {"name": "id", "type": "uuid", "pk": true},
         {"name": "module_session_id", "type": "fk", "ref": "module_sessions.id"},
         {"name": "student_module_id", "type": "fk", "ref": "student_modules.id"},
+        {"name": "date", "type": "date"},
         {"name": "status", "type": "enum", "values": ["PRESENT", "ABSENT", "LATE"]}
       ]
     },

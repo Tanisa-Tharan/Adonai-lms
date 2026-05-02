@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   {% include "accounts/home/_styles.html" %}
 </head>
-<body data-active-tab="{{ active_tab }}" data-user-panel-mode="{{ user_panel_mode }}">
+<body data-active-tab="{{ active_tab }}" data-user-panel-mode="{{ user_panel_mode }}" hx-indicator="#htmx-indicator">
   <div class="layout">
     {% include "accounts/home/_sidebar.html" %}
 
@@ -23,6 +23,10 @@
         {% include "accounts/home/panels/_modules.html" %}
       </div>
     </main>
+  </div>
+
+  <div id="htmx-indicator" class="htmx-indicator" aria-hidden="true">
+    <span class="spinner" aria-hidden="true"></span>
   </div>
 
   {% include "accounts/home/_scripts.html" %}

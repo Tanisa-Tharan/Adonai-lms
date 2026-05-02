@@ -1,11 +1,12 @@
 import secrets
+from datetime import date as date_type
 from datetime import timedelta
 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q, Count
 from django.urls import reverse
 from .decorators import admin_required
 from django.contrib import messages
@@ -17,7 +18,7 @@ from academics.forms import CreateAcademicYearForm, CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 from modules.forms import CreateModuleForm
-from modules.models import Module, ModuleRun, ModuleSession
+from modules.models import AttendanceRecord, Module, ModuleRun, ModuleSession, StudentModule
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -468,3 +469,180 @@ def delete_user(request, user_id):
         return redirect("home")
 
     return redirect("home")
+
+
+@login_required
+@admin_required
+def module_students_panel(request, module_run_id):
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related("module", "quarter", "quarter__academic_year", "faculty"),
+        id=module_run_id,
+    )
+    assigned = (
+        StudentModule.objects.filter(module_run=module_run)
+        .select_related("enrollment", "enrollment__student")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+    available_enrollments = (
+        Enrollment.objects.select_related("student")
+        .filter(status="ACTIVE")
+        .exclude(student_modules__module_run=module_run)
+        .order_by("student__first_name", "student__last_name")
+    )
+
+    return render(
+        request,
+        "accounts/home/panels/modules/_module_students.html",
+        {
+            "module_run": module_run,
+            "assigned_students": assigned,
+            "available_enrollments": available_enrollments,
+        },
+    )
+
+
+@login_required
+@admin_required
+def add_student_to_module_run(request, module_run_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = get_object_or_404(ModuleRun, id=module_run_id)
+    enrollment_id = request.POST.get("enrollment_id")
+    if enrollment_id:
+        enrollment = get_object_or_404(Enrollment, id=enrollment_id)
+        StudentModule.objects.get_or_create(enrollment=enrollment, module_run=module_run)
+
+    return module_students_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_required
+def remove_student_from_module_run(request, module_run_id, enrollment_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    StudentModule.objects.filter(module_run_id=module_run_id, enrollment_id=enrollment_id).delete()
+    return module_students_panel(request, module_run_id=module_run_id)
+
+
+def _dates_between(start_date: date_type, end_date: date_type):
+    current = start_date
+    while current <= end_date:
+        yield current
+        current += timedelta(days=1)
+
+
+def _ensure_daily_sessions(module_run):
+    existing = set(module_run.sessions.values_list("session_date", flat=True))
+    to_create = []
+    for session_date in _dates_between(module_run.start_date, module_run.end_date):
+        if session_date in existing:
+            continue
+        to_create.append(
+            ModuleSession(
+                module_run=module_run,
+                session_number=0,  # not used for attendance; keep stable ordering via session_date
+                session_date=session_date,
+            )
+        )
+    if to_create:
+        ModuleSession.objects.bulk_create(to_create)
+
+
+@login_required
+@admin_required
+def module_attendance_panel(request, module_run_id):
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related("module", "quarter", "quarter__academic_year", "faculty").prefetch_related("sessions"),
+        id=module_run_id,
+    )
+
+    # Attendance is per-day between start/end; ensure ModuleSession exists for each day.
+    _ensure_daily_sessions(module_run)
+
+    sessions = module_run.sessions.all().order_by("session_date")
+    assigned = (
+        StudentModule.objects.filter(module_run=module_run)
+        .select_related("enrollment", "enrollment__student")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+    attendance = AttendanceRecord.objects.filter(
+        module_session__module_run=module_run,
+        student_module__in=assigned,
+    )
+    attendance_by_student = {}
+    for record in attendance:
+        attendance_by_student.setdefault(str(record.student_module_id), {})[str(record.module_session_id)] = record.status
+
+    return render(
+        request,
+        "accounts/home/panels/modules/_module_attendance.html",
+        {
+            "module_run": module_run,
+            "sessions": sessions,
+            "assigned_students": assigned,
+            "attendance_by_student": attendance_by_student,
+            "attendance_statuses": ["PRESENT", "ABSENT", "LATE"],
+        },
+    )
+
+
+@login_required
+@admin_required
+def save_module_attendance(request, module_run_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = get_object_or_404(ModuleRun.objects.prefetch_related("sessions"), id=module_run_id)
+    _ensure_daily_sessions(module_run)
+    session_ids = {str(session_id) for session_id in module_run.sessions.values_list("id", flat=True)}
+
+    for key, value in request.POST.items():
+        if not key.startswith("att__"):
+            continue
+        # Format: att__<student_module_id>__<module_session_id>
+        parts = key.split("__")
+        if len(parts) != 3:
+            continue
+        student_module_id = parts[1]
+        module_session_id = parts[2]
+        if str(module_session_id) not in session_ids:
+            continue
+        if value not in {"PRESENT", "ABSENT", "LATE"}:
+            continue
+
+        student_module = StudentModule.objects.filter(id=student_module_id, module_run_id=module_run_id).first()
+        if not student_module:
+            continue
+        module_session = ModuleSession.objects.filter(id=module_session_id, module_run_id=module_run_id).first()
+        if not module_session:
+            continue
+
+        AttendanceRecord.objects.update_or_create(
+            module_session=module_session,
+            student_module=student_module,
+            defaults={"date": module_session.session_date, "status": value},
+        )
+
+    # Update attendance_percentage on student_modules for this run.
+    total_sessions = module_run.sessions.count()
+    student_modules = StudentModule.objects.filter(module_run_id=module_run_id)
+    attended_counts = {
+        str(row["student_module_id"]): row["attended"]
+        for row in AttendanceRecord.objects.filter(
+            module_session__module_run_id=module_run_id,
+            student_module__in=student_modules,
+        )
+        .values("student_module_id")
+        .annotate(attended=Count("id", filter=Q(status__in=["PRESENT", "LATE"])))
+    }
+    for student_module in student_modules:
+        if total_sessions <= 0:
+            student_module.attendance_percentage = None
+        else:
+            attended = attended_counts.get(str(student_module.id), 0)
+            student_module.attendance_percentage = (attended / total_sessions) * 100.0
+        student_module.save(update_fields=["attendance_percentage"])
+
+    return module_attendance_panel(request, module_run_id=module_run_id)

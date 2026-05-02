@@ -1,0 +1,107 @@
+<div class="panel-card" style="margin-top: 18px;">
+  <div class="panel-header">
+    <div>
+      <h3>Students for {{ module_run.module.title }}</h3>
+      <p>
+        Quarter: {{ module_run.quarter.name }} ({{ module_run.quarter.academic_year.name }}) |
+        Faculty: {{ module_run.faculty.first_name }} {{ module_run.faculty.last_name }}
+      </p>
+    </div>
+
+    <div class="panel-actions">
+      <button
+        type="button"
+        class="button button-secondary"
+        hx-on:click="document.getElementById('module-students-drawer').innerHTML=''"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  <form
+    method="post"
+    hx-post="{% url 'add_student_to_module_run' module_run.id %}"
+    hx-target="#module-students-drawer"
+    hx-swap="innerHTML"
+  >
+    {% csrf_token %}
+    <div class="user-form-grid" style="grid-template-columns: 2fr 1fr; margin-top: 12px;">
+      <section class="user-form-section">
+        <h4>Add Student</h4>
+        <div class="field-group">
+          <label for="enrollment_id">Student</label>
+          <select name="enrollment_id" id="enrollment_id" required>
+            <option value="" selected disabled>Select a student</option>
+            {% for enrollment in available_enrollments %}
+              <option value="{{ enrollment.id }}">
+                {{ enrollment.student.first_name }} {{ enrollment.student.last_name }} ({{ enrollment.student.email }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </section>
+      <section class="user-form-section" style="display: flex; align-items: flex-end;">
+        <div class="form-actions" style="justify-content: flex-start; width: 100%;">
+          <button type="submit" class="button button-primary" {% if not available_enrollments %}disabled{% endif %}>
+            Add To Module
+          </button>
+        </div>
+      </section>
+    </div>
+  </form>
+
+  <div style="margin-top: 18px;">
+    <h4 style="margin-bottom: 10px;">Assigned Students</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Attendance %</th>
+          <th>Final Grade</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student_module in assigned_students %}
+        <tr>
+          <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
+          <td>{{ student_module.enrollment.student.email }}</td>
+          <td>
+            <span class="status-pill {% if student_module.status == 'COMPLETED' %}active{% else %}inactive{% endif %}">
+              {{ student_module.get_status_display }}
+            </span>
+          </td>
+          <td>
+            {% if student_module.attendance_percentage is not None %}
+              {{ student_module.attendance_percentage|floatformat:0 }}%
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ student_module.final_grade|default:"-" }}</td>
+          <td>
+            <form
+              method="post"
+              hx-post="{% url 'remove_student_from_module_run' module_run.id student_module.enrollment.id %}"
+              hx-target="#module-students-drawer"
+              hx-swap="innerHTML"
+              onsubmit="return confirm('Remove this student from the module?');"
+              style="display:inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="button button-secondary">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">No students assigned yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

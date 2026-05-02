@@ -103,6 +103,41 @@
     padding: 28px;
   }
 
+  .htmx-indicator {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    width: 44px;
+    height: 44px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    z-index: 9999;
+  }
+
+  .htmx-indicator.htmx-request {
+    display: flex;
+  }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 2px solid rgba(15, 118, 110, 0.24);
+    border-top-color: rgba(15, 118, 110, 0.95);
+    animation: spin 700ms linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .topbar {
     display: flex;
     justify-content: space-between;

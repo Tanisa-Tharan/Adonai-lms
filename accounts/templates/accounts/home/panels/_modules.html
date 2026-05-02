@@ -81,6 +81,27 @@
               <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
               <div class="action-menu">
                 <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
+                {% if latest_run %}
+                  <button
+                    type="button"
+                    hx-get="{% url 'module_students_panel' latest_run.id %}"
+                    hx-target="#module-students-drawer"
+                    hx-swap="innerHTML"
+                  >
+                    Manage Students
+                  </button>
+                  <button
+                    type="button"
+                    hx-get="{% url 'module_attendance_panel' latest_run.id %}"
+                    hx-target="#module-attendance-drawer"
+                    hx-swap="innerHTML"
+                  >
+                    Take Attendance
+                  </button>
+                {% else %}
+                  <button type="button" disabled title="Schedule a module run first.">Manage Students</button>
+                  <button type="button" disabled title="Schedule a module run first.">Take Attendance</button>
+                {% endif %}
                 <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
                   {% csrf_token %}
                   <button type="submit" class="danger-item">Delete Module</button>
@@ -184,5 +205,8 @@
         </div>
       </form>
     </div>
+
+    <div id="module-students-drawer"></div>
+    <div id="module-attendance-drawer"></div>
   </div>
 </section>
