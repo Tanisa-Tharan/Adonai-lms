@@ -1,0 +1,141 @@
+<div class="panel-card" style="margin-top: 18px;">
+  <div class="panel-header">
+    <div>
+      <h3>Course Materials</h3>
+      <p>Upload module materials (PDF/VIDEO/PPT) or add a LINK. Stored on this server under MEDIA_ROOT.</p>
+    </div>
+
+    <div class="panel-actions">
+      <button
+        type="button"
+        class="button button-secondary"
+        hx-on:click="document.getElementById('course-materials-drawer').innerHTML=''"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    hx-post="{% url 'add_course_material' %}"
+    hx-target="#course-materials-drawer"
+    hx-swap="innerHTML"
+    hx-encoding="multipart/form-data"
+  >
+    {% csrf_token %}
+
+    <div class="user-form-grid" style="grid-template-columns: 1fr 1fr; margin-top: 12px;">
+      <section class="user-form-section">
+        <h4>New Material</h4>
+
+        <div class="field-group">
+          <label for="module_id">Module</label>
+          <select name="module_id" id="module_id" required>
+            <option value="" disabled {% if not selected_module_id %}selected{% endif %}>Select module</option>
+            {% for module in modules %}
+              <option value="{{ module.id }}" {% if selected_module_id == module.id|stringformat:"s" %}selected{% endif %}>
+                {{ module.title }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="title">Title</label>
+          <input type="text" name="title" id="title" required placeholder="e.g. Week 1 Slides">
+        </div>
+      </section>
+
+      <section class="user-form-section">
+        <h4>File / Link</h4>
+
+        <div class="field-group">
+          <label for="material_type">Material Type</label>
+          <select
+            name="material_type"
+            id="material_type"
+            required
+            hx-on:change="
+              const isLink = event.target.value === 'LINK';
+              document.getElementById('cm-file-group').style.display = isLink ? 'none' : '';
+              document.getElementById('cm-link-group').style.display = isLink ? '' : 'none';
+            "
+          >
+            <option value="PDF">PDF</option>
+            <option value="PPT">PPT</option>
+            <option value="VIDEO">VIDEO</option>
+            <option value="LINK">LINK</option>
+          </select>
+        </div>
+
+        <div class="field-group" id="cm-file-group">
+          <label for="file">File (for PDF/PPT/VIDEO)</label>
+          <input type="file" name="file" id="file">
+        </div>
+
+        <div class="field-group" id="cm-link-group" style="display:none;">
+          <label for="link_url">Link URL (for LINK)</label>
+          <input type="url" name="link_url" id="link_url" placeholder="https://...">
+        </div>
+      </section>
+    </div>
+
+    <div class="form-actions" style="margin-top: 10px;">
+      <button type="submit" class="button button-primary">Upload / Add</button>
+    </div>
+  </form>
+
+  <div style="margin-top: 18px;">
+    <h4 style="margin-bottom: 10px;">Materials</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>File/Link</th>
+          <th>Uploaded By</th>
+          <th>Created</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for material in materials %}
+        <tr>
+          <td><strong>{{ material.module.title }}</strong></td>
+          <td>{{ material.title }}</td>
+          <td><span class="status-pill inactive">{{ material.material_type }}</span></td>
+          <td>
+            <a href="{{ material.file_url }}" target="_blank" rel="noopener">Open</a>
+            {% if material.material_type != "LINK" %}
+              &nbsp;|&nbsp;
+              <a href="{{ material.file_url }}" download>Download</a>
+            {% endif %}
+          </td>
+          <td>{{ material.uploaded_by.first_name }} {{ material.uploaded_by.last_name }}</td>
+          <td>{{ material.created_at|date:"Y-m-d" }}</td>
+          <td>
+            <form
+              method="post"
+              hx-post="{% url 'delete_course_material' material.id %}"
+              hx-target="#course-materials-drawer"
+              hx-swap="innerHTML"
+              onsubmit="return confirm('Delete this material?');"
+              style="display:inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="button button-secondary">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">No materials uploaded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

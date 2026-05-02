@@ -21,10 +21,10 @@
         <p>Review all modules and schedule a new module run from this pane.</p>
       </div>
 
-      <div class="panel-actions">
-        <a href="{% url 'home' %}?tab=modules&mode=create" class="button button-primary">Add Module</a>
-      </div>
-    </div>
+	      <div class="panel-actions">
+	        <a href="{% url 'home' %}?tab=modules&mode=create" class="button button-primary">Add Module</a>
+	      </div>
+	    </div>
 
     <div class="{% if active_tab == 'modules' and module_panel_mode != 'table' %}hidden-panel{% endif %}">
       <table>
@@ -79,12 +79,20 @@
             <td>{{ module.created_at|date:"Y-m-d" }}</td>
             <td class="actions-cell">
               <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
-              <div class="action-menu">
-                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
-                {% if latest_run %}
-                  <button
-                    type="button"
-                    hx-get="{% url 'module_students_panel' latest_run.id %}"
+	              <div class="action-menu">
+	                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
+	                <button
+	                  type="button"
+	                  hx-get="{% url 'course_materials_panel' %}?module_id={{ module.id }}"
+	                  hx-target="#course-materials-drawer"
+	                  hx-swap="innerHTML"
+	                >
+	                  Materials
+	                </button>
+	                {% if latest_run %}
+	                  <button
+	                    type="button"
+	                    hx-get="{% url 'module_students_panel' latest_run.id %}"
                     hx-target="#module-students-drawer"
                     hx-swap="innerHTML"
                   >
@@ -208,5 +216,6 @@
 
     <div id="module-students-drawer"></div>
     <div id="module-attendance-drawer"></div>
+    <div id="course-materials-drawer"></div>
   </div>
 </section>

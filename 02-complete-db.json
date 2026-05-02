@@ -155,7 +155,19 @@
         {"name": "created_by", "type": "fk", "ref": "users.id"}
       ]
     },
-
+    {
+      "name": "assignment_files",
+      "fields": [
+        {"name": "id", "type": "uuid", "pk": true},
+        {"name": "assignment_id", "type": "fk", "ref": "assignments.id"},
+        {"name": "file_url", "type": "varchar"},
+        {"name": "file_name", "type": "varchar"},
+        {"name": "file_type", "type": "varchar"},
+        {"name": "file_size", "type": "int"},
+        {"name": "uploaded_at", "type": "datetime"},
+        {"name": "uploaded_by", "type": "fk", "ref": "users.id"}
+      ]
+    },
     {
       "name": "assignment_submissions",
       "fields": [

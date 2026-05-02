@@ -10,6 +10,7 @@ from django.db.models import Prefetch, Q, Count
 from django.urls import reverse
 from .decorators import admin_required
 from django.contrib import messages
+from django.core.files.storage import default_storage
 
 
 from .forms import CreateUserForm
@@ -18,7 +19,7 @@ from academics.forms import CreateAcademicYearForm, CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 from modules.forms import CreateModuleForm
-from modules.models import AttendanceRecord, Module, ModuleRun, ModuleSession, StudentModule
+from modules.models import AttendanceRecord, CourseMaterial, Module, ModuleRun, ModuleSession, StudentModule
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -646,3 +647,85 @@ def save_module_attendance(request, module_run_id):
         student_module.save(update_fields=["attendance_percentage"])
 
     return module_attendance_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_required
+def course_materials_panel(request):
+    module_id = request.GET.get("module_id")
+    modules = Module.objects.all().order_by("order_number", "title")
+    materials = CourseMaterial.objects.select_related("module", "uploaded_by")
+    if module_id:
+        materials = materials.filter(module_id=module_id)
+
+    return render(
+        request,
+        "accounts/home/panels/modules/_course_materials.html",
+        {
+            "modules": modules,
+            "materials": materials.order_by("-created_at"),
+            "selected_module_id": module_id or "",
+        },
+    )
+
+
+@login_required
+@admin_required
+def add_course_material(request):
+    if request.method != "POST":
+        return redirect("home")
+
+    module_id = request.POST.get("module_id")
+    title = (request.POST.get("title") or "").strip()
+    material_type = request.POST.get("material_type")
+    link_url = (request.POST.get("link_url") or "").strip()
+    upload = request.FILES.get("file")
+
+    if not module_id or not title or material_type not in {"PDF", "VIDEO", "LINK", "PPT"}:
+        return course_materials_panel(request)
+
+    module = get_object_or_404(Module, id=module_id)
+
+    if material_type == "LINK":
+        if not link_url:
+            return course_materials_panel(request)
+        file_url = link_url
+    else:
+        if not upload:
+            return course_materials_panel(request)
+        # Store in MEDIA_ROOT on the same server.
+        safe_name = upload.name.replace("/", "_").replace("\\", "_")
+        storage_path = f"course_materials/{module.id}/{safe_name}"
+        saved_path = default_storage.save(storage_path, upload)
+        try:
+            file_url = default_storage.url(saved_path)
+        except Exception:
+            file_url = saved_path
+
+    CourseMaterial.objects.create(
+        module=module,
+        title=title,
+        file_url=file_url,
+        material_type=material_type,
+        uploaded_by=request.user,
+    )
+
+    # Preserve module filter after submit.
+    request.GET = request.GET.copy()
+    request.GET["module_id"] = module_id
+    return course_materials_panel(request)
+
+
+@login_required
+@admin_required
+def delete_course_material(request, material_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    material = get_object_or_404(CourseMaterial, id=material_id)
+    module_id = str(material.module_id)
+    material.delete()
+
+    request.GET = request.GET.copy()
+    request.GET["module_id"] = module_id
+    return course_materials_panel(request)
