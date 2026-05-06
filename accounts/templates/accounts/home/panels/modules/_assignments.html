@@ -206,15 +206,17 @@
                     {% endwith %}
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      class="button button-secondary"
-                      hx-get="{% url 'assignment_submission_form' assignment.id student_module.id %}"
-                      hx-target="#assignment-action-drawer"
-                      hx-swap="innerHTML"
-                    >
-                      Submit
-                    </button>
+                    {% if request.user.role == "ADMIN" %}
+                      <button
+                        type="button"
+                        class="button button-secondary"
+                        hx-get="{% url 'assignment_submission_form' assignment.id student_module.id %}"
+                        hx-target="#assignment-action-drawer"
+                        hx-swap="innerHTML"
+                      >
+                        Submit
+                      </button>
+                    {% endif %}
                     <button
                       type="button"
                       class="button button-secondary"
@@ -225,6 +227,19 @@
                     >
                       Grade
                     </button>
+                    {% if request.user.role == "ADMIN" and submission %}
+                      <form
+                        method="post"
+                        hx-post="{% url 'delete_assignment_submission' assignment.id student_module.id %}"
+                        hx-target="#module-assignments-drawer"
+                        hx-swap="innerHTML"
+                        onsubmit="return confirm('Delete this submission?');"
+                        style="display:inline"
+                      >
+                        {% csrf_token %}
+                        <button type="submit" class="button button-secondary">Delete Submission</button>
+                      </form>
+                    {% endif %}
                   </td>
                 </tr>
                 {% endwith %}

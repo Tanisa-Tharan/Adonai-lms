@@ -1,0 +1,59 @@
+<section class="tab-panel {% if active_tab == 'modules' %}active{% endif %}" id="modules-panel">
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>My Teaching Modules</h3>
+        <p>Manage materials and assignments for your assigned module runs.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Quarter</th>
+          <th>Run Dates</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in faculty_runs %}
+        <tr>
+          <td><strong>{{ run.module.title }}</strong></td>
+          <td>{{ run.quarter.name }}<br><span class="mini-meta">{{ run.quarter.academic_year.name }}</span></td>
+          <td>{{ run.start_date }} to {{ run.end_date }}</td>
+          <td><span class="status-pill active">{{ run.get_status_display }}</span></td>
+          <td class="actions-cell">
+            <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
+            <div class="action-menu">
+              <button
+                type="button"
+                hx-get="{% url 'course_materials_panel' %}?module_id={{ run.module.id }}"
+                hx-target="#course-materials-drawer"
+                hx-swap="innerHTML"
+              >
+                Materials
+              </button>
+              <button
+                type="button"
+                hx-get="{% url 'module_assignments_panel' run.id %}"
+                hx-target="#module-assignments-drawer"
+                hx-swap="innerHTML"
+              >
+                Assignments
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5">No assigned module runs.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div id="course-materials-drawer"></div>
+    <div id="module-assignments-drawer"></div>
+  </div>
+</section>
+

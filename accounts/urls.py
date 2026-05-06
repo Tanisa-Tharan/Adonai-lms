@@ -2,9 +2,11 @@ from django.urls import path
 from .views import (
     add_student_to_module_run,
     delete_user,
+    reset_user_password,
     home,
     login_view,
     logout_view,
+    faculty_home,
     module_attendance_panel,
     course_materials_panel,
     add_course_material,
@@ -17,6 +19,7 @@ from .views import (
     submit_assignment,
     grade_assignment_form,
     grade_assignment_submission,
+    delete_assignment_submission,
     module_students_panel,
     remove_student_from_module_run,
     save_module_attendance,
@@ -25,8 +28,10 @@ from .views import (
 urlpatterns = [
     path("", login_view, name="login"),
     path("home/", home, name="home"),
+    path("faculty/", faculty_home, name="faculty_home"),
     path("logout/", logout_view, name="logout"),
     path("users/delete/<uuid:user_id>/", delete_user, name="delete_user"),
+    path("users/<uuid:user_id>/reset-password/", reset_user_password, name="reset_user_password"),
     path("module-runs/<uuid:module_run_id>/students/", module_students_panel, name="module_students_panel"),
     path("module-runs/<uuid:module_run_id>/students/add/", add_student_to_module_run, name="add_student_to_module_run"),
     path(
@@ -70,5 +75,10 @@ urlpatterns = [
         "assignments/<uuid:assignment_id>/students/<uuid:student_module_id>/grade/save/",
         grade_assignment_submission,
         name="grade_assignment_submission",
+    ),
+    path(
+        "assignments/<uuid:assignment_id>/students/<uuid:student_module_id>/delete-submission/",
+        delete_assignment_submission,
+        name="delete_assignment_submission",
     ),
 ]

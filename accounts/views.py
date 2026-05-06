@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.db.models import Prefetch, Q, Count
 from django.urls import reverse
-from .decorators import admin_required
+from .decorators import admin_or_faculty_required, admin_required, faculty_required
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils import timezone
@@ -346,8 +346,40 @@ def login_view(request):
             # Redirect after login
             if user.role == "ADMIN":
                 return redirect("home")
+            if user.role == "FACULTY":
+                return redirect("faculty_home")
 
     return render(request, "accounts/login.html")
+
+
+@login_required
+@faculty_required
+def faculty_home(request):
+    active_tab = request.GET.get("tab", "dashboard")
+
+    faculty_runs = (
+        ModuleRun.objects.filter(faculty=request.user)
+        .select_related("module", "quarter", "quarter__academic_year")
+        .prefetch_related("sessions")
+        .order_by("-created_at")
+    )
+    modules = Module.objects.filter(runs__in=faculty_runs).distinct().order_by("order_number", "title")
+    student_modules = (
+        StudentModule.objects.filter(module_run__in=faculty_runs)
+        .select_related("enrollment", "enrollment__student", "module_run", "module_run__module")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+
+    return render(
+        request,
+        "accounts/faculty/home.html",
+        {
+            "active_tab": active_tab,
+            "faculty_runs": faculty_runs,
+            "modules": modules,
+            "student_modules": student_modules,
+        },
+    )
 
 
 @login_required
@@ -481,6 +513,23 @@ def delete_user(request, user_id):
         return redirect("home")
 
     return redirect("home")
+
+
+@login_required
+@admin_required
+def reset_user_password(request, user_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    user = get_object_or_404(User, id=user_id)
+    if user.role == "ADMIN":
+        return render(request, "accounts/home/panels/dashboard/_password_cell.html", {"password": ""})
+
+    new_password = secrets.token_urlsafe(8)
+    user.set_password(new_password)
+    user.save(update_fields=["password"])
+
+    return render(request, "accounts/home/panels/dashboard/_password_cell.html", {"password": new_password})
 
 
 @login_required
@@ -661,13 +710,18 @@ def save_module_attendance(request, module_run_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def course_materials_panel(request):
     module_id = request.GET.get("module_id")
     modules = Module.objects.all().order_by("order_number", "title")
+    if request.user.role == "FACULTY":
+        modules = modules.filter(runs__faculty=request.user).distinct()
     materials = CourseMaterial.objects.select_related("module", "uploaded_by")
     if module_id:
-        materials = materials.filter(module_id=module_id)
+        if request.user.role == "FACULTY" and not modules.filter(id=module_id).exists():
+            module_id = ""
+        else:
+            materials = materials.filter(module_id=module_id)
 
     return render(
         request,
@@ -681,7 +735,7 @@ def course_materials_panel(request):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def add_course_material(request):
     if request.method != "POST":
         return redirect("home")
@@ -696,6 +750,8 @@ def add_course_material(request):
         return course_materials_panel(request)
 
     module = get_object_or_404(Module, id=module_id)
+    if request.user.role == "FACULTY" and not ModuleRun.objects.filter(module=module, faculty=request.user).exists():
+        return course_materials_panel(request)
 
     if material_type == "LINK":
         if not link_url:
@@ -728,12 +784,14 @@ def add_course_material(request):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def delete_course_material(request, material_id):
     if request.method != "POST":
         return redirect("home")
 
     material = get_object_or_404(CourseMaterial, id=material_id)
+    if request.user.role == "FACULTY" and not ModuleRun.objects.filter(module_id=material.module_id, faculty=request.user).exists():
+        return course_materials_panel(request)
     module_id = str(material.module_id)
     material.delete()
 
@@ -743,9 +801,11 @@ def delete_course_material(request, material_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def module_assignments_panel(request, module_run_id):
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
     assignments = (
         Assignment.objects.filter(module_run=module_run)
         .select_related("created_by", "module", "module_run")
@@ -788,12 +848,14 @@ def module_assignments_panel(request, module_run_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def add_module_assignment(request, module_run_id):
     if request.method != "POST":
         return redirect("home")
 
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
     title = (request.POST.get("title") or "").strip()
     description = (request.POST.get("description") or "").strip()
     due_date = request.POST.get("due_date")
@@ -857,24 +919,28 @@ def add_module_assignment(request, module_run_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def delete_module_assignment(request, module_run_id, assignment_id):
     if request.method != "POST":
         return redirect("home")
 
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
+    if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
     assignment.delete()
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def update_module_assignment(request, module_run_id, assignment_id):
     if request.method != "POST":
         return redirect("home")
 
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run=module_run)
+    if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
 
     title = (request.POST.get("title") or "").strip()
     description = (request.POST.get("description") or "").strip()
@@ -989,9 +1055,11 @@ def submit_assignment(request, assignment_id, student_module_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def grade_assignment_form(request, assignment_id, student_module_id):
     assignment = get_object_or_404(Assignment.objects.select_related("module_run", "module_run__faculty"), id=assignment_id)
+    if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
     student_module = get_object_or_404(
         StudentModule.objects.select_related("enrollment", "enrollment__student"),
         id=student_module_id,
@@ -1013,12 +1081,14 @@ def grade_assignment_form(request, assignment_id, student_module_id):
 
 
 @login_required
-@admin_required
+@admin_or_faculty_required
 def grade_assignment_submission(request, assignment_id, student_module_id):
     if request.method != "POST":
         return redirect("home")
 
     assignment = get_object_or_404(Assignment.objects.select_related("module_run", "module_run__faculty"), id=assignment_id)
+    if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
     student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
     submission = AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).first()
     if not submission:
@@ -1074,3 +1144,15 @@ def grade_assignment_submission(request, assignment_id, student_module_id):
             "grade_success": "Grade saved.",
         },
     )
+
+
+@login_required
+@admin_required
+def delete_assignment_submission(request, assignment_id, student_module_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    assignment = get_object_or_404(Assignment.objects.select_related("module_run"), id=assignment_id)
+    student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
+    AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).delete()
+    return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))

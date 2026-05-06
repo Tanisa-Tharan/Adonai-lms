@@ -76,4 +76,52 @@
 
     document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
   });
+
+  document.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-password-toggle]");
+    if (!toggle) return;
+    const container = toggle.closest("[data-password-container]") || toggle.parentElement;
+    if (!container) return;
+    const valueEl = container.querySelector("[data-password-value]");
+    if (!valueEl) return;
+    const isHidden = valueEl.dataset.hidden === "1";
+    if (isHidden) {
+      valueEl.textContent = valueEl.dataset.password;
+      valueEl.dataset.hidden = "0";
+      toggle.textContent = "Hide";
+    } else {
+      valueEl.textContent = "********";
+      valueEl.dataset.hidden = "1";
+      toggle.textContent = "Show";
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".message").forEach((el) => {
+      const text = el.textContent || "";
+      const marker = "Password:";
+      const idx = text.indexOf(marker);
+      if (idx === -1) return;
+      const password = text.slice(idx + marker.length).trim();
+      if (!password) return;
+      const prefix = text.slice(0, idx + marker.length).trim();
+      el.innerHTML = "";
+      const span = document.createElement("span");
+      span.textContent = prefix + " ";
+      const value = document.createElement("span");
+      value.setAttribute("data-password-value", "1");
+      value.dataset.password = password;
+      value.dataset.hidden = "1";
+      value.textContent = "********";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "button button-secondary";
+      btn.style.marginLeft = "10px";
+      btn.setAttribute("data-password-toggle", "1");
+      btn.textContent = "Show";
+      el.appendChild(span);
+      el.appendChild(value);
+      el.appendChild(btn);
+    });
+  });
 </script>
