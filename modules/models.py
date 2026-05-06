@@ -142,3 +142,68 @@ class CourseMaterial(models.Model):
     class Meta:
         db_table = "course_materials"
         ordering = ["-created_at"]
+
+
+class Assignment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="assignments")
+    module_run = models.ForeignKey(ModuleRun, on_delete=models.CASCADE, related_name="assignments")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    due_date = models.DateTimeField()
+    max_score = models.IntegerField()
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_assignments",
+    )
+
+    class Meta:
+        db_table = "assignments"
+        ordering = ["-due_date", "-id"]
+
+
+class AssignmentFile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="files")
+    file_url = models.CharField(max_length=1024)
+    file_name = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=100, blank=True)
+    file_size = models.IntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="uploaded_assignment_files",
+    )
+
+    class Meta:
+        db_table = "assignment_files"
+        ordering = ["-uploaded_at"]
+
+
+class AssignmentSubmission(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions")
+    student_module = models.ForeignKey(
+        StudentModule,
+        on_delete=models.CASCADE,
+        related_name="assignment_submissions",
+    )
+    file_url = models.CharField(max_length=1024)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    score = models.FloatField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    graded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="graded_assignment_submissions",
+    )
+
+    class Meta:
+        db_table = "assignment_submissions"
+        constraints = [
+            models.UniqueConstraint(fields=["assignment", "student_module"], name="uniq_assignment_submission"),
+        ]

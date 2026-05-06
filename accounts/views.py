@@ -11,6 +11,7 @@ from django.urls import reverse
 from .decorators import admin_required
 from django.contrib import messages
 from django.core.files.storage import default_storage
+from django.utils import timezone
 
 
 from .forms import CreateUserForm
@@ -19,7 +20,17 @@ from academics.forms import CreateAcademicYearForm, CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 from modules.forms import CreateModuleForm
-from modules.models import AttendanceRecord, CourseMaterial, Module, ModuleRun, ModuleSession, StudentModule
+from modules.models import (
+    Assignment,
+    AssignmentFile,
+    AssignmentSubmission,
+    AttendanceRecord,
+    CourseMaterial,
+    Module,
+    ModuleRun,
+    ModuleSession,
+    StudentModule,
+)
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -729,3 +740,337 @@ def delete_course_material(request, material_id):
     request.GET = request.GET.copy()
     request.GET["module_id"] = module_id
     return course_materials_panel(request)
+
+
+@login_required
+@admin_required
+def module_assignments_panel(request, module_run_id):
+    module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    assignments = (
+        Assignment.objects.filter(module_run=module_run)
+        .select_related("created_by", "module", "module_run")
+        .prefetch_related("files")
+        .order_by("-due_date", "-id")
+    )
+    max_score_by_assignment = {str(a.id): a.max_score for a in assignments}
+    student_modules = (
+        StudentModule.objects.filter(module_run=module_run)
+        .select_related("enrollment", "enrollment__student")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+    submissions = AssignmentSubmission.objects.filter(assignment__in=assignments, student_module__in=student_modules)
+    submissions_by_assignment = {}
+    percentage_by_assignment = {}
+    for submission in submissions:
+        assignment_key = str(submission.assignment_id)
+        student_key = str(submission.student_module_id)
+        submissions_by_assignment.setdefault(assignment_key, {})[student_key] = submission
+        if submission.score is not None:
+            max_score = max_score_by_assignment.get(assignment_key) or 0
+            if max_score > 0:
+                percentage_by_assignment.setdefault(assignment_key, {})[student_key] = (float(submission.score) / float(max_score)) * 100.0
+    editing_assignment = None
+    assignment_id = request.GET.get("assignment_id")
+    if assignment_id:
+        editing_assignment = get_object_or_404(Assignment, id=assignment_id, module_run=module_run)
+    return render(
+        request,
+        "accounts/home/panels/modules/_assignments.html",
+        {
+            "module_run": module_run,
+            "assignments": assignments,
+            "editing_assignment": editing_assignment,
+            "student_modules": student_modules,
+            "submissions_by_assignment": submissions_by_assignment,
+            "percentage_by_assignment": percentage_by_assignment,
+        },
+    )
+
+
+@login_required
+@admin_required
+def add_module_assignment(request, module_run_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    title = (request.POST.get("title") or "").strip()
+    description = (request.POST.get("description") or "").strip()
+    due_date = request.POST.get("due_date")
+    max_score = request.POST.get("max_score")
+
+    if not title or not due_date or not max_score:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    try:
+        max_score_int = int(max_score)
+    except ValueError:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    # Input is a date; interpret it as end-of-day in the current timezone.
+    try:
+        due_date_value = timezone.datetime.fromisoformat(due_date)
+    except ValueError:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    due_dt = timezone.datetime.combine(
+        due_date_value.date(),
+        timezone.datetime.max.time().replace(microsecond=0),
+    )
+    if timezone.is_naive(due_dt):
+        due_dt = timezone.make_aware(due_dt, timezone.get_current_timezone())
+
+    assignment = Assignment.objects.create(
+        module=module_run.module,
+        module_run=module_run,
+        title=title,
+        description=description,
+        due_date=due_dt,
+        max_score=max_score_int,
+        created_by=request.user,
+    )
+
+    uploads = request.FILES.getlist("files")
+    file_rows = []
+    for upload in uploads:
+        safe_name = upload.name.replace("/", "_").replace("\\", "_")
+        storage_path = f"assignments/{module_run.id}/{assignment.id}/{safe_name}"
+        saved_path = default_storage.save(storage_path, upload)
+        try:
+            file_url = default_storage.url(saved_path)
+        except Exception:
+            file_url = saved_path
+        file_rows.append(
+            AssignmentFile(
+                assignment=assignment,
+                file_url=file_url,
+                file_name=upload.name,
+                file_type=getattr(upload, "content_type", "") or "",
+                file_size=getattr(upload, "size", 0) or 0,
+                uploaded_by=request.user,
+            )
+        )
+    if file_rows:
+        AssignmentFile.objects.bulk_create(file_rows)
+
+    return module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_required
+def delete_module_assignment(request, module_run_id, assignment_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
+    assignment.delete()
+    return module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_required
+def update_module_assignment(request, module_run_id, assignment_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    assignment = get_object_or_404(Assignment, id=assignment_id, module_run=module_run)
+
+    title = (request.POST.get("title") or "").strip()
+    description = (request.POST.get("description") or "").strip()
+    due_date = request.POST.get("due_date")
+    max_score = request.POST.get("max_score")
+
+    if not title or not due_date or not max_score:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    try:
+        max_score_int = int(max_score)
+    except ValueError:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    try:
+        due_date_value = timezone.datetime.fromisoformat(due_date)
+    except ValueError:
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    due_dt = timezone.datetime.combine(
+        due_date_value.date(),
+        timezone.datetime.max.time().replace(microsecond=0),
+    )
+    if timezone.is_naive(due_dt):
+        due_dt = timezone.make_aware(due_dt, timezone.get_current_timezone())
+
+    assignment.title = title
+    assignment.description = description
+    assignment.due_date = due_dt
+    assignment.max_score = max_score_int
+    assignment.save()
+
+    # Allow attaching more files when editing.
+    uploads = request.FILES.getlist("files")
+    file_rows = []
+    for upload in uploads:
+        safe_name = upload.name.replace("/", "_").replace("\\", "_")
+        storage_path = f"assignments/{module_run.id}/{assignment.id}/{safe_name}"
+        saved_path = default_storage.save(storage_path, upload)
+        try:
+            file_url = default_storage.url(saved_path)
+        except Exception:
+            file_url = saved_path
+        file_rows.append(
+            AssignmentFile(
+                assignment=assignment,
+                file_url=file_url,
+                file_name=upload.name,
+                file_type=getattr(upload, "content_type", "") or "",
+                file_size=getattr(upload, "size", 0) or 0,
+                uploaded_by=request.user,
+            )
+        )
+    if file_rows:
+        AssignmentFile.objects.bulk_create(file_rows)
+
+    return module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_required
+def assignment_submission_form(request, assignment_id, student_module_id):
+    assignment = get_object_or_404(Assignment.objects.select_related("module_run"), id=assignment_id)
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related("enrollment", "enrollment__student"),
+        id=student_module_id,
+        module_run=assignment.module_run,
+    )
+    submission = AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).first()
+    return render(
+        request,
+        "accounts/home/panels/modules/_assignment_submit.html",
+        {
+            "assignment": assignment,
+            "student_module": student_module,
+            "submission": submission,
+        },
+    )
+
+
+@login_required
+@admin_required
+def submit_assignment(request, assignment_id, student_module_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    assignment = get_object_or_404(Assignment.objects.select_related("module_run"), id=assignment_id)
+    student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
+    upload = request.FILES.get("file")
+    if not upload:
+        return assignment_submission_form(request, assignment_id=assignment_id, student_module_id=student_module_id)
+
+    safe_name = upload.name.replace("/", "_").replace("\\", "_")
+    storage_path = f"assignment_submissions/{assignment.id}/{student_module.id}/{safe_name}"
+    saved_path = default_storage.save(storage_path, upload)
+    try:
+        file_url = default_storage.url(saved_path)
+    except Exception:
+        file_url = saved_path
+
+    AssignmentSubmission.objects.update_or_create(
+        assignment=assignment,
+        student_module=student_module,
+        defaults={
+            "file_url": file_url,
+            # score/feedback/graded_by intentionally left blank on submit
+        },
+    )
+
+    # Return updated assignments panel so statuses refresh.
+    return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
+
+
+@login_required
+@admin_required
+def grade_assignment_form(request, assignment_id, student_module_id):
+    assignment = get_object_or_404(Assignment.objects.select_related("module_run", "module_run__faculty"), id=assignment_id)
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related("enrollment", "enrollment__student"),
+        id=student_module_id,
+        module_run=assignment.module_run,
+    )
+    submission = AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).first()
+    return render(
+        request,
+        "accounts/home/panels/modules/_assignment_grade.html",
+        {
+            "assignment": assignment,
+            "student_module": student_module,
+            "submission": submission,
+            "faculty": assignment.module_run.faculty,
+            "grade_error": "",
+            "grade_success": "",
+        },
+    )
+
+
+@login_required
+@admin_required
+def grade_assignment_submission(request, assignment_id, student_module_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    assignment = get_object_or_404(Assignment.objects.select_related("module_run", "module_run__faculty"), id=assignment_id)
+    student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
+    submission = AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).first()
+    if not submission:
+        return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
+
+    score = request.POST.get("score")
+    feedback = (request.POST.get("feedback") or "").strip()
+    graded_by_id = request.POST.get("graded_by_id")
+
+    try:
+        score_value = float(score) if score not in (None, "") else None
+    except ValueError:
+        score_value = None
+
+    if score_value is not None and score_value > float(assignment.max_score):
+        student_module = get_object_or_404(
+            StudentModule.objects.select_related("enrollment", "enrollment__student"),
+            id=student_module_id,
+            module_run=assignment.module_run,
+        )
+        return render(
+            request,
+            "accounts/home/panels/modules/_assignment_grade.html",
+            {
+                "assignment": assignment,
+                "student_module": student_module,
+                "submission": submission,
+                "faculty": assignment.module_run.faculty,
+                "grade_error": f"Score must be less than or equal to {assignment.max_score}.",
+            },
+        )
+
+    graded_by = None
+    if graded_by_id:
+        # Restrict to the faculty assigned to this module run.
+        if str(assignment.module_run.faculty_id) == str(graded_by_id):
+            graded_by = assignment.module_run.faculty
+
+    submission.score = score_value
+    submission.feedback = feedback
+    submission.graded_by = graded_by
+    submission.save()
+
+    return render(
+        request,
+        "accounts/home/panels/modules/_assignment_grade.html",
+        {
+            "assignment": assignment,
+            "student_module": student_module,
+            "submission": submission,
+            "faculty": assignment.module_run.faculty,
+            "grade_error": "",
+            "grade_success": "Grade saved.",
+        },
+    )

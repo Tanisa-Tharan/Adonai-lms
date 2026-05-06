@@ -92,9 +92,17 @@
 	                {% if latest_run %}
 	                  <button
 	                    type="button"
+	                    hx-get="{% url 'module_assignments_panel' latest_run.id %}"
+	                    hx-target="#module-assignments-drawer"
+	                    hx-swap="innerHTML"
+	                  >
+	                    Assignments
+	                  </button>
+	                  <button
+	                    type="button"
 	                    hx-get="{% url 'module_students_panel' latest_run.id %}"
-                    hx-target="#module-students-drawer"
-                    hx-swap="innerHTML"
+	                    hx-target="#module-students-drawer"
+	                    hx-swap="innerHTML"
                   >
                     Manage Students
                   </button>
@@ -107,13 +115,14 @@
                     Take Attendance
                   </button>
                 {% else %}
-                  <button type="button" disabled title="Schedule a module run first.">Manage Students</button>
-                  <button type="button" disabled title="Schedule a module run first.">Take Attendance</button>
-                {% endif %}
-                <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
-                  {% csrf_token %}
-                  <button type="submit" class="danger-item">Delete Module</button>
-                </form>
+	                  <button type="button" disabled title="Schedule a module run first.">Manage Students</button>
+	                  <button type="button" disabled title="Schedule a module run first.">Take Attendance</button>
+	                  <button type="button" disabled title="Schedule a module run first.">Assignments</button>
+	                {% endif %}
+	                <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
+	                  {% csrf_token %}
+	                  <button type="submit" class="danger-item">Delete Module</button>
+	                </form>
               </div>
             </td>
           </tr>
@@ -214,8 +223,9 @@
       </form>
     </div>
 
-    <div id="module-students-drawer"></div>
-    <div id="module-attendance-drawer"></div>
-    <div id="course-materials-drawer"></div>
-  </div>
-</section>
+	    <div id="module-students-drawer"></div>
+	    <div id="module-attendance-drawer"></div>
+	    <div id="course-materials-drawer"></div>
+	    <div id="module-assignments-drawer"></div>
+	  </div>
+	</section>

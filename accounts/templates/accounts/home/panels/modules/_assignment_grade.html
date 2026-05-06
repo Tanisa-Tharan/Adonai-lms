@@ -1,0 +1,86 @@
+<div class="panel-card" style="margin-top: 18px;">
+  <div class="panel-header">
+    <div>
+      <h3>Grade: {{ assignment.title }}</h3>
+      <p>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</p>
+    </div>
+
+    <div class="panel-actions">
+      <button
+        type="button"
+        class="button button-secondary"
+        hx-on:click="document.getElementById('assignment-action-drawer').innerHTML=''"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  {% if not submission %}
+    <div class="messages" style="margin-top: 12px;">
+      <div class="message">No submission found for this student.</div>
+    </div>
+  {% else %}
+    <div style="margin-top: 12px;">
+      <a href="{{ submission.file_url }}" target="_blank" rel="noopener">Open Submission</a>
+      &nbsp;|&nbsp;
+      <a href="{{ submission.file_url }}" download>Download</a>
+    </div>
+  {% endif %}
+
+  {% if grade_error %}
+    <div class="messages" style="margin-top: 12px;">
+      <div class="message">{{ grade_error }}</div>
+    </div>
+  {% endif %}
+
+  {% if grade_success %}
+    <div class="messages" style="margin-top: 12px;">
+      <div class="message">{{ grade_success }}</div>
+    </div>
+  {% endif %}
+
+  <form
+    method="post"
+    hx-post="{% url 'grade_assignment_submission' assignment.id student_module.id %}"
+    hx-target="#assignment-action-drawer"
+    hx-swap="innerHTML"
+    hx-on:htmx:afterRequest="if (event.detail && event.detail.successful) { if (window.htmx && document.getElementById('module-assignments-drawer')) { htmx.ajax('GET', '{% url 'module_assignments_panel' assignment.module_run.id %}', {target:'#module-assignments-drawer', swap:'innerHTML'}); } }"
+    style="margin-top: 12px;"
+  >
+    {% csrf_token %}
+
+    <div class="user-form-grid" style="grid-template-columns: 1fr 1fr;">
+      <section class="user-form-section">
+        <h4>Grade</h4>
+
+        <div class="field-group">
+          <label for="score">Score (Max: {{ assignment.max_score }})</label>
+          <input type="number" step="0.01" name="score" id="score" max="{{ assignment.max_score }}" value="{% if submission and submission.score is not None %}{{ submission.score }}{% endif %}">
+        </div>
+
+        <div class="field-group">
+          <label for="graded_by_id">Graded By</label>
+          <select name="graded_by_id" id="graded_by_id">
+            <option value="" {% if not submission or not submission.graded_by %}selected{% endif %}>--</option>
+            <option value="{{ faculty.id }}" {% if submission and submission.graded_by and submission.graded_by.id == faculty.id %}selected{% endif %}>
+              {{ faculty.first_name }} {{ faculty.last_name }}
+            </option>
+          </select>
+        </div>
+      </section>
+
+      <section class="user-form-section">
+        <h4>Feedback</h4>
+        <div class="field-group">
+          <label for="feedback">Feedback</label>
+          <textarea name="feedback" id="feedback" rows="6" placeholder="Optional feedback">{% if submission %}{{ submission.feedback }}{% endif %}</textarea>
+        </div>
+      </section>
+    </div>
+
+    <div class="form-actions" style="margin-top: 10px;">
+      <button type="submit" class="button button-primary" {% if not submission %}disabled{% endif %}>Save Grade</button>
+    </div>
+  </form>
+</div>

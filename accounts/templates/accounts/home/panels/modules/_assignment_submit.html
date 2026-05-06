@@ -1,0 +1,48 @@
+<div class="panel-card" style="margin-top: 18px;">
+  <div class="panel-header">
+    <div>
+      <h3>Submit: {{ assignment.title }}</h3>
+      <p>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</p>
+    </div>
+
+    <div class="panel-actions">
+      <button
+        type="button"
+        class="button button-secondary"
+        hx-on:click="document.getElementById('assignment-action-drawer').innerHTML=''"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    hx-post="{% url 'submit_assignment' assignment.id student_module.id %}"
+    hx-target="#module-assignments-drawer"
+    hx-swap="innerHTML"
+    hx-encoding="multipart/form-data"
+    style="margin-top: 12px;"
+  >
+    {% csrf_token %}
+
+    <div class="user-form-grid" style="grid-template-columns: 1fr;">
+      <section class="user-form-section">
+        <h4>Upload Submission</h4>
+        <div class="field-group">
+          <label for="file">File</label>
+          <input type="file" name="file" id="file" required>
+        </div>
+        {% if submission %}
+          <div class="mini-meta">Already submitted.</div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="form-actions" style="margin-top: 10px;">
+      <button type="submit" class="button button-primary">Submit</button>
+    </div>
+  </form>
+</div>
+
