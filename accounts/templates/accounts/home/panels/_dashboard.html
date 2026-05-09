@@ -67,8 +67,10 @@
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
-          <th>Password</th>
-          <th>Action</th>
+          {% if request.user.role == "ADMIN" %}
+            <th>Password</th>
+            <th>Action</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -77,31 +79,33 @@
           <td>{{ user.first_name }} {{ user.last_name }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.role }}</td>
-          <td id="password-cell-{{ user.id }}">
-            <span class="mini-meta">Click reset to view</span>
-          </td>
-          <td>
-            <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');" style="display:inline">
-              {% csrf_token %}
-              <button type="submit" class="button button-danger">Delete</button>
-            </form>
-            {% if user.role != "ADMIN" %}
-              <button
-                type="button"
-                class="button button-secondary"
-                hx-post="{% url 'reset_user_password' user.id %}"
-                hx-target="#password-cell-{{ user.id }}"
-                hx-swap="innerHTML"
-                onClick="return confirm('Reset password for this user?');"
-              >
-                Reset
-              </button>
-            {% endif %}
-          </td>
+          {% if request.user.role == "ADMIN" %}
+            <td id="password-cell-{{ user.id }}">
+              <span class="mini-meta">Click reset to view</span>
+            </td>
+            <td>
+              <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger">Delete</button>
+              </form>
+              {% if user.role != "ADMIN" %}
+                <button
+                  type="button"
+                  class="button button-secondary"
+                  hx-post="{% url 'reset_user_password' user.id %}"
+                  hx-target="#password-cell-{{ user.id }}"
+                  hx-swap="innerHTML"
+                  onClick="return confirm('Reset password for this user?');"
+                >
+                  Reset
+                </button>
+              {% endif %}
+            </td>
+          {% endif %}
         </tr>
         {% empty %}
         <tr>
-          <td colspan="5">No users found</td>
+          <td colspan="{% if request.user.role == 'ADMIN' %}5{% else %}3{% endif %}">No users found</td>
         </tr>
         {% endfor %}
       </tbody>

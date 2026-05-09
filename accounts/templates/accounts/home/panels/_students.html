@@ -7,7 +7,9 @@
       </div>
 
       <div class="panel-actions">
-        <a href="{% url 'home' %}?tab=students&mode=create&role=STUDENT" class="button button-primary">Add Student</a>
+        {% if request.user.role == "ADMIN" %}
+          <a href="{% url 'home' %}?tab=students&mode=create&role=STUDENT" class="button button-primary">Add Student</a>
+        {% endif %}
       </div>
     </div>
 
@@ -43,10 +45,12 @@
               <button type="button" class="action-menu-button" aria-label="User actions">...</button>
               <div class="action-menu">
                 <a href="{% url 'home' %}?tab=students&mode=edit&user_id={{ user.id }}">Edit Student</a>
-                <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
-                  {% csrf_token %}
-                  <button type="submit" class="danger-item">Delete Student</button>
-                </form>
+                {% if request.user.role == "ADMIN" %}
+                  <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-item">Delete Student</button>
+                  </form>
+                {% endif %}
               </div>
             </td>
           </tr>

@@ -8,7 +8,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.db.models import Prefetch, Q, Count
 from django.urls import reverse
-from .decorators import admin_or_faculty_required, admin_required, faculty_required, student_required
+from .decorators import (
+    admin_or_faculty_required,
+    admin_or_supervisor_required,
+    admin_required,
+    faculty_required,
+    student_required,
+)
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils import timezone
@@ -346,6 +352,8 @@ def login_view(request):
             # Redirect after login
             if user.role == "ADMIN":
                 return redirect("home")
+            if user.role == "SUPERVISOR":
+                return redirect("home")
             if user.role == "FACULTY":
                 return redirect("faculty_home")
             if user.role == "STUDENT":
@@ -610,7 +618,7 @@ def student_module_materials_panel(request, module_id):
 
 
 @login_required
-@admin_required
+@admin_or_supervisor_required
 def home(request):
     active_tab = request.GET.get("tab", "dashboard")
     selected_role = ROLE_TABS.get(active_tab, request.GET.get("role"))
@@ -625,6 +633,9 @@ def home(request):
     } if request.GET.get("year_id") else None)
     module_form = CreateModuleForm()
 
+    if request.user.role == "SUPERVISOR" and active_tab in ROLE_TABS and user_panel_mode == "create":
+        return redirect(f"{reverse('home')}?tab={active_tab}")
+
     if active_tab in ROLE_TABS and user_panel_mode == "edit":
         editing_user = get_object_or_404(User, id=request.GET.get("user_id"), role__in=["STUDENT", "FACULTY"])
         active_tab = "faculty" if editing_user.role == "FACULTY" else "students"
@@ -637,6 +648,9 @@ def home(request):
         module_form = _build_module_form(editing_module)
 
     if request.method == "POST" and active_tab in ROLE_TABS:
+        if request.user.role == "SUPERVISOR":
+            messages.error(request, "Supervisors cannot create users.")
+            return redirect(f"{reverse('home')}?tab={active_tab}")
         user_panel_mode = request.GET.get("mode", "create")
         user_id = request.GET.get("user_id")
         editing_user = None
