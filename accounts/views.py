@@ -370,6 +370,34 @@ def faculty_home(request):
         .order_by("enrollment__student__first_name", "enrollment__student__last_name")
     )
 
+    submissions = AssignmentSubmission.objects.filter(
+        assignment__module_run__in=faculty_runs,
+        student_module__in=student_modules,
+    ).select_related("graded_by", "assignment")
+    has_submission = set()
+    graded_by_faculty = set()
+    next_ungraded_assignment_by_student_module = {}
+    grade_percent_sum = {}
+    grade_percent_count = {}
+    for submission in submissions:
+        key = str(submission.student_module_id)
+        has_submission.add(key)
+        if submission.graded_by_id == request.user.id or submission.score is not None:
+            graded_by_faculty.add(key)
+        if submission.score is None and submission.graded_by_id is None and key not in next_ungraded_assignment_by_student_module:
+            next_ungraded_assignment_by_student_module[key] = str(submission.assignment_id)
+        if submission.score is not None and submission.assignment and submission.assignment.max_score:
+            max_score = float(submission.assignment.max_score)
+            if max_score > 0:
+                grade_percent_sum[key] = grade_percent_sum.get(key, 0.0) + (float(submission.score) / max_score) * 100.0
+                grade_percent_count[key] = grade_percent_count.get(key, 0) + 1
+
+    grade_percentage_by_student_module = {
+        sm_id: (grade_percent_sum[sm_id] / grade_percent_count[sm_id])
+        for sm_id in grade_percent_sum
+        if grade_percent_count.get(sm_id)
+    }
+
     return render(
         request,
         "accounts/faculty/home.html",
@@ -378,6 +406,67 @@ def faculty_home(request):
             "faculty_runs": faculty_runs,
             "modules": modules,
             "student_modules": student_modules,
+            "faculty_student_has_submission": has_submission,
+            "faculty_student_graded": graded_by_faculty,
+            "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
+            "faculty_grade_percentage": grade_percentage_by_student_module,
+        },
+    )
+
+
+@login_required
+@faculty_required
+def faculty_students_panel(request):
+    active_tab = "students"
+    faculty_runs = (
+        ModuleRun.objects.filter(faculty=request.user)
+        .select_related("module", "quarter", "quarter__academic_year")
+        .order_by("-created_at")
+    )
+    student_modules = (
+        StudentModule.objects.filter(module_run__in=faculty_runs)
+        .select_related("enrollment", "enrollment__student", "module_run", "module_run__module")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+
+    submissions = AssignmentSubmission.objects.filter(
+        assignment__module_run__in=faculty_runs,
+        student_module__in=student_modules,
+    ).select_related("graded_by", "assignment")
+    has_submission = set()
+    graded_by_faculty = set()
+    next_ungraded_assignment_by_student_module = {}
+    grade_percent_sum = {}
+    grade_percent_count = {}
+    for submission in submissions:
+        key = str(submission.student_module_id)
+        has_submission.add(key)
+        if submission.graded_by_id == request.user.id or submission.score is not None:
+            graded_by_faculty.add(key)
+        if submission.score is None and submission.graded_by_id is None and key not in next_ungraded_assignment_by_student_module:
+            next_ungraded_assignment_by_student_module[key] = str(submission.assignment_id)
+        if submission.score is not None and submission.assignment and submission.assignment.max_score:
+            max_score = float(submission.assignment.max_score)
+            if max_score > 0:
+                grade_percent_sum[key] = grade_percent_sum.get(key, 0.0) + (float(submission.score) / max_score) * 100.0
+                grade_percent_count[key] = grade_percent_count.get(key, 0) + 1
+
+    grade_percentage_by_student_module = {
+        sm_id: (grade_percent_sum[sm_id] / grade_percent_count[sm_id])
+        for sm_id in grade_percent_sum
+        if grade_percent_count.get(sm_id)
+    }
+
+    return render(
+        request,
+        "accounts/faculty/panels/_students.html",
+        {
+            "active_tab": active_tab,
+            "student_modules": student_modules,
+            "faculty_student_has_submission": has_submission,
+            "faculty_student_graded": graded_by_faculty,
+            "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
+            "faculty_grade_percentage": grade_percentage_by_student_module,
         },
     )
 

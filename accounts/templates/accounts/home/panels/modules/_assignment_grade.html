@@ -9,7 +9,7 @@
       <button
         type="button"
         class="button button-secondary"
-        hx-on:click="document.getElementById('assignment-action-drawer').innerHTML=''"
+        hx-on:click="const drawer = event.target.closest('.assignment-drawer'); if (drawer) { drawer.innerHTML=''; }"
       >
         Close
       </button>
@@ -43,9 +43,9 @@
   <form
     method="post"
     hx-post="{% url 'grade_assignment_submission' assignment.id student_module.id %}"
-    hx-target="#assignment-action-drawer"
+    hx-target="closest .assignment-drawer"
     hx-swap="innerHTML"
-    hx-on:htmx:afterRequest="if (event.detail && event.detail.successful) { if (window.htmx && document.getElementById('module-assignments-drawer')) { htmx.ajax('GET', '{% url 'module_assignments_panel' assignment.module_run.id %}', {target:'#module-assignments-drawer', swap:'innerHTML'}); } }"
+    hx-on:htmx:afterRequest="if (event.detail && event.detail.successful) { if (window.htmx && document.getElementById('module-assignments-drawer')) { htmx.ajax('GET', '{% url 'module_assignments_panel' assignment.module_run.id %}', {target:'#module-assignments-drawer', swap:'innerHTML'}); } if (window.htmx && document.getElementById('students-panel')) { htmx.ajax('GET', '{% url 'faculty_students_panel' %}', {target:'#students-panel', swap:'outerHTML'}); } }"
     style="margin-top: 12px;"
   >
     {% csrf_token %}

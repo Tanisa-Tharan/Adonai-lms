@@ -1,0 +1,91 @@
+{% load template_extras %}
+
+<section class="tab-panel {% if active_tab == 'students' %}active{% endif %}" id="students-panel">
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>My Students</h3>
+        <p>Students enrolled in modules you teach, with attendance and grading status.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Email</th>
+          <th>Module</th>
+          <th>Quarter</th>
+          <th>Attendance %</th>
+          <th>Assignment Graded</th>
+          <th>Grade %</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sm in student_modules %}
+        <tr>
+          <td>{{ sm.enrollment.student.first_name }} {{ sm.enrollment.student.last_name }}</td>
+          <td>{{ sm.enrollment.student.email }}</td>
+          <td>{{ sm.module_run.module.title }}</td>
+          <td>{{ sm.module_run.quarter.name }}</td>
+          <td>
+            {% if sm.attendance_percentage is not None %}
+              {{ sm.attendance_percentage|floatformat:0 }}%
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if sm.id|stringformat:"s" in faculty_student_has_submission %}
+              {% if sm.id|stringformat:"s" in faculty_student_graded %}
+                <span class="status-pill active">Graded</span>
+              {% else %}
+                <span class="status-pill inactive">Not Graded</span>
+              {% endif %}
+            {% else %}
+              <span class="status-pill inactive">No Submission</span>
+            {% endif %}
+          </td>
+          <td>
+            {% with pct=faculty_grade_percentage|get_item:sm.id %}
+              {% if pct is not None %}
+                {{ pct|floatformat:0 }}%
+              {% else %}
+                <span class="mini-meta"></span>
+              {% endif %}
+            {% endwith %}
+          </td>
+          <td>
+            {% with key=sm.id|stringformat:"s" %}
+              {% if key in faculty_student_has_submission and key not in faculty_student_graded %}
+                {% with assignment_id=faculty_next_ungraded_assignment|get_item:key %}
+                  {% if assignment_id %}
+                    <button
+                      type="button"
+                      class="button button-secondary"
+                      hx-get="{% url 'grade_assignment_form' assignment_id sm.id %}"
+                      hx-target="#faculty-grade-drawer"
+                      hx-swap="innerHTML"
+                    >
+                      Grade
+                    </button>
+                  {% endif %}
+                {% endwith %}
+              {% else %}
+                <span class="mini-meta">-</span>
+              {% endif %}
+            {% endwith %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8">No students found for your modules.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div id="faculty-grade-drawer" class="assignment-drawer"></div>
+  </div>
+</section>
