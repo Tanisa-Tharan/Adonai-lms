@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.db.models import Prefetch, Q, Count
 from django.urls import reverse
-from .decorators import admin_or_faculty_required, admin_required, faculty_required
+from .decorators import admin_or_faculty_required, admin_required, faculty_required, student_required
 from django.contrib import messages
 from django.core.files.storage import default_storage
 from django.utils import timezone
@@ -348,6 +348,8 @@ def login_view(request):
                 return redirect("home")
             if user.role == "FACULTY":
                 return redirect("faculty_home")
+            if user.role == "STUDENT":
+                return redirect("student_home")
 
     return render(request, "accounts/login.html")
 
@@ -467,6 +469,142 @@ def faculty_students_panel(request):
             "faculty_student_graded": graded_by_faculty,
             "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
             "faculty_grade_percentage": grade_percentage_by_student_module,
+        },
+    )
+
+
+@login_required
+@student_required
+def student_home(request):
+    active_tab = request.GET.get("tab", "dashboard")
+    student_modules = (
+        StudentModule.objects.filter(enrollment__student=request.user)
+        .select_related("enrollment", "module_run", "module_run__module", "module_run__quarter", "module_run__quarter__academic_year")
+        .order_by("module_run__module__order_number", "module_run__module__title")
+    )
+    module_runs = [sm.module_run for sm in student_modules]
+
+    submissions = AssignmentSubmission.objects.filter(student_module__in=student_modules).select_related("assignment")
+    submission_by_assignment = {str(s.assignment_id): s for s in submissions}
+
+    due_assignments = (
+        Assignment.objects.filter(module_run__in=module_runs)
+        .prefetch_related("files")
+        .order_by("due_date")
+    )
+
+    return render(
+        request,
+        "accounts/student/home.html",
+        {
+            "active_tab": active_tab,
+            "student_modules": student_modules,
+            "due_assignments": due_assignments,
+            "submission_by_assignment": submission_by_assignment,
+        },
+    )
+
+
+@login_required
+@student_required
+def student_module_assignments_panel(request, module_run_id):
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related("module_run", "module_run__module"),
+        module_run_id=module_run_id,
+        enrollment__student=request.user,
+    )
+    assignments = (
+        Assignment.objects.filter(module_run_id=module_run_id)
+        .prefetch_related("files")
+        .order_by("-due_date", "-id")
+    )
+    submissions = AssignmentSubmission.objects.filter(student_module=student_module, assignment__in=assignments)
+    submission_by_assignment = {str(s.assignment_id): s for s in submissions}
+    now = timezone.now()
+    return render(
+        request,
+        "accounts/student/panels/modules/_assignments.html",
+        {
+            "student_module": student_module,
+            "assignments": assignments,
+            "submission_by_assignment": submission_by_assignment,
+            "now": now,
+        },
+    )
+
+
+@login_required
+@student_required
+def student_submit_assignment(request, assignment_id, module_run_id):
+    if request.method != "POST":
+        return redirect("student_home")
+
+    student_module = get_object_or_404(
+        StudentModule,
+        module_run_id=module_run_id,
+        enrollment__student=request.user,
+    )
+    assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
+    if timezone.now() > assignment.due_date:
+        return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+    upload = request.FILES.get("file")
+    if not upload:
+        return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+    safe_name = upload.name.replace("/", "_").replace("\\", "_")
+    storage_path = f"assignment_submissions/{assignment.id}/{student_module.id}/{safe_name}"
+    saved_path = default_storage.save(storage_path, upload)
+    try:
+        file_url = default_storage.url(saved_path)
+    except Exception:
+        file_url = saved_path
+
+    AssignmentSubmission.objects.update_or_create(
+        assignment=assignment,
+        student_module=student_module,
+        defaults={
+            "file_url": file_url,
+        },
+    )
+
+    return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@student_required
+def student_delete_submission(request, assignment_id, module_run_id):
+    if request.method != "POST":
+        return redirect("student_home")
+
+    student_module = get_object_or_404(
+        StudentModule,
+        module_run_id=module_run_id,
+        enrollment__student=request.user,
+    )
+    assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
+    if timezone.now() > assignment.due_date:
+        return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+    AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).delete()
+    return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@student_required
+def student_module_materials_panel(request, module_id):
+    # Ensure student is enrolled in at least one run for this module.
+    if not StudentModule.objects.filter(enrollment__student=request.user, module_run__module_id=module_id).exists():
+        return redirect("student_home")
+
+    materials = CourseMaterial.objects.filter(module_id=module_id).select_related("module", "uploaded_by").order_by("-created_at")
+    module = get_object_or_404(Module, id=module_id)
+    return render(
+        request,
+        "accounts/student/panels/modules/_materials.html",
+        {
+            "module": module,
+            "materials": materials,
         },
     )
 

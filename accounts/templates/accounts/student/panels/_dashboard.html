@@ -1,0 +1,71 @@
+{% load template_extras %}
+
+<section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
+  <div class="hero-card">
+    <h3 style="margin:0 0 8px;">Student Dashboard</h3>
+    <p style="margin:0; color:var(--muted);">Upcoming assignments for your registered modules.</p>
+
+    <div class="stats">
+      <div class="stat">
+        <span>My Modules</span>
+        <strong>{{ student_modules|length }}</strong>
+      </div>
+      <div class="stat">
+        <span>Assignments</span>
+        <strong>{{ due_assignments|length }}</strong>
+      </div>
+      <div class="stat">
+        <span>Tabs</span>
+        <strong>2</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>Assignments Due</h3>
+        <p>Assignments for your enrolled module runs.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Assignment</th>
+          <th>Due</th>
+          <th>Status</th>
+          <th>Grade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for assignment in due_assignments %}
+        {% with submission=submission_by_assignment|get_item:assignment.id %}
+        <tr>
+          <td>{{ assignment.module.title }}</td>
+          <td><strong>{{ assignment.title }}</strong></td>
+          <td>{{ assignment.due_date|date:"Y-m-d" }}</td>
+          <td>
+            {% if submission %}
+              {% if submission.score is not None or submission.graded_by %}
+                <span class="status-pill active">Graded</span>
+              {% else %}
+                <span class="status-pill inactive">Submitted</span>
+              {% endif %}
+            {% else %}
+              <span class="status-pill inactive">Not Submitted</span>
+            {% endif %}
+          </td>
+          <td>{% if submission and submission.score is not None %}{{ submission.score }}{% else %}-{% endif %}</td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr>
+          <td colspan="5">No assignments found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -1,0 +1,108 @@
+{% load template_extras %}
+
+<div class="panel-card" style="margin-top: 18px;">
+  <div class="panel-header">
+    <div>
+      <h3>Assignments: {{ student_module.module_run.module.title }}</h3>
+      <p>Download assignment files and submit before the due date.</p>
+    </div>
+
+    <div class="panel-actions">
+      <button
+        type="button"
+        class="button button-secondary"
+        hx-on:click="const drawer = event.target.closest('.assignment-drawer'); if (drawer) { drawer.innerHTML=''; }"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+
+  <table style="margin-top: 12px;">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Due</th>
+        <th>Max</th>
+        <th>Files</th>
+        <th>Status</th>
+        <th>Grade</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assignment in assignments %}
+        {% with submission=submission_by_assignment|get_item:assignment.id %}
+        <tr>
+          <td>
+            <strong>{{ assignment.title }}</strong><br>
+            <span class="mini-meta">{{ assignment.description|default:"" }}</span>
+          </td>
+          <td>{{ assignment.due_date|date:"Y-m-d" }}</td>
+          <td>{{ assignment.max_score }}</td>
+          <td>
+            {% if assignment.files.all %}
+              {% for file in assignment.files.all %}
+                <div>
+                  <a href="{{ file.file_url }}" target="_blank" rel="noopener">Open</a>
+                  &nbsp;|&nbsp;
+                  <a href="{{ file.file_url }}" download>Download</a>
+                  <span class="mini-meta">({{ file.file_name }})</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            {% if submission %}
+              {% if submission.score is not None or submission.graded_by %}
+                <span class="status-pill active">Graded</span>
+              {% else %}
+                <span class="status-pill inactive">Submitted</span>
+              {% endif %}
+            {% else %}
+              <span class="status-pill inactive">Not Submitted</span>
+            {% endif %}
+          </td>
+          <td>{% if submission and submission.score is not None %}{{ submission.score }}{% else %}-{% endif %}</td>
+          <td>
+            {% if now <= assignment.due_date %}
+              <form
+                method="post"
+                enctype="multipart/form-data"
+                hx-post="{% url 'student_submit_assignment' student_module.module_run.id assignment.id %}"
+                hx-target="closest .assignment-drawer"
+                hx-swap="innerHTML"
+                hx-encoding="multipart/form-data"
+                style="display:inline"
+              >
+                {% csrf_token %}
+                <input type="file" name="file" required style="max-width: 210px;">
+                <button type="submit" class="button button-secondary">Submit</button>
+              </form>
+              {% if submission %}
+                <form
+                  method="post"
+                  hx-post="{% url 'student_delete_submission' student_module.module_run.id assignment.id %}"
+                  hx-target="closest .assignment-drawer"
+                  hx-swap="innerHTML"
+                  onsubmit="return confirm('Delete your submission?');"
+                  style="display:inline"
+                >
+                  {% csrf_token %}
+                  <button type="submit" class="button button-secondary">Delete Submission</button>
+                </form>
+              {% endif %}
+            {% else %}
+              <span class="mini-meta">Closed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endwith %}
+      {% empty %}
+        <tr><td colspan="7">No assignments found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

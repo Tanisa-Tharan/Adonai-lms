@@ -1,0 +1,71 @@
+{% load template_extras %}
+
+<section class="tab-panel {% if active_tab == 'modules' %}active{% endif %}" id="modules-panel">
+  <div class="panel-card">
+    <div class="panel-header">
+      <div>
+        <h3>My Modules</h3>
+        <p>Modules you are registered in, with attendance and assignment status.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Module</th>
+          <th>Quarter</th>
+          <th>Run Dates</th>
+          <th>Attendance %</th>
+          <th>Assignments</th>
+          <th>Grade</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sm in student_modules %}
+        <tr>
+          <td><strong>{{ sm.module_run.module.title }}</strong></td>
+          <td>{{ sm.module_run.quarter.name }}<br><span class="mini-meta">{{ sm.module_run.quarter.academic_year.name }}</span></td>
+          <td>{{ sm.module_run.start_date }} to {{ sm.module_run.end_date }}</td>
+          <td>
+            {% if sm.attendance_percentage is not None %}
+              {{ sm.attendance_percentage|floatformat:0 }}%
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td><span class="mini-meta">Open to view</span></td>
+          <td><span class="mini-meta">Open to view</span></td>
+          <td class="actions-cell">
+            <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
+            <div class="action-menu">
+              <button
+                type="button"
+                hx-get="{% url 'student_module_materials_panel' sm.module_run.module.id %}"
+                hx-target="#student-materials-drawer"
+                hx-swap="innerHTML"
+              >
+                Materials
+              </button>
+              <button
+                type="button"
+                hx-get="{% url 'student_module_assignments_panel' sm.module_run.id %}"
+                hx-target="#student-assignments-drawer"
+                hx-swap="innerHTML"
+              >
+                Assignments
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No modules found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div id="student-materials-drawer" class="assignment-drawer"></div>
+    <div id="student-assignments-drawer" class="assignment-drawer"></div>
+  </div>
+</section>
+

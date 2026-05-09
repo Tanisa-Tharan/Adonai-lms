@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  {% include "accounts/home/_styles.html" %}
+</head>
+<body data-active-tab="{{ active_tab }}" hx-indicator="#htmx-indicator">
+  <div class="layout">
+    {% include "accounts/student/_sidebar.html" %}
+
+    <main class="content">
+      <div class="shell">
+        {% include "accounts/home/_messages.html" %}
+        {% include "accounts/student/panels/_dashboard.html" %}
+        {% include "accounts/student/panels/_modules.html" %}
+      </div>
+    </main>
+  </div>
+
+  <div id="htmx-indicator" class="htmx-indicator" aria-hidden="true">
+    <span class="spinner" aria-hidden="true"></span>
+  </div>
+
+  {% include "accounts/home/_scripts.html" %}
+</body>
+</html>
+
