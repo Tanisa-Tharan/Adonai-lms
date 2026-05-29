@@ -18,6 +18,7 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Student ID</th>
             <th>Email</th>
             <th>Role</th>
             <th>Status</th>
@@ -29,6 +30,7 @@
           {% for user in student_users %}
           <tr>
             <td>{{ user.first_name }} {{ user.last_name }}</td>
+            <td>{% if user.serial_number %}{{ user.serial_number }}{% else %}-{% endif %}</td>
             <td>{{ user.email }}</td>
             <td>
               <span class="role-pill {{ user.role|lower }}">
@@ -56,7 +58,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="6">No students found</td>
+            <td colspan="7">No students found</td>
           </tr>
           {% endfor %}
         </tbody>
