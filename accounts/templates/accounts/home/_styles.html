@@ -61,33 +61,57 @@
     margin: 0;
     color: rgba(248, 250, 252, 0.72);
     font-size: 14px;
+    font-family: "Roboto", sans-serif;
   }
 
   .nav {
-    display: grid;
-    gap: 12px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
   }
 
   .nav button {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     width: 100%;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent !important;
+    color: #57534e !important;
     text-align: left;
-    padding: 16px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.04);
-    color: inherit;
-    font-size: 14px;
-    letter-spacing: 0.08em;
+    font-family: Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
     cursor: pointer;
-    transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
 
   .nav button:hover,
   .nav button.active {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(124, 198, 255, 0.28);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
-    transform: translateX(4px);
+    transform: translateX(0);
+  }
+
+  .nav button.active {
+    background: rgba(113, 2, 14, 0.06) !important;
+    color: #921f22 !important;
+  }
+
+  .nav button.active svg path {
+    fill: #921f22 !important;
+  }
+
+  .nav button:not(.active) svg path {
+    fill: #57534e !important;
+  }
+
+  .nav button:not(.active):hover {
+    background: rgba(113, 2, 14, 0.04) !important;
   }
 
   .content {
@@ -169,17 +193,27 @@
 
   .sidebar-footer .logout-form button {
     width: 100%;
-    justify-content: flex-start;
-    padding: 16px 18px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    align-self: stretch;
+    display: flex;
+    padding: 12px 16px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    background: #921F22;
+    color: #FFF;
+    border: 0;
+    font-family: "Lexend", sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: center;
   }
 
-  .sidebar-footer .logout-form button:hover {
+  /* .sidebar-footer .logout-form button:hover {
     background: rgba(255, 255, 255, 0.14);
-  }
+  } */
 
   .button,
   .logout-form button,
