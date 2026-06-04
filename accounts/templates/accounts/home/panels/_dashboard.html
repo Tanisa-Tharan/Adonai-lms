@@ -1,8 +1,13 @@
 <section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
-  <div class="hero-card">
-    <h3 style="margin:0 0 8px;">Admin Dashboard</h3>
-    <p style="margin:0; color:var(--muted);">This keeps the current dashboard information visible while the rest of the sections move into a tabbed home page.</p>
+  {% load static %}
+  <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}');">
+    <div>
+      <h3>Welcome Back, {{ request.user.first_name }}</h3>
+      <p>Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students.</p>
+    </div>
+  </div>
 
+  <div class="hero-card">
     <div class="stats">
       <div class="stat">
         <span>Total Users</span>
@@ -22,18 +27,17 @@
   <div class="panel-card">
     <div class="panel-header">
       <div>
-        <h3>Existing Academic Years</h3>
-        <p>Overview of all academic years currently configured.</p>
+        <h3>Academic Years</h3>
       </div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Max Quarters</th>
+          <th>NAME</th>
+          <th>START DATE</th>
+          <th>END DATE</th>
+          <th>MAX QUARTERS</th>
         </tr>
       </thead>
       <tbody>
@@ -57,7 +61,6 @@
     <div class="panel-header">
       <div>
         <h3>Existing Users</h3>
-        <p>Current user list from the existing dashboard.</p>
       </div>
     </div>
 

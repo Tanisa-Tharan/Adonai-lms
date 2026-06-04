@@ -1,15 +1,14 @@
 <section class="tab-panel {% if active_tab == 'academic-session' %}active{% endif %}" id="academic-session-panel">
-  <div class="panel-card">
-    <div class="panel-header">
-      <div>
-        <h3>Academic Session</h3>
-        <p>Academic year table with expandable quarter details.</p>
-      </div>
-
-      <div class="panel-actions">
-        <a href="{% url 'home' %}?tab=academic-session&mode=create-academic-year" class="button button-secondary">Create Academic Year</a>
-      </div>
+  {% load static %}
+  <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h3>Academic Session</h3>
+      <p>Academic year table with expandable quarter details.</p>
     </div>
+    <a href="{% url 'home' %}?tab=academic-session&mode=create-academic-year" class="banner-action-button">Create Academic Year</a>
+  </div>
+
+  <div class="panel-card">
 
     <div class="{% if academic_panel_mode != 'table' %}hidden-panel{% endif %}">
       <table>
