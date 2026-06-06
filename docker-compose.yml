@@ -16,6 +16,8 @@ services:
   web:
     build: .
     container_name: lms_web
+    env_file:
+      - .env
     volumes:
       - .:/app
     ports:

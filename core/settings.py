@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     "accounts",
     "academics",
     "modules",
@@ -147,8 +148,30 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# DigitalOcean Spaces Configuration
+USE_SPACES = os.getenv("USE_SPACES", "False").lower() == "true"
+
+if USE_SPACES:
+    # DigitalOcean Spaces settings
+    AWS_ACCESS_KEY_ID = os.getenv("DO_SPACES_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("DO_SPACES_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("DO_SPACES_BUCKET_NAME", "absstorage")
+    AWS_S3_REGION_NAME = os.getenv("DO_SPACES_REGION", "sfo3")
+    AWS_S3_ENDPOINT_URL = os.getenv("DO_SPACES_ENDPOINT_URL", "https://sfo3.digitaloceanspaces.com")
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
+    AWS_LOCATION = 'media'
+    
+    # Media files configuration
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+else:
+    # Local media files configuration
+    MEDIA_URL = "media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 

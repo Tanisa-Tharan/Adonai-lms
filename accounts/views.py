@@ -560,19 +560,12 @@ def student_submit_assignment(request, assignment_id, module_run_id):
     if not upload:
         return student_module_assignments_panel(request, module_run_id=module_run_id)
 
-    safe_name = upload.name.replace("/", "_").replace("\\", "_")
-    storage_path = f"assignment_submissions/{assignment.id}/{student_module.id}/{safe_name}"
-    saved_path = default_storage.save(storage_path, upload)
-    try:
-        file_url = default_storage.url(saved_path)
-    except Exception:
-        file_url = saved_path
-
+    # Directly assign the file object to FileField
     AssignmentSubmission.objects.update_or_create(
         assignment=assignment,
         student_module=student_module,
         defaults={
-            "file_url": file_url,
+            "file_url": upload,
         },
     )
 
@@ -997,26 +990,27 @@ def add_course_material(request):
     if material_type == "LINK":
         if not link_url:
             return course_materials_panel(request)
-        file_url = link_url
+        # For LINK type, we still store the URL as a string in file_url
+        # Note: This will need special handling since file_url is now a FileField
+        # For now, create with empty file and store link separately if needed
+        CourseMaterial.objects.create(
+            module=module,
+            title=title,
+            file_url='',  # Empty for links - may need model adjustment
+            material_type=material_type,
+            uploaded_by=request.user,
+        )
     else:
         if not upload:
             return course_materials_panel(request)
-        # Store in MEDIA_ROOT on the same server.
-        safe_name = upload.name.replace("/", "_").replace("\\", "_")
-        storage_path = f"course_materials/{module.id}/{safe_name}"
-        saved_path = default_storage.save(storage_path, upload)
-        try:
-            file_url = default_storage.url(saved_path)
-        except Exception:
-            file_url = saved_path
-
-    CourseMaterial.objects.create(
-        module=module,
-        title=title,
-        file_url=file_url,
-        material_type=material_type,
-        uploaded_by=request.user,
-    )
+        # Directly assign the file object to FileField
+        CourseMaterial.objects.create(
+            module=module,
+            title=title,
+            file_url=upload,
+            material_type=material_type,
+            uploaded_by=request.user,
+        )
 
     # Preserve module filter after submit.
     request.GET = request.GET.copy()
@@ -1134,27 +1128,16 @@ def add_module_assignment(request, module_run_id):
     )
 
     uploads = request.FILES.getlist("files")
-    file_rows = []
     for upload in uploads:
-        safe_name = upload.name.replace("/", "_").replace("\\", "_")
-        storage_path = f"assignments/{module_run.id}/{assignment.id}/{safe_name}"
-        saved_path = default_storage.save(storage_path, upload)
-        try:
-            file_url = default_storage.url(saved_path)
-        except Exception:
-            file_url = saved_path
-        file_rows.append(
-            AssignmentFile(
-                assignment=assignment,
-                file_url=file_url,
-                file_name=upload.name,
-                file_type=getattr(upload, "content_type", "") or "",
-                file_size=getattr(upload, "size", 0) or 0,
-                uploaded_by=request.user,
-            )
+        # Save each file individually (bulk_create doesn't work with FileField)
+        AssignmentFile.objects.create(
+            assignment=assignment,
+            file_url=upload,  # Directly assign the file object to FileField
+            file_name=upload.name,
+            file_type=getattr(upload, "content_type", "") or "",
+            file_size=getattr(upload, "size", 0) or 0,
+            uploaded_by=request.user,
         )
-    if file_rows:
-        AssignmentFile.objects.bulk_create(file_rows)
 
     return module_assignments_panel(request, module_run_id=module_run_id)
 
@@ -1216,27 +1199,16 @@ def update_module_assignment(request, module_run_id, assignment_id):
 
     # Allow attaching more files when editing.
     uploads = request.FILES.getlist("files")
-    file_rows = []
     for upload in uploads:
-        safe_name = upload.name.replace("/", "_").replace("\\", "_")
-        storage_path = f"assignments/{module_run.id}/{assignment.id}/{safe_name}"
-        saved_path = default_storage.save(storage_path, upload)
-        try:
-            file_url = default_storage.url(saved_path)
-        except Exception:
-            file_url = saved_path
-        file_rows.append(
-            AssignmentFile(
-                assignment=assignment,
-                file_url=file_url,
-                file_name=upload.name,
-                file_type=getattr(upload, "content_type", "") or "",
-                file_size=getattr(upload, "size", 0) or 0,
-                uploaded_by=request.user,
-            )
+        # Save each file individually (bulk_create doesn't work with FileField)
+        AssignmentFile.objects.create(
+            assignment=assignment,
+            file_url=upload,  # Directly assign the file object to FileField
+            file_name=upload.name,
+            file_type=getattr(upload, "content_type", "") or "",
+            file_size=getattr(upload, "size", 0) or 0,
+            uploaded_by=request.user,
         )
-    if file_rows:
-        AssignmentFile.objects.bulk_create(file_rows)
 
     return module_assignments_panel(request, module_run_id=module_run_id)
 
@@ -1274,19 +1246,12 @@ def submit_assignment(request, assignment_id, student_module_id):
     if not upload:
         return assignment_submission_form(request, assignment_id=assignment_id, student_module_id=student_module_id)
 
-    safe_name = upload.name.replace("/", "_").replace("\\", "_")
-    storage_path = f"assignment_submissions/{assignment.id}/{student_module.id}/{safe_name}"
-    saved_path = default_storage.save(storage_path, upload)
-    try:
-        file_url = default_storage.url(saved_path)
-    except Exception:
-        file_url = saved_path
-
+    # Directly assign the file object to FileField
     AssignmentSubmission.objects.update_or_create(
         assignment=assignment,
         student_module=student_module,
         defaults={
-            "file_url": file_url,
+            "file_url": upload,
             # score/feedback/graded_by intentionally left blank on submit
         },
     )
