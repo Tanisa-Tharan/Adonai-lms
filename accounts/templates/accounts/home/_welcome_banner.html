@@ -1,0 +1,15 @@
+{% load static %}
+<div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3>{{ banner_title }}</h3>
+    <p>{{ banner_description }}</p>
+  </div>
+  {% if banner_button_url and banner_button_text %}
+    <a href="{{ banner_button_url }}" class="banner-action-button">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+        <path d="M4.28571 5.71428H0V4.28571H4.28571V0H5.71428V4.28571H10V5.71428H5.71428V10H4.28571V5.71428Z" fill="#921F22"/>
+      </svg>
+      {{ banner_button_text }}
+    </a>
+  {% endif %}
+</div>

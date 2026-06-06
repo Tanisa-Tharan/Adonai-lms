@@ -1,4 +1,7 @@
 <section class="tab-panel {% if active_tab == 'modules' %}active{% endif %}" id="modules-panel">
+  {% url 'home' as home_url %}
+  {% include 'accounts/home/_welcome_banner.html' with banner_title="Module Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url=home_url|add:"?tab=modules&mode=create" banner_button_text="Add Module" %}
+
   <div class="stats" style="margin-bottom: 22px;">
     <div class="stat">
       <span>Total Course</span>
@@ -15,16 +18,6 @@
   </div>
 
   <div class="panel-card">
-    <div class="panel-header">
-      <div>
-        <h3>Module Management</h3>
-        <p>Review all modules and schedule a new module run from this pane.</p>
-      </div>
-
-	      <div class="panel-actions">
-	        <a href="{% url 'home' %}?tab=modules&mode=create" class="button button-primary">Add Module</a>
-	      </div>
-	    </div>
 
     <div class="{% if active_tab == 'modules' and module_panel_mode != 'table' %}hidden-panel{% endif %}">
       <table>

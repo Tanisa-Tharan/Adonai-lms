@@ -1,17 +1,12 @@
 <section class="tab-panel {% if active_tab == 'faculty' %}active{% endif %}" id="faculty-panel">
-  <div class="panel-card">
-    <div class="panel-header">
-      <div>
-        <h3>Faculty Management</h3>
-        <p>Manage all faculty records and add new faculty or students from this pane.</p>
-      </div>
+  {% url 'home' as home_url %}
+  {% if request.user.role == "ADMIN" %}
+    {% include 'accounts/home/_welcome_banner.html' with banner_title="Faculty Management" banner_description="Oversee staff performance, grading cycles, and academic credentials." banner_button_url=home_url|add:"?tab=faculty&mode=create&role=FACULTY" banner_button_text="Add Faculty" %}
+  {% else %}
+    {% include 'accounts/home/_welcome_banner.html' with banner_title="Faculty Management" banner_description="Oversee staff performance, grading cycles, and academic credentials." %}
+  {% endif %}
 
-      <div class="panel-actions">
-        {% if request.user.role == "ADMIN" %}
-          <a href="{% url 'home' %}?tab=faculty&mode=create&role=FACULTY" class="button button-primary">Add Faculty</a>
-        {% endif %}
-      </div>
-    </div>
+  <div class="panel-card">
 
     <div class="{% if active_tab == 'faculty' and user_panel_mode != 'table' %}hidden-panel{% endif %}">
       <table>
