@@ -242,6 +242,49 @@
     border: 1px solid var(--line);
   }
 
+  /* Form action buttons - Figma styling */
+  .form-actions .button-primary {
+    display: flex;
+    padding: 12px 40px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    background: #921F22;
+    color: #FFF;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .form-actions .button-primary:hover {
+    background: #7a1a1c;
+  }
+
+  .form-actions .button-secondary {
+    display: flex;
+    padding: 12px 24px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    border: 1px solid #71020E;
+    background: transparent;
+    color: #71020E;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .form-actions .button-secondary:hover {
+    background: rgba(113, 2, 14, 0.05);
+  }
+
   .button-danger {
     background: #fee2e2;
     color: var(--danger);
@@ -612,20 +655,80 @@
 
   .user-form-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 18px;
   }
 
   .user-form-section {
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 18px;
-    background: #fff;
+    display: flex;
+    width: 100%;
+    padding: 16px 32px 32px 32px;
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 4px;
+    border: 1px solid #E5E7EB;
+    background: #FFF;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 960px) {
+    .user-form-section {
+      padding: 16px 24px 24px 24px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .user-form-section {
+      padding: 16px 16px 24px 16px;
+    }
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  .form-row-single {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  .form-row-half {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 14px;
+    width: 100%;
+  }
+
+  .form-row-half .field-group:last-child {
+    visibility: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .form-row,
+    .form-row-half {
+      grid-template-columns: 1fr;
+    }
+
+    .form-row-half .field-group:last-child {
+      display: none;
+    }
   }
 
   .user-form-section h4 {
     margin: 0 0 14px;
-    font-size: 18px;
+    color: #71020E;
+    font-family: Lexend;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 31.2px; /* 130% */
   }
 
   .field-group {
@@ -635,9 +738,13 @@
   .field-group label {
     display: block;
     margin-bottom: 6px;
+    color: #58413F;
+    font-family: Lexend, sans-serif;
     font-size: 14px;
-    font-weight: 600;
-    color: var(--muted);
+    font-style: normal;
+    font-weight: 500;
+    line-height: 19.6px;
+    letter-spacing: 0.14px;
   }
 
   .locked-role {
@@ -651,15 +758,34 @@
   }
 
   .field-group input,
-  .field-group select,
+  .field-group select {
+    width: 100%;
+    display: flex;
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: stretch;
+    border-radius: 4px;
+    border: 1px solid #D1D5DB;
+    background: #FFF;
+    font: inherit;
+    color: var(--text);
+  }
+
   .field-group textarea {
     width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
+    display: flex;
+    padding: 11px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: stretch;
+    border-radius: 4px;
+    border: 1px solid #D1D5DB;
+    background: #FFF;
     font: inherit;
-    background: #fff;
     color: var(--text);
+    min-height: 120px;
+    resize: vertical;
   }
 
   .field-group input[type="checkbox"] {

@@ -17,7 +17,10 @@ class CreateUserForm(forms.Form):
 
     # PROFILE
     phone = forms.CharField(required=False)
-    address = forms.CharField(required=False)
+    address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4})
+    )
     dob = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"})
