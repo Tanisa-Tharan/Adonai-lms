@@ -647,16 +647,29 @@
   }
 
   .user-form-shell {
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 24px;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    display: flex;
+    width: 100%;
+    padding: 32px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    border: none;
+    background: #F8F9FA;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 768px) {
+    .user-form-shell {
+      padding: 24px 16px;
+      gap: 20px;
+    }
   }
 
   .user-form-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
+    width: 100%;
   }
 
   .user-form-section {

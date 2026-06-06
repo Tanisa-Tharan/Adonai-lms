@@ -659,11 +659,6 @@ def home(request):
         if user_form.is_valid():
             saved_user, generated_password = _save_user_from_form(user_form, editing_user)
 
-            if generated_password:
-                messages.success(request, f"User created. Password: {generated_password}")
-            else:
-                messages.success(request, f"User updated for {saved_user.first_name} {saved_user.last_name}.")
-
             next_tab = "faculty" if saved_user.role == "FACULTY" else "students"
             return redirect(f"{reverse('home')}?tab={next_tab}")
 
