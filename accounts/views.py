@@ -707,10 +707,8 @@ def home(request):
         if module_form.is_valid():
             if module_panel_mode == "edit" and editing_module:
                 module = _update_module_from_form(module_form, editing_module)
-                messages.success(request, f"Module {module.title} updated successfully.")
             else:
                 module = _save_module_from_form(module_form)
-                messages.success(request, f"Module {module.title} created successfully.")
             return redirect(f"{reverse('home')}?tab=modules")
 
     return render(request, "accounts/home.html", _build_home_context(

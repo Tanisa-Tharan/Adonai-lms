@@ -1,9 +1,11 @@
 <section class="tab-panel {% if active_tab == 'students' %}active{% endif %}" id="students-panel">
-  {% url 'home' as home_url %}
-  {% if request.user.role == "ADMIN" %}
-    {% include 'accounts/home/_welcome_banner.html' with banner_title="Student Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url=home_url|add:"?tab=students&mode=create&role=STUDENT" banner_button_text="Add Student" %}
-  {% else %}
-    {% include 'accounts/home/_welcome_banner.html' with banner_title="Student Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." %}
+  {% if user_panel_mode == 'table' %}
+    {% url 'home' as home_url %}
+    {% if request.user.role == "ADMIN" %}
+      {% include 'accounts/home/_welcome_banner.html' with banner_title="Student Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url=home_url|add:"?tab=students&mode=create&role=STUDENT" banner_button_text="Add Student" %}
+    {% else %}
+      {% include 'accounts/home/_welcome_banner.html' with banner_title="Student Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." %}
+    {% endif %}
   {% endif %}
 
   <div class="panel-card">
@@ -63,90 +65,90 @@
     <div class="user-form-shell {% if active_tab != 'students' or user_panel_mode == 'table' %}hidden-panel{% endif %}">
       <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=students&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=students&mode=create&role=STUDENT{% endif %}">
         {% csrf_token %}
+        <input type="hidden" name="role" value="STUDENT">
 
         <div class="user-form-grid user-entry-form">
           <section class="user-form-section">
-            <h4>{% if user_panel_mode == "edit" %}Edit Student{% else %}Add Student{% endif %}</h4>
+            <h4>{% if user_panel_mode == "edit" %}Edit Student{% else %}Student Details{% endif %}</h4>
 
-            <div class="field-group">
-              <label for="{{ user_form.email.id_for_label }}">Email</label>
-              {{ user_form.email }}
-              {{ user_form.email.errors }}
+            <!-- Row 1: First Name, Last Name -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
+                {{ user_form.first_name }}
+                {{ user_form.first_name.errors }}
+              </div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
+                {{ user_form.last_name }}
+                {{ user_form.last_name.errors }}
+              </div>
             </div>
 
-            <div class="field-group">
-              <label for="{{ user_form.first_name.id_for_label }}">First Name</label>
-              {{ user_form.first_name }}
-              {{ user_form.first_name.errors }}
+            <!-- Row 2: Email, Phone -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.email.id_for_label }}">Email</label>
+                {{ user_form.email }}
+                {{ user_form.email.errors }}
+              </div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.phone.id_for_label }}">Phone</label>
+                {{ user_form.phone }}
+                {{ user_form.phone.errors }}
+              </div>
             </div>
 
-            <div class="field-group">
-              <label for="{{ user_form.last_name.id_for_label }}">Last Name</label>
-              {{ user_form.last_name }}
-              {{ user_form.last_name.errors }}
+            <!-- Row 3: Date of Birth (half width) -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
+                {{ user_form.dob }}
+                {{ user_form.dob.errors }}
+              </div>
+              <div class="field-group" style="visibility: hidden;"></div>
             </div>
 
-            <div class="field-group">
-              <label for="{{ user_form.role.id_for_label }}">Role</label>
-              {% if user_panel_mode == "create" %}
-              <input type="hidden" name="role" value="STUDENT">
-              <span class="locked-role">
-                <span class="role-pill student">Student</span>
-              </span>
-              {% else %}
-              {{ user_form.role }}
-              {% endif %}
-              {{ user_form.role.errors }}
+            <!-- Row 4: Address (full width) -->
+            <div class="form-row-single">
+              <div class="field-group">
+                <label for="{{ user_form.address.id_for_label }}">Address</label>
+                {{ user_form.address }}
+                {{ user_form.address.errors }}
+              </div>
             </div>
-          </section>
+            <h4>Academic Enrollment</h4>
 
-          <section class="user-form-section">
-            <h4>Profile Details</h4>
-
-            <div class="field-group">
-              <label for="{{ user_form.phone.id_for_label }}">Phone</label>
-              {{ user_form.phone }}
-              {{ user_form.phone.errors }}
-            </div>
-
-            <div class="field-group">
-              <label for="{{ user_form.address.id_for_label }}">Address</label>
-              {{ user_form.address }}
-              {{ user_form.address.errors }}
+            <!-- Row 1: Track, Academic Year -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.track.id_for_label }}">Track</label>
+                {{ user_form.track }}
+                {{ user_form.track.errors }}
+              </div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
+                {{ user_form.academic_year }}
+                {{ user_form.academic_year.errors }}
+              </div>
             </div>
 
-            <div class="field-group">
-              <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
-              {{ user_form.dob }}
-              {{ user_form.dob.errors }}
-            </div>
-          </section>
-
-          <section class="user-form-section">
-            <h4>Enrollment (Only for Students)</h4>
-
-            <div class="field-group">
-              <label for="{{ user_form.track.id_for_label }}">Track</label>
-              {{ user_form.track }}
-              {{ user_form.track.errors }}
-            </div>
-
-            <div class="field-group">
-              <label for="{{ user_form.start_date.id_for_label }}">Start Date</label>
-              {{ user_form.start_date }}
-              {{ user_form.start_date.errors }}
-            </div>
-
-            <div class="field-group">
-              <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
-              {{ user_form.academic_year }}
-              {{ user_form.academic_year.errors }}
-            </div>
-
-            <div class="field-group">
-              <label for="{{ user_form.expected_completion_date.id_for_label }}">Expected Completion Date</label>
-              {{ user_form.expected_completion_date }}
-              {{ user_form.expected_completion_date.errors }}
+            <!-- Row 2: Start Date, Expected Completion Date -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.start_date.id_for_label }}">Start Date</label>
+                {{ user_form.start_date }}
+                {{ user_form.start_date.errors }}
+              </div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.expected_completion_date.id_for_label }}">Expected Completion Date</label>
+                {{ user_form.expected_completion_date }}
+                {{ user_form.expected_completion_date.errors }}
+              </div>
             </div>
           </section>
         </div>

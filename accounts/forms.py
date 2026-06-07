@@ -54,7 +54,6 @@ class CreateUserForm(forms.Form):
         if role == "STUDENT":
             required_student_fields = {
                 "track": "Track is required for students.",
-                "start_date": "Start date is required for students.",
                 "expected_completion_date": "Expected completion date is required for students.",
                 "academic_year": "Academic year is required for students.",
             }
