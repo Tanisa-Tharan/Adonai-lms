@@ -87,14 +87,6 @@
 	                {% if latest_run %}
 	                  <button
 	                    type="button"
-	                    hx-get="{% url 'module_assignments_panel' latest_run.id %}"
-	                    hx-target="#module-assignments-drawer"
-	                    hx-swap="innerHTML"
-	                  >
-	                    Assignments
-	                  </button>
-	                  <button
-	                    type="button"
 	                    hx-get="{% url 'module_students_panel' latest_run.id %}"
 	                    hx-target="#module-students-drawer"
 	                    hx-swap="innerHTML"
@@ -234,6 +226,5 @@
 	    <div id="module-students-drawer"></div>
 	    <div id="module-attendance-drawer"></div>
 	    <div id="course-materials-drawer"></div>
-	    <div id="module-assignments-drawer"></div>
 	  </div>
 	</section>

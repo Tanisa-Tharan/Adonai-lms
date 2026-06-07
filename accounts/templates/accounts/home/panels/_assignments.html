@@ -1,0 +1,56 @@
+<section class="tab-panel {% if active_tab == 'assignments' %}active{% endif %}" id="assignments-panel">
+  {% load static %}
+  
+  <!-- Module Grid View (default view) -->
+  <div id="assignments-grid-view">
+    <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}');">
+      <div>
+        <h3>Assignments Management</h3>
+        <p>Manage all assignments across modules. View assignment counts, edit assignments, and track submissions for each module.</p>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-header">
+        <div>
+          <h3>Modules with Assignments</h3>
+          <p>Select a module to manage its assignments</p>
+        </div>
+      </div>
+
+      <div class="module-grid" id="assignments-module-grid">
+        {% for module_run in module_runs %}
+        <div class="module-card" id="module-card-{{ module_run.id }}">
+          <h4 class="module-card-title">{{ module_run.module.title }}</h4>
+          <p class="module-card-subtitle">{{ module_run.quarter.name }}</p>
+          
+          <div class="module-card-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 15 17" fill="none">
+              <path d="M6.33333 12.5417L12.2083 6.66667L11.0417 5.5L6.33333 10.2083L3.95833 7.83333L2.79167 9L6.33333 12.5417ZM1.66667 16.6667C1.20833 16.6667 0.815972 16.5035 0.489583 16.1771C0.163194 15.8507 0 15.4583 0 15V3.33333C0 2.875 0.163194 2.48264 0.489583 2.15625C0.815972 1.82986 1.20833 1.66667 1.66667 1.66667H5.16667C5.34722 1.16667 5.64931 0.763889 6.07292 0.458333C6.49653 0.152778 6.97222 0 7.5 0C8.02778 0 8.50347 0.152778 8.92708 0.458333C9.35069 0.763889 9.65278 1.16667 9.83333 1.66667H13.3333C13.7917 1.66667 14.184 1.82986 14.5104 2.15625C14.8368 2.48264 15 2.875 15 3.33333V15C15 15.4583 14.8368 15.8507 14.5104 16.1771C14.184 16.5035 13.7917 16.6667 13.3333 16.6667H1.66667Z" fill="#921F22"/>
+            </svg>
+            <span class="module-card-count">{{ module_run.assignments.count }} Assignment{{ module_run.assignments.count|pluralize }}</span>
+          </div>
+
+          <button
+            type="button"
+            class="module-card-button"
+            hx-get="{% url 'module_assignments_detail' module_run.id %}"
+            hx-target="#assignments-detail-drawer"
+            hx-swap="innerHTML"
+            hx-on::after-request="document.getElementById('assignments-grid-view').style.display='none'"
+          >
+            Assignments
+          </button>
+        </div>
+        {% empty %}
+        <div class="placeholder">
+          <p>No module runs found. Create module runs to add assignments.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawer for assignment details -->
+  <div id="assignments-detail-drawer"></div>
+</section>

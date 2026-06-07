@@ -285,6 +285,15 @@ def _admin_home_context(
 
     student_users = users.filter(role="STUDENT")
     active_modules = modules.filter(is_active=True)
+    
+    # Get module runs with assignment counts for assignments panel
+    module_runs = ModuleRun.objects.select_related(
+        "module", "quarter", "quarter__academic_year", "faculty"
+    ).prefetch_related(
+        "assignments"
+    ).annotate(
+        assignment_count=Count("assignments")
+    ).order_by("-created_at")
 
     return {
         "users": users,
@@ -302,6 +311,7 @@ def _admin_home_context(
         "module_form": CreateModuleForm(),
         "module_panel_mode": "table",
         "editing_module": None,
+        "module_runs": module_runs,
         "module_stats": {
             "total_courses": modules.count(),
             "active_courses": active_modules.count(),

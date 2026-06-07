@@ -1,0 +1,109 @@
+{% load template_extras %}
+
+<div style="margin-top: 18px;">
+  <h4 style="margin-bottom: 10px;">Student Status </h4>
+  {% for assignment in assignments %}
+    <div class="panel-card" style="margin-top: 12px;">
+      <div class="panel-header">
+        <div>
+          <h3>{{ assignment.title }}</h3>
+          <p>Submission status per student.</p>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto; margin-top: 10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Score</th>
+              <th>Max</th>
+              <th>%</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student_module in student_modules %}
+              {% with submission=submissions_by_assignment|get_item:assignment.id|get_item:student_module.id %}
+              <tr>
+                <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
+                <td>{{ student_module.enrollment.student.email }}</td>
+                <td>
+                  {% if submission %}
+                    {% if submission.score is not None or submission.graded_by %}
+                      <span class="status-pill active">Graded</span>
+                    {% else %}
+                      <span class="status-pill inactive">Submitted</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="status-pill inactive">Not Submitted</span>
+                  {% endif %}
+                </td>
+                <td>{% if submission %}{{ submission.submitted_at|date:"Y-m-d H:i" }}{% else %}-{% endif %}</td>
+                <td>{% if submission and submission.score is not None %}{{ submission.score }}{% else %}-{% endif %}</td>
+                <td>{{ assignment.max_score }}</td>
+                <td>
+                  {% with pct=percentage_by_assignment|get_item:assignment.id|get_item:student_module.id %}
+                    {% if pct is not None %}
+                      {{ pct|floatformat:0 }}%
+                    {% else %}
+                      -
+                    {% endif %}
+                  {% endwith %}
+                </td>
+                <td>
+                  {% if request.user.role == "ADMIN" %}
+                    <button
+                      type="button"
+                      class="button button-secondary"
+                      hx-get="{% url 'assignment_submission_form' assignment.id student_module.id %}"
+                      hx-target="#assignment-action-drawer"
+                      hx-swap="innerHTML"
+                    >
+                      Submit
+                    </button>
+                  {% endif %}
+                  <button
+                    type="button"
+                    class="button button-secondary"
+                    hx-get="{% url 'grade_assignment_form' assignment.id student_module.id %}"
+                    hx-target="#assignment-action-drawer"
+                    hx-swap="innerHTML"
+                    {% if not submission %}disabled{% endif %}
+                  >
+                    Grade
+                  </button>
+                  {% if request.user.role == "ADMIN" and submission %}
+                    <form
+                      method="post"
+                      hx-post="{% url 'delete_assignment_submission' assignment.id student_module.id %}"
+                      hx-target="#assignments-detail-drawer"
+                      hx-swap="innerHTML"
+                      onsubmit="return confirm('Delete this submission?');"
+                      style="display:inline"
+                    >
+                      {% csrf_token %}
+                      <button type="submit" class="button button-secondary">Delete Submission</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endwith %}
+            {% empty %}
+              <tr>
+                <td colspan="8">No students assigned to this module run.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% empty %}
+    <div class="messages">
+      <div class="message">No assignments yet.</div>
+    </div>
+  {% endfor %}
+</div>

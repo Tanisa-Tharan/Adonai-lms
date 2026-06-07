@@ -1,0 +1,76 @@
+{% load template_extras %}
+
+<div style="margin-top: 18px;">
+  <h4 style="margin-bottom: 10px;">Assignments</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Due</th>
+        <th>Max</th>
+        <th>Files</th>
+        <th>Created By</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assignment in assignments %}
+      <tr>
+        <td>
+          <strong>{{ assignment.title }}</strong><br>
+          <span class="mini-meta">{{ assignment.description|default:"" }}</span>
+        </td>
+        <td>{{ assignment.due_date|date:"Y-m-d" }}</td>
+        <td>{{ assignment.max_score }}</td>
+        <td>
+          {% if assignment.files.all %}
+            {% for file in assignment.files.all %}
+              <div>
+                <a href="{{ file.file_url }}" target="_blank" rel="noopener">Open</a>
+                &nbsp;|&nbsp;
+                <a href="{{ file.file_url }}" download>Download</a>
+                <span class="mini-meta">({{ file.file_name }})</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ assignment.created_by.first_name }} {{ assignment.created_by.last_name }}</td>
+        <td>
+          <form
+            method="post"
+            hx-post="{% url 'delete_module_assignment' module_run.id assignment.id %}"
+            hx-target="#assignments-detail-drawer"
+            hx-swap="innerHTML"
+            hx-on::after-request="
+              const moduleCard = document.getElementById('module-card-{{ module_run.id }}');
+              if (moduleCard) {
+                const countSpan = moduleCard.querySelector('.module-card-count');
+                if (countSpan) {
+                  const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+                  const newCount = Math.max(0, currentCount - 1);
+                  countSpan.textContent = newCount + ' Assignment' + (newCount !== 1 ? 's' : '');
+                }
+              }
+            "
+            onsubmit="return confirm('Delete this assignment?');"
+            style="display:inline"
+          >
+            {% csrf_token %}
+            <button type="submit" class="button button-ghost" style="padding: 8px; border: none; background: transparent; cursor: pointer;" title="Delete assignment">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 12 14" fill="none">
+                <path d="M2.25 13.5C1.8375 13.5 1.48438 13.3531 1.19062 13.0594C0.896875 12.7656 0.75 12.4125 0.75 12V2.25H0V0.75H3.75V0H8.25V0.75H12V2.25H11.25V12C11.25 12.4125 11.1031 12.7656 10.8094 13.0594C10.5156 13.3531 10.1625 13.5 9.75 13.5H2.25ZM9.75 2.25H2.25V12H9.75V2.25ZM3.75 10.5H5.25V3.75H3.75V10.5ZM6.75 10.5H8.25V3.75H6.75V10.5ZM2.25 2.25V12V2.25Z" fill="#A8A29E"/>
+              </svg>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">No assignments yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

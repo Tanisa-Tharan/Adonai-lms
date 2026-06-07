@@ -53,6 +53,7 @@ urlpatterns = [
     path("course-materials/add/", add_course_material, name="add_course_material"),
     path("course-materials/<uuid:material_id>/delete/", delete_course_material, name="delete_course_material"),
     path("module-runs/<uuid:module_run_id>/assignments/", module_assignments_panel, name="module_assignments_panel"),
+    path("module-runs/<uuid:module_run_id>/assignments/detail/", module_assignments_panel, name="module_assignments_detail"),
     path("module-runs/<uuid:module_run_id>/assignments/add/", add_module_assignment, name="add_module_assignment"),
     path(
         "module-runs/<uuid:module_run_id>/assignments/<uuid:assignment_id>/update/",

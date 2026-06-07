@@ -4,258 +4,45 @@
   <div class="panel-header">
     <div>
       <h3>Assignments: {{ module_run.module.title }}</h3>
-      <p>Create assignments, manage them, and track submissions per student.</p>
+      <p>{{ module_run.quarter.name }} - Create assignments, manage them, and track submissions per student.</p>
     </div>
 
     <div class="panel-actions">
       <button
         type="button"
+        id="add-assignment-btn"
+        class="button button-primary"
+        onclick="document.getElementById('assignment-form-section').style.display='block'; this.style.display='none';"
+      >
+        Add Assignment
+      </button>
+      <button
+        type="button"
         class="button button-secondary"
-        hx-on:click="document.getElementById('module-assignments-drawer').innerHTML=''"
+        onclick="
+          document.getElementById('assignments-detail-drawer').innerHTML='';
+          document.getElementById('assignments-grid-view').style.display='block';
+          window.location.reload();
+        "
       >
         Close
       </button>
     </div>
   </div>
 
-  <form
-    method="post"
-    enctype="multipart/form-data"
-    hx-post="{% if editing_assignment %}{% url 'update_module_assignment' module_run.id editing_assignment.id %}{% else %}{% url 'add_module_assignment' module_run.id %}{% endif %}"
-    hx-target="#module-assignments-drawer"
-    hx-swap="innerHTML"
-    hx-encoding="multipart/form-data"
-    style="margin-top: 12px;"
-  >
-    {% csrf_token %}
-
-    <div class="user-form-grid" style="grid-template-columns: 1fr 1fr;">
-      <section class="user-form-section">
-        <h4>{% if editing_assignment %}Edit Assignment{% else %}New Assignment{% endif %}</h4>
-
-        <div class="field-group">
-          <label for="title">Title</label>
-          <input type="text" name="title" id="title" required placeholder="e.g. Assignment 1" value="{% if editing_assignment %}{{ editing_assignment.title }}{% endif %}">
-        </div>
-
-        <div class="field-group">
-          <label for="description">Description</label>
-          <textarea name="description" id="description" rows="4" placeholder="Optional instructions">{% if editing_assignment %}{{ editing_assignment.description }}{% endif %}</textarea>
-        </div>
-      </section>
-
-      <section class="user-form-section">
-        <h4>Details</h4>
-
-        <div class="field-group">
-          <label for="due_date">Due Date</label>
-          <input type="date" name="due_date" id="due_date" required value="{% if editing_assignment %}{{ editing_assignment.due_date|date:'Y-m-d' }}{% endif %}">
-        </div>
-
-        <div class="field-group">
-          <label for="max_score">Max Score</label>
-          <input type="number" name="max_score" id="max_score" required min="0" step="1" value="{% if editing_assignment %}{{ editing_assignment.max_score }}{% else %}100{% endif %}">
-        </div>
-
-        <div class="field-group">
-          <label for="files">Files (optional){% if editing_assignment %} - add more{% endif %}</label>
-          <input type="file" name="files" id="files" multiple>
-        </div>
-      </section>
-    </div>
-
-    <div class="form-actions" style="margin-top: 10px;">
-      {% if editing_assignment %}
-        <button
-          type="button"
-          class="button button-secondary"
-          hx-get="{% url 'module_assignments_panel' module_run.id %}"
-          hx-target="#module-assignments-drawer"
-          hx-swap="innerHTML"
-        >
-          Cancel
-        </button>
-      {% endif %}
-      <button type="submit" class="button button-primary">{% if editing_assignment %}Update Assignment{% else %}Add Assignment{% endif %}</button>
-    </div>
-  </form>
-
-  <div style="margin-top: 18px;">
-    <h4 style="margin-bottom: 10px;">Assignments</h4>
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Due</th>
-          <th>Max</th>
-          <th>Files</th>
-          <th>Created By</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for assignment in assignments %}
-        <tr>
-          <td>
-            <strong>{{ assignment.title }}</strong><br>
-            <span class="mini-meta">{{ assignment.description|default:"" }}</span>
-          </td>
-          <td>{{ assignment.due_date|date:"Y-m-d" }}</td>
-          <td>{{ assignment.max_score }}</td>
-          <td>
-            {% if assignment.files.all %}
-              {% for file in assignment.files.all %}
-                <div>
-                  <a href="{{ file.file_url }}" target="_blank" rel="noopener">Open</a>
-                  &nbsp;|&nbsp;
-                  <a href="{{ file.file_url }}" download>Download</a>
-                  <span class="mini-meta">({{ file.file_name }})</span>
-                </div>
-              {% endfor %}
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>{{ assignment.created_by.first_name }} {{ assignment.created_by.last_name }}</td>
-          <td>
-            <button
-              type="button"
-              class="button button-secondary"
-              hx-get="{% url 'module_assignments_panel' module_run.id %}?assignment_id={{ assignment.id }}"
-              hx-target="#module-assignments-drawer"
-              hx-swap="innerHTML"
-            >
-              Edit
-            </button>
-            <form
-              method="post"
-              hx-post="{% url 'delete_module_assignment' module_run.id assignment.id %}"
-              hx-target="#module-assignments-drawer"
-              hx-swap="innerHTML"
-              onsubmit="return confirm('Delete this assignment?');"
-              style="display:inline"
-            >
-              {% csrf_token %}
-              <button type="submit" class="button button-secondary">Delete</button>
-            </form>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="6">No assignments yet.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <!-- Assignment Form Section (hidden by default) -->
+  <div id="assignment-form-section" style="display: none;">
+    {% include "accounts/home/panels/modules/_assignment_form.html" %}
   </div>
 
+  <!-- Assignment List Section -->
+  {% include "accounts/home/panels/modules/_assignment_list.html" %}
+
+  <!-- Assignment Action Drawer (for submit/grade) -->
   <div id="assignment-action-drawer" class="assignment-drawer"></div>
 
-  <div style="margin-top: 18px;">
-    <h4 style="margin-bottom: 10px;">Student Status (Per Assignment)</h4>
-    {% for assignment in assignments %}
-      <div class="panel-card" style="margin-top: 12px;">
-        <div class="panel-header">
-          <div>
-            <h3>{{ assignment.title }}</h3>
-            <p>Submission status per student.</p>
-          </div>
-        </div>
-
-        <div style="overflow-x: auto; margin-top: 10px;">
-          <table>
-            <thead>
-        <tr>
-          <th>Student</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>Submitted</th>
-          <th>Score</th>
-          <th>Max</th>
-          <th>%</th>
-          <th>Action</th>
-        </tr>
-            </thead>
-            <tbody>
-              {% for student_module in student_modules %}
-                {% with submission=submissions_by_assignment|get_item:assignment.id|get_item:student_module.id %}
-                <tr>
-                  <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
-                  <td>{{ student_module.enrollment.student.email }}</td>
-                  <td>
-                    {% if submission %}
-                      {% if submission.score is not None or submission.graded_by %}
-                        <span class="status-pill active">Graded</span>
-                      {% else %}
-                        <span class="status-pill inactive">Submitted</span>
-                      {% endif %}
-                    {% else %}
-                      <span class="status-pill inactive">Not Submitted</span>
-                    {% endif %}
-                  </td>
-                  <td>{% if submission %}{{ submission.submitted_at|date:"Y-m-d H:i" }}{% else %}-{% endif %}</td>
-                  <td>{% if submission and submission.score is not None %}{{ submission.score }}{% else %}-{% endif %}</td>
-                  <td>{{ assignment.max_score }}</td>
-                  <td>
-                    {% with pct=percentage_by_assignment|get_item:assignment.id|get_item:student_module.id %}
-                      {% if pct is not None %}
-                        {{ pct|floatformat:0 }}%
-                      {% else %}
-                        -
-                      {% endif %}
-                    {% endwith %}
-                  </td>
-                  <td>
-                    {% if request.user.role == "ADMIN" %}
-                      <button
-                        type="button"
-                        class="button button-secondary"
-                        hx-get="{% url 'assignment_submission_form' assignment.id student_module.id %}"
-                        hx-target="#assignment-action-drawer"
-                        hx-swap="innerHTML"
-                      >
-                        Submit
-                      </button>
-                    {% endif %}
-                    <button
-                      type="button"
-                      class="button button-secondary"
-                      hx-get="{% url 'grade_assignment_form' assignment.id student_module.id %}"
-                      hx-target="#assignment-action-drawer"
-                      hx-swap="innerHTML"
-                      {% if not submission %}disabled{% endif %}
-                    >
-                      Grade
-                    </button>
-                    {% if request.user.role == "ADMIN" and submission %}
-                      <form
-                        method="post"
-                        hx-post="{% url 'delete_assignment_submission' assignment.id student_module.id %}"
-                        hx-target="#module-assignments-drawer"
-                        hx-swap="innerHTML"
-                        onsubmit="return confirm('Delete this submission?');"
-                        style="display:inline"
-                      >
-                        {% csrf_token %}
-                        <button type="submit" class="button button-secondary">Delete Submission</button>
-                      </form>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% endwith %}
-              {% empty %}
-                <tr>
-                  <td colspan="8">No students assigned to this module run.</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    {% empty %}
-      <div class="messages">
-        <div class="message">No assignments yet.</div>
-      </div>
-    {% endfor %}
-  </div>
+  <!-- Assignment Students Section (only show if assignments exist) -->
+  {% if assignments %}
+    {% include "accounts/home/panels/modules/_assignment_students.html" %}
+  {% endif %}
 </div>

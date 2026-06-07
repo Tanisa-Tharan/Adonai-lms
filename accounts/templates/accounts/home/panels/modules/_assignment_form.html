@@ -1,0 +1,78 @@
+{% load template_extras %}
+
+<div class="panel-card" style="margin-top: 12px;">
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    hx-post="{% if editing_assignment %}{% url 'update_module_assignment' module_run.id editing_assignment.id %}{% else %}{% url 'add_module_assignment' module_run.id %}{% endif %}"
+    hx-target="#assignments-detail-drawer"
+    hx-swap="innerHTML"
+    hx-encoding="multipart/form-data"
+    hx-on::after-request="
+      const moduleCard = document.getElementById('module-card-{{ module_run.id }}');
+      if (moduleCard) {
+        const countSpan = moduleCard.querySelector('.module-card-count');
+        if (countSpan) {
+          const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
+          const newCount = currentCount + 1;
+          countSpan.textContent = newCount + ' Assignment' + (newCount !== 1 ? 's' : '');
+        }
+      }
+    "
+  >
+    {% csrf_token %}
+
+    <div class="user-form-grid" style="grid-template-columns: 1fr;">
+      <section class="user-form-section">
+        <h4>{% if editing_assignment %}Edit Assignment{% else %}New Assignment{% endif %}</h4>
+
+        <!-- Row 1: Title (full width) -->
+        <div class="form-row-single">
+          <div class="field-group">
+            <label for="title">Title</label>
+            <input type="text" name="title" id="title" required placeholder="e.g. Assignment 1" value="{% if editing_assignment %}{{ editing_assignment.title }}{% endif %}">
+          </div>
+        </div>
+
+        <!-- Row 2: Description (full width) -->
+        <div class="form-row-single">
+          <div class="field-group">
+            <label for="description">Description</label>
+            <textarea name="description" id="description" rows="4" placeholder="Optional instructions">{% if editing_assignment %}{{ editing_assignment.description }}{% endif %}</textarea>
+          </div>
+        </div>
+
+        <!-- Row 3: Files (full width) -->
+        <div class="form-row-single">
+          <div class="field-group">
+            <label for="files">Files (optional){% if editing_assignment %} - add more{% endif %}</label>
+            <input type="file" name="files" id="files" multiple>
+          </div>
+        </div>
+
+        <!-- Row 4: Due Date and Max Score (half width each) -->
+        <div class="form-row-half">
+          <div class="field-group">
+            <label for="due_date">Due Date</label>
+            <input type="date" name="due_date" id="due_date" required value="{% if editing_assignment %}{{ editing_assignment.due_date|date:'Y-m-d' }}{% endif %}">
+          </div>
+          <div class="field-group">
+            <label for="max_score">Max Score</label>
+            <input type="number" name="max_score" id="max_score" required min="0" step="1" value="{% if editing_assignment %}{{ editing_assignment.max_score }}{% else %}100{% endif %}">
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="form-actions" style="margin-top: 10px;">
+      <button
+        type="button"
+        class="button button-secondary"
+        onclick="document.getElementById('assignment-form-section').style.display='none'; document.getElementById('add-assignment-btn').style.display='inline-flex';"
+      >
+        Cancel
+      </button>
+      <button type="submit" class="button button-primary">{% if editing_assignment %}Update Assignment{% else %}Create Assignment{% endif %}</button>
+    </div>
+  </form>
+</div>
