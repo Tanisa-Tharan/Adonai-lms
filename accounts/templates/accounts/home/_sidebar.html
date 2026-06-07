@@ -72,7 +72,14 @@
   <div class="sidebar-footer">
     <form method="post" action="{% url 'logout' %}" class="logout-form">
       {% csrf_token %}
-      <button type="submit">Logout</button>
+      <button type="submit">
+        <span class="tab-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true" focusable="false">
+            <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V2C1 1.45 1.19583 0.979167 1.5875 0.5875C1.97917 0.195833 2.45 0 3 0H9V2H3V16H9V18H3ZM13 14L11.625 12.55L14.175 10H7V8H14.175L11.625 5.45L13 4L18 9L13 14Z"/>
+          </svg>
+        </span>
+        <span>Logout</span>
+      </button>
     </form>
   </div>
 </aside>
