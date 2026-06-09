@@ -69,6 +69,7 @@ def _build_user_form(user=None, role=None):
             "start_date": enrollment.start_date,
             "expected_completion_date": enrollment.expected_completion_date,
             "academic_year": enrollment.academic_year,
+            "start_quarter": enrollment.start_quarter,
         })
 
     return CreateUserForm(initial=initial)
@@ -133,6 +134,7 @@ def _save_user_from_form(form, user=None):
                 "track": form.cleaned_data.get("track"),
                 "start_date": form.cleaned_data.get("start_date"),
                 "expected_completion_date": form.cleaned_data.get("expected_completion_date"),
+                "start_quarter": form.cleaned_data.get("start_quarter"),
             },
         )
     else:

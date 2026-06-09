@@ -121,18 +121,31 @@
             </div>
             <h4>Academic Enrollment</h4>
 
-            <!-- Row 1: Track, Academic Year -->
-            <div class="form-row">
+            <!-- Row 1: Track (Radio buttons side by side) -->
+            <div class="form-row-single">
               <div class="field-group">
-                <label for="{{ user_form.track.id_for_label }}">Track</label>
-                {{ user_form.track }}
+                <label>Track</label>
+                <div class="radio-group">
+                  <label class="radio-card {% if user_form.track.value == 'DIPLOMA' %}active{% endif %}">
+                    <input type="radio" name="{{ user_form.track.name }}" value="DIPLOMA"
+                           {% if user_form.track.value == 'DIPLOMA' %}checked{% endif %}
+                           id="id_track_0">
+                    <div class="radio-card-content">
+                      <span class="radio-card-title">Diploma Program</span>
+                      <span class="radio-card-description">Graduate Diploma in Ministry [Recognized by SAIACS]</span>
+                    </div>
+                  </label>
+                  <label class="radio-card {% if user_form.track.value == 'CERTIFICATE' %}active{% endif %}">
+                    <input type="radio" name="{{ user_form.track.name }}" value="CERTIFICATE"
+                           {% if user_form.track.value == 'CERTIFICATE' %}checked{% endif %}
+                           id="id_track_1">
+                    <div class="radio-card-content">
+                      <span class="radio-card-title">Certificate Program</span>
+                      <span class="radio-card-description">Certificate of Achievement in ministry</span>
+                    </div>
+                  </label>
+                </div>
                 {{ user_form.track.errors }}
-              </div>
-              
-              <div class="field-group">
-                <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
-                {{ user_form.academic_year }}
-                {{ user_form.academic_year.errors }}
               </div>
             </div>
 
@@ -148,6 +161,20 @@
                 <label for="{{ user_form.expected_completion_date.id_for_label }}">Expected Completion Date</label>
                 {{ user_form.expected_completion_date }}
                 {{ user_form.expected_completion_date.errors }}
+              </div>
+            </div>
+
+            <!-- Row 3: Academic Year (half width) -->
+            <div class="form-row">
+              <div class="field-group">
+                <label for="{{ user_form.academic_year.id_for_label }}">Academic Year</label>
+                {{ user_form.academic_year }}
+                {{ user_form.academic_year.errors }}
+              </div>
+              <div class="field-group">
+                <label for="{{ user_form.start_quarter.id_for_label }}">Start Quarter</label>
+                {{ user_form.start_quarter }}
+                {{ user_form.start_quarter.errors }}
               </div>
             </div>
           </section>

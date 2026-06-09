@@ -1,6 +1,6 @@
 from django import forms
 from accounts.models import User, UserProfile
-from academics.models import Enrollment, AcademicYear
+from academics.models import Enrollment, AcademicYear, Quarter
 
 
 class CreateUserForm(forms.Form):
@@ -29,7 +29,8 @@ class CreateUserForm(forms.Form):
     # ENROLLMENT (only for student)
     track = forms.ChoiceField(
         choices=Enrollment.TRACK_CHOICES,
-        required=False
+        required=False,
+        widget=forms.RadioSelect
     )
 
     start_date = forms.DateField(
@@ -44,6 +45,11 @@ class CreateUserForm(forms.Form):
     
     academic_year = forms.ModelChoiceField(
         queryset=AcademicYear.objects.all(),
+        required=False
+    )
+    
+    start_quarter = forms.ModelChoiceField(
+        queryset=Quarter.objects.all(),
         required=False
     )
 

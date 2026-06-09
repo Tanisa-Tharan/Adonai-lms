@@ -972,18 +972,14 @@
     width: 100%;
   }
 
-  .form-row-half .field-group:last-child {
-    visibility: hidden;
+  .form-row-half .field-group:only-child {
+    grid-column: 1;
   }
 
   @media (max-width: 768px) {
     .form-row,
     .form-row-half {
       grid-template-columns: 1fr;
-    }
-
-    .form-row-half .field-group:last-child {
-      display: none;
     }
   }
 
@@ -1057,6 +1053,115 @@
   .field-group input[type="checkbox"] {
     width: auto;
     padding: 0;
+  }
+
+  .radio-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px;
+    margin-top: 8px;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .radio-card {
+    display: flex !important;
+    flex-direction: row !important;
+    padding: 16px;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: 4px;
+    border: 1px solid #D1D5DB;
+    background: #FFF;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .radio-card:hover {
+    border-color: #921F22;
+    background: #FFF5F5;
+  }
+
+  .radio-card.active {
+    border-color: #921F22;
+    background: #FFF5F5;
+  }
+
+  .radio-card input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+    align-self: center;
+    accent-color: #921F22;
+  }
+
+  .radio-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .radio-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1F2937;
+    line-height: 1.4;
+  }
+
+  .radio-card-description {
+    color: #58413F;
+    font-family: Lexend, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+  }
+
+  @media (max-width: 768px) {
+    .radio-group {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .radio-card {
+      width: 100%;
+    }
+
+    .radio-card-title {
+      font-size: 15px;
+    }
+
+    .radio-card-description {
+      font-size: 12px;
+      line-height: 18px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .radio-card {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .radio-card input[type="radio"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .radio-card-title {
+      font-size: 14px;
+    }
+
+    .radio-card-description {
+      font-size: 11px;
+      line-height: 16px;
+    }
   }
 
   .field-group ul {

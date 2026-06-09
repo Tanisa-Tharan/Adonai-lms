@@ -28,9 +28,8 @@ class AcademicYear(models.Model):
 class Enrollment(models.Model):
 
     TRACK_CHOICES = (
-        ("DIPLOMA", "Diploma"),
-        ("CERTIFICATE", "Certificate"),
-        ("INDIVIDUAL", "Individual"),
+        ("DIPLOMA", "Diploma Program"),
+        ("CERTIFICATE", "Certificate Program"),
     )
 
     STATUS_CHOICES = (
@@ -49,7 +48,12 @@ class Enrollment(models.Model):
         null=True,
         blank=True)
 
-    track = models.CharField(max_length=20, choices=TRACK_CHOICES)    
+    start_quarter = models.ForeignKey(
+        'Quarter',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='enrollments')
 
     track = models.CharField(max_length=20, choices=TRACK_CHOICES)
 
@@ -89,6 +93,9 @@ class Quarter(models.Model):
 
     class Meta:
         db_table = "quarters"
+    
+    def __str__(self):
+        return self.name
 
 def clean(self):
 
