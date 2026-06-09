@@ -1176,6 +1176,45 @@
     font-size: 13px;
   }
 
+  /* Rich text editor content styling */
+  .assignment-description {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .assignment-description p {
+    margin: 0.5em 0;
+  }
+
+  .assignment-description ul,
+  .assignment-description ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+  }
+
+  .assignment-description h1,
+  .assignment-description h2,
+  .assignment-description h3,
+  .assignment-description h4,
+  .assignment-description h5,
+  .assignment-description h6 {
+    margin: 0.5em 0;
+    font-weight: 600;
+  }
+
+  .assignment-description strong {
+    font-weight: 600;
+  }
+
+  .assignment-description em {
+    font-style: italic;
+  }
+
+  .assignment-description a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1325,6 +1364,708 @@
     .module-card-button {
       padding: 8px 16px;
       font-size: 12px;
+    }
+  }
+
+  /* Readings Tab Styling */
+  .readings-container {
+    display: flex;
+    width: 100%;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 21px;
+    border-radius: 16px;
+    background: #FFF;
+    margin-top: 24px;
+  }
+
+  .readings-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .readings-icon {
+    width: 16px;
+    height: 20px;
+    fill: #921F22;
+    flex-shrink: 0;
+  }
+
+  .readings-title {
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
+    margin: 0;
+  }
+
+  .readings-cards {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .reading-card {
+    width: calc(50% - 12px);
+    max-width: 435px;
+    min-height: 329px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.00);
+    box-shadow: 0 24px 48px -12px rgba(146, 31, 34, 0.06);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  /* Reading Card Header (Section 1) */
+  .reading-card-header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .reading-card-icon {
+    width: 22px;
+    height: 19.5px;
+    flex-shrink: 0;
+  }
+
+  .reading-card-icon svg {
+    width: 22px;
+    height: 19.5px;
+    fill: #921F22;
+  }
+
+  .reading-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .reading-card-title {
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    margin: 0;
+  }
+
+  .reading-card-description {
+    color: #6B7280;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    margin: 0;
+  }
+
+  /* Reading Card Actions (Section 2) */
+  .reading-card-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reading-action-icon {
+    display: flex;
+    width: 56px;
+    height: 42px;
+    padding: 12px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    background: #F1F5F9;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .reading-action-icon:hover {
+    background: #E2E8F0;
+  }
+
+  .reading-action-icon svg {
+    flex-shrink: 0;
+  }
+
+  .reading-action-icon svg path {
+    transition: fill 0.2s ease;
+  }
+
+  /* Reading Card Add Link (Section 3) */
+  .reading-card-add-link {
+    display: flex;
+    padding: 12px 0;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    align-self: stretch;
+    border-radius: 8px;
+    border: 2px dashed #921F22;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .reading-card-add-link:hover {
+    background: rgba(146, 31, 34, 0.02);
+    border-color: #7A1A1C;
+  }
+
+  .add-link-icon {
+    width: 11.667px;
+    height: 7.583px;
+    flex-shrink: 0;
+  }
+
+  .add-link-icon path {
+    fill: #5D5E61;
+  }
+
+  .add-link-text {
+    color: #5D5E61;
+    text-align: center;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+  }
+
+  /* Link Dialog Modal */
+  .link-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  }
+
+  .link-dialog {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .link-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .link-dialog-title {
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .link-dialog-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #64748B;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .link-dialog-close:hover {
+    background: #F1F5F9;
+    color: #1D1B1A;
+  }
+
+  .link-dialog-body {
+    padding: 24px;
+  }
+
+  .link-dialog-field {
+    margin-bottom: 20px;
+  }
+
+  .link-dialog-field:last-child {
+    margin-bottom: 0;
+  }
+
+  .link-dialog-label {
+    display: block;
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .link-dialog-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    color: #1D1B1A;
+    transition: all 0.2s ease;
+  }
+
+  .link-dialog-input:focus {
+    outline: none;
+    border-color: #921F22;
+    box-shadow: 0 0 0 3px rgba(146, 31, 34, 0.1);
+  }
+
+  .link-dialog-input::placeholder {
+    color: #94A3B8;
+  }
+
+  .link-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #E2E8F0;
+  }
+
+  .link-dialog-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+  }
+
+  .link-dialog-btn-cancel {
+    background: #F1F5F9;
+    color: #64748B;
+  }
+
+  .link-dialog-btn-cancel:hover {
+    background: #E2E8F0;
+    color: #475569;
+  }
+
+  .link-dialog-btn-submit {
+    background: #921F22;
+    color: white;
+  }
+
+  .link-dialog-btn-submit:hover {
+    background: #7A1A1C;
+  }
+
+  /* Materials List */
+  .materials-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  .material-card {
+    display: flex;
+    width: 100%;
+    max-width: 386px;
+    height: 53px;
+    padding: 12px;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    background: #F1F5F9;
+  }
+
+  .material-icon {
+    width: 16px;
+    height: 20px;
+    fill: #921F22;
+    flex-shrink: 0;
+  }
+
+  .material-name {
+    flex: 1;
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.28px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .material-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+  }
+
+  .material-delete-btn:hover {
+    background: rgba(88, 65, 63, 0.1);
+  }
+
+  .material-delete-btn svg {
+    width: 13.333px;
+    height: 15px;
+    fill: #58413F;
+  }
+
+  /* Mobile Responsive Styles for Material Cards */
+  @media (max-width: 768px) {
+    .materials-list {
+      gap: 8px;
+    }
+
+    .material-card {
+      max-width: 100%;
+      height: auto;
+      min-height: 53px;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    .material-name {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .material-icon {
+      width: 14px;
+      height: 18px;
+    }
+
+    .material-delete-btn svg {
+      width: 12px;
+      height: 13.5px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .materials-list {
+      gap: 6px;
+    }
+
+    .material-card {
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .material-name {
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .material-icon {
+      width: 12px;
+      height: 16px;
+    }
+
+    .material-delete-btn {
+      padding: 2px;
+    }
+
+    .material-delete-btn svg {
+      width: 11px;
+      height: 12px;
+    }
+  }
+
+  /* Module Tabs Styling */
+  .module-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #E2E8F0;
+    margin-top: 24px;
+  }
+
+  .module-tab-button {
+    display: inline-flex;
+    padding: 16px 24px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    color: #64748B;
+    text-align: center;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    transition: all 0.2s ease;
+  }
+
+  .module-tab-button:hover {
+    color: #921F22;
+    background: rgba(146, 31, 34, 0.05);
+  }
+
+  .module-tab-button.active {
+    color: #921F22;
+    border-bottom: 2px solid #921F22;
+  }
+
+  .module-tab-content {
+    display: none;
+  }
+
+  .module-tab-content.active {
+    display: block;
+  }
+
+  /* Module Description Box Responsive */
+  .module-description-box {
+    max-width: 100% !important;
+  }
+
+  @media (max-width: 768px) {
+    .module-description-box {
+      padding: 16px !important;
+      gap: 12px !important;
+    }
+
+    .module-description-box h4 {
+      font-size: 20px !important;
+      line-height: 28px !important;
+    }
+
+    .module-description-box p {
+      font-size: 13px !important;
+      line-height: 20px !important;
+    }
+
+    .welcome-banner {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 16px;
+      padding: 16px !important;
+    }
+
+    .welcome-banner .banner-action-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .module-tabs {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .module-tab-button {
+      padding: 12px 16px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .readings-container {
+      padding: 12px;
+      gap: 16px;
+    }
+
+    .readings-title {
+      font-size: 20px;
+      line-height: 28px;
+    }
+
+    .readings-cards {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .reading-card {
+      width: 100%;
+      height: auto;
+      min-height: 200px;
+      padding: 16px;
+      gap: 12px;
+    }
+
+    .reading-card-header {
+      gap: 10px;
+    }
+
+    .reading-card-title {
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .reading-card-description {
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .reading-card-actions {
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .reading-action-icon {
+      width: 48px;
+      height: 38px;
+      padding: 10px;
+    }
+
+    .reading-card-add-link {
+      padding: 10px 0;
+      gap: 6px;
+    }
+
+    .add-link-text {
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .module-description-box {
+      padding: 12px !important;
+      gap: 10px !important;
+      border-radius: 12px !important;
+    }
+
+    .module-description-box h4 {
+      font-size: 18px !important;
+      line-height: 24px !important;
+    }
+
+    .module-description-box p {
+      font-size: 12px !important;
+      line-height: 18px !important;
+    }
+
+    .welcome-banner h3 {
+      font-size: 18px !important;
+    }
+
+    .welcome-banner p {
+      font-size: 13px !important;
+    }
+
+    .readings-container {
+      padding: 10px;
+      gap: 12px;
+    }
+
+    .readings-title {
+      font-size: 18px;
+      line-height: 24px;
+    }
+
+    .reading-card {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .reading-card-icon {
+      width: 18px;
+      height: 16px;
+    }
+
+    .reading-card-icon svg {
+      width: 18px;
+      height: 16px;
+    }
+
+    .reading-card-title {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .reading-card-description {
+      font-size: 11px;
+      line-height: 14px;
+    }
+
+    .reading-action-icon {
+      width: 44px;
+      height: 36px;
+      padding: 8px;
+    }
+
+    .reading-card-add-link {
+      padding: 8px 0;
+    }
+
+    .add-link-text {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .module-tab-button {
+      padding: 10px 12px;
+      font-size: 12px;
+      min-width: 100px;
+    }
+
+    .module-tabs {
+      gap: 0;
+      justify-content: flex-start;
+    }
+
+    .readings-container {
+      padding: 8px;
+      gap: 12px;
+      border-radius: 12px;
+    }
+
+    .readings-header {
+      gap: 8px;
+    }
+
+    .readings-title {
+      font-size: 18px;
+      line-height: 24px;
+    }
+
+    .readings-icon {
+      width: 14px;
+      height: 18px;
+    }
+
+    .reading-card {
+      min-height: 150px;
+      border-radius: 6px;
     }
   }
 

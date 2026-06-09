@@ -18,7 +18,7 @@
       <tr>
         <td>
           <strong>{{ assignment.title }}</strong><br>
-          <span class="mini-meta">{{ assignment.description|default:"" }}</span>
+          <div class="mini-meta assignment-description">{{ assignment.description|safe|default:"" }}</div>
         </td>
         <td>{{ assignment.due_date|date:"Y-m-d" }}</td>
         <td>{{ assignment.max_score }}</td>

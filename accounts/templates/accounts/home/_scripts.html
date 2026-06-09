@@ -1,4 +1,73 @@
 <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+<!-- Quill.js Rich Text Editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+  // Initialize Quill editor for assignment description
+  let quillInstance = null;
+  
+  function initQuillEditor() {
+    const editorContainer = document.getElementById('quill-editor-container');
+    const hiddenTextarea = document.getElementById('description');
+    
+    if (!editorContainer || !hiddenTextarea) {
+      return;
+    }
+
+    // Remove existing instance if any
+    if (quillInstance) {
+      quillInstance = null;
+      editorContainer.innerHTML = '';
+    }
+
+    // Initialize Quill
+    quillInstance = new Quill(editorContainer, {
+      theme: 'snow',
+      placeholder: 'Enter assignment description with formatting...',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'indent': '-1'}, { 'indent': '+1' }],
+          [{ 'align': [] }],
+          [{ 'color': [] }, { 'background': [] }],
+          ['link'],
+          ['clean']
+        ]
+      }
+    });
+
+    // Set initial content if editing
+    const initialContent = hiddenTextarea.value;
+    if (initialContent) {
+      quillInstance.root.innerHTML = initialContent;
+    }
+
+    // Sync content to hidden textarea on change
+    quillInstance.on('text-change', function() {
+      hiddenTextarea.value = quillInstance.root.innerHTML;
+    });
+
+    // Also sync before form submission
+    const form = editorContainer.closest('form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        hiddenTextarea.value = quillInstance.root.innerHTML;
+      });
+    }
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initQuillEditor, 100);
+  });
+
+  // Re-initialize after HTMX content swap
+  document.body.addEventListener('htmx:afterSwap', function(event) {
+    setTimeout(initQuillEditor, 100);
+  });
+</script>
 <script>
   function getCookie(name) {
     const value = `; ${document.cookie}`;
@@ -77,7 +146,42 @@
     document.querySelectorAll(".action-menu").forEach((menu) => menu.classList.remove("open"));
   });
 
+  // Module tabs functionality
   document.addEventListener("click", (event) => {
+    const tabButton = event.target.closest(".module-tab-button");
+    if (tabButton) {
+      const targetTab = tabButton.dataset.tab;
+      
+      // Remove active class from all buttons and contents
+      document.querySelectorAll(".module-tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".module-tab-content").forEach(content => content.classList.remove("active"));
+      
+      // Add active class to clicked button and corresponding content
+      tabButton.classList.add("active");
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) {
+        targetContent.classList.add("active");
+      }
+      
+      // Toggle between Add Assignment and Publish buttons based on active tab
+      const addAssignmentBtn = document.getElementById('add-assignment-btn');
+      const publishBtn = document.getElementById('publish-materials-btn');
+      
+      if (addAssignmentBtn && publishBtn) {
+        if (targetTab === 'readings-tab') {
+          // Show Publish button, hide Add Assignment button
+          addAssignmentBtn.style.display = 'none';
+          publishBtn.style.display = 'flex';
+        } else {
+          // Show Add Assignment button, hide Publish button
+          addAssignmentBtn.style.display = 'flex';
+          publishBtn.style.display = 'none';
+        }
+      }
+      
+      return;
+    }
+
     const toggle = event.target.closest("[data-password-toggle]");
     if (!toggle) return;
     const container = toggle.closest("[data-password-container]") || toggle.parentElement;

@@ -1073,6 +1073,12 @@ def module_assignments_panel(request, module_run_id):
     assignment_id = request.GET.get("assignment_id")
     if assignment_id:
         editing_assignment = get_object_or_404(Assignment, id=assignment_id, module_run=module_run)
+    
+    # Fetch course materials for the module
+    course_materials = CourseMaterial.objects.filter(
+        module=module_run.module
+    ).select_related("uploaded_by").order_by("-created_at")
+    
     return render(
         request,
         "accounts/home/panels/modules/_assignments.html",
@@ -1083,6 +1089,7 @@ def module_assignments_panel(request, module_run_id):
             "student_modules": student_modules,
             "submissions_by_assignment": submissions_by_assignment,
             "percentage_by_assignment": percentage_by_assignment,
+            "course_materials": course_materials,
         },
     )
 

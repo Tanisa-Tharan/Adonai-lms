@@ -1,21 +1,47 @@
 {% load template_extras %}
 
 <div class="panel-card" style="margin-top: 18px;">
-  <div class="panel-header">
+  <!-- Welcome Banner -->
+  {% load static %}
+  <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
     <div>
-      <h3>Assignments: {{ module_run.module.title }}</h3>
-      <p>{{ module_run.quarter.name }} - Create assignments, manage them, and track submissions per student.</p>
+      <h3>{{ module_run.module.title }}</h3>
+      <p>Instructor: {{ module_run.faculty.first_name }} {{ module_run.faculty.last_name }}</p>
     </div>
+    <button
+      type="button"
+      id="add-assignment-btn"
+      class="banner-action-button"
+      onclick="document.getElementById('assignment-form-section').style.display='block'; this.style.display='none';"
+      style="cursor: pointer; border: none;"
+    >
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
+        <path d="M4.28571 5.71428H0V4.28571H4.28571V0H5.71428V4.28571H10V5.71428H5.71428V10H4.28571V5.71428Z" fill="#921F22"/>
+      </svg>
+      Add Assignment
+    </button>
+    <button
+      type="button"
+      id="publish-materials-btn"
+      class="banner-action-button"
+      onclick="publishMaterials()"
+      style="display: none; cursor: pointer; border: none; width: 130px; height: 37px; padding: 4px 0; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 4px; background: #FFF;"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" style="width: 16px; height: 16px; fill: #921F22;">
+        <path d="M7 16V7.85L4.4 10.45L3 9L8 4L13 9L11.6 10.45L9 7.85V16H7ZM0 5V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14C14.55 0 15.0208 0.195833 15.4125 0.5875C15.8042 0.979167 16 1.45 16 2V5H14V2H2V5H0Z" fill="#921F22"/>
+      </svg>
+      Publish
+    </button>
+  </div>
 
+  <!-- Module Description Section -->
+  <div class="module-description-box" style="display: flex; max-width: 957px; width: 100%; padding: 24px; flex-direction: column; align-items: flex-start; gap: 15.25px; border-radius: 16px; border: 1px solid #FEF8F5; background: #FFF; margin-top: 24px;">
+    <h4 style="color: #0F172A; font-family: Inter, sans-serif; font-size: 24px; font-style: normal; font-weight: 700; line-height: 32px; margin: 0;">Description</h4>
+    <p style="align-self: stretch; color: #475569; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; line-height: 22.75px; margin: 0;">{{ module_run.module.description|default:"No description available for this module." }}</p>
+  </div>
+
+  <div class="panel-header" style="margin-top: 18px;">
     <div class="panel-actions">
-      <button
-        type="button"
-        id="add-assignment-btn"
-        class="button button-primary"
-        onclick="document.getElementById('assignment-form-section').style.display='block'; this.style.display='none';"
-      >
-        Add Assignment
-      </button>
       <button
         type="button"
         class="button button-secondary"
@@ -30,19 +56,407 @@
     </div>
   </div>
 
-  <!-- Assignment Form Section (hidden by default) -->
-  <div id="assignment-form-section" style="display: none;">
-    {% include "accounts/home/panels/modules/_assignment_form.html" %}
+  <!-- Tabs Navigation -->
+  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">
+    <button class="module-tab-button active" data-tab="assignments-tab" type="button">
+      Assignments
+    </button>
+    <button class="module-tab-button" data-tab="readings-tab" type="button">
+      Readings
+    </button>
+    <button class="module-tab-button" data-tab="resources-tab" type="button">
+      Resources
+    </button>
   </div>
 
-  <!-- Assignment List Section -->
-  {% include "accounts/home/panels/modules/_assignment_list.html" %}
+  <!-- Tab Content: Assignments -->
+  <div id="assignments-tab" class="module-tab-content active">
+    <!-- Assignment Form Section (hidden by default) -->
+    <div id="assignment-form-section" style="display: none;">
+      {% include "accounts/home/panels/modules/_assignment_form.html" %}
+    </div>
 
-  <!-- Assignment Action Drawer (for submit/grade) -->
-  <div id="assignment-action-drawer" class="assignment-drawer"></div>
+    <!-- Assignment List Section -->
+    {% include "accounts/home/panels/modules/_assignment_list.html" %}
 
-  <!-- Assignment Students Section (only show if assignments exist) -->
-  {% if assignments %}
-    {% include "accounts/home/panels/modules/_assignment_students.html" %}
-  {% endif %}
+    <!-- Assignment Action Drawer (for submit/grade) -->
+    <div id="assignment-action-drawer" class="assignment-drawer"></div>
+
+    <!-- Assignment Students Section (only show if assignments exist) -->
+    {% if assignments %}
+      {% include "accounts/home/panels/modules/_assignment_students.html" %}
+    {% endif %}
+  </div>
+
+  <!-- Tab Content: Readings -->
+  <div id="readings-tab" class="module-tab-content">
+    <div class="readings-container">
+      <div class="readings-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none" class="readings-icon">
+          <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+        </svg>
+        <h4 class="readings-title">Readings</h4>
+      </div>
+      <div class="readings-cards">
+        <div class="reading-card">
+          <!-- Section 1: Header with icon and text -->
+          <div class="reading-card-header">
+            <div class="reading-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" viewBox="0 0 22 20" fill="none">
+                <path d="M11 19.5C10.2 18.8667 9.33333 18.375 8.4 18.025C7.46667 17.675 6.5 17.5 5.5 17.5C4.8 17.5 4.1125 17.5917 3.4375 17.775C2.7625 17.9583 2.11667 18.2167 1.5 18.55C1.15 18.7333 0.8125 18.725 0.4875 18.525C0.1625 18.325 0 18.0333 0 17.65V5.6C0 5.41667 0.0458333 5.24167 0.1375 5.075C0.229167 4.90833 0.366667 4.78333 0.55 4.7C1.31667 4.3 2.11667 4 2.95 3.8C3.78333 3.6 4.63333 3.5 5.5 3.5C6.46667 3.5 7.4125 3.625 8.3375 3.875C9.2625 4.125 10.15 4.5 11 5V17.1C11.85 16.5667 12.7417 16.1667 13.675 15.9C14.6083 15.6333 15.55 15.5 16.5 15.5C17.1 15.5 17.6875 15.55 18.2625 15.65C18.8375 15.75 19.4167 15.9 20 16.1V4.1C20.25 4.18333 20.4958 4.27083 20.7375 4.3625C20.9792 4.45417 21.2167 4.56667 21.45 4.7C21.6333 4.78333 21.7708 4.90833 21.8625 5.075C21.9542 5.24167 22 5.41667 22 5.6V17.65C22 18.0333 21.8375 18.325 21.5125 18.525C21.1875 18.725 20.85 18.7333 20.5 18.55C19.8833 18.2167 19.2375 17.9583 18.5625 17.775C17.8875 17.5917 17.2 17.5 16.5 17.5C15.5 17.5 14.5333 17.675 13.6 18.025C12.6667 18.375 11.8 18.8667 11 19.5ZM13 14.5V5L18 0V10L13 14.5ZM9 16.125V6.225C8.45 5.99167 7.87917 5.8125 7.2875 5.6875C6.69583 5.5625 6.1 5.5 5.5 5.5C4.88333 5.5 4.28333 5.55833 3.7 5.675C3.11667 5.79167 2.55 5.96667 2 6.2V16.125C2.58333 15.9083 3.1625 15.75 3.7375 15.65C4.3125 15.55 4.9 15.5 5.5 15.5C6.1 15.5 6.6875 15.55 7.2625 15.65C7.8375 15.75 8.41667 15.9083 9 16.125Z" fill="#921F22"/>
+              </svg>
+            </div>
+            <div class="reading-card-text">
+              <h5 class="reading-card-title">Required Reading</h5>
+              <p class="reading-card-description">Specify mandatory texts (e.g., primary book, 120 pages) or links.</p>
+            </div>
+          </div>
+
+          <!-- Section 2: Action Icons -->
+          <div class="reading-card-actions">
+            <!-- Hidden file inputs -->
+            <input type="file" id="pdf-upload-{{ module_run.id }}" accept=".pdf" style="display: none;" data-material-type="PDF" data-module-id="{{ module_run.module.id }}">
+            <input type="file" id="ppt-upload-{{ module_run.id }}" accept=".ppt,.pptx" style="display: none;" data-material-type="PPT" data-module-id="{{ module_run.module.id }}">
+            <input type="file" id="video-upload-{{ module_run.id }}" accept="video/*" style="display: none;" data-material-type="VIDEO" data-module-id="{{ module_run.module.id }}">
+            
+            <div class="reading-action-icon" data-upload-type="PDF" onclick="document.getElementById('pdf-upload-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 10.5H8V8.5H9C9.28333 8.5 9.52083 8.40417 9.7125 8.2125C9.90417 8.02083 10 7.78333 10 7.5V6.5C10 6.21667 9.90417 5.97917 9.7125 5.7875C9.52083 5.59583 9.28333 5.5 9 5.5H7V10.5ZM8 7.5V6.5H9V7.5H8ZM11 10.5H13C13.2833 10.5 13.5208 10.4042 13.7125 10.2125C13.9042 10.0208 14 9.78333 14 9.5V6.5C14 6.21667 13.9042 5.97917 13.7125 5.7875C13.5208 5.59583 13.2833 5.5 13 5.5H11V10.5ZM12 9.5V6.5H13V9.5H12ZM15 10.5H16V8.5H17V7.5H16V6.5H17V5.5H15V10.5ZM6 16C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H6ZM6 14H18V2H6V14ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4H2V18H16V20H2ZM6 2V14V2Z" fill="#BA1A1A"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="PPT" onclick="document.getElementById('ppt-upload-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
+                <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="VIDEO" onclick="document.getElementById('video-upload-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M11 17.5V15.45C12.5 15.0167 13.7083 14.1833 14.625 12.95C15.5417 11.7167 16 10.3167 16 8.75C16 7.18333 15.5417 5.78333 14.625 4.55C13.7083 3.31667 12.5 2.48333 11 2.05V0C13.0667 0.466667 14.75 1.5125 16.05 3.1375C17.35 4.7625 18 6.63333 18 8.75C18 10.8667 17.35 12.7375 16.05 14.3625C14.75 15.9875 13.0667 17.0333 11 17.5ZM0 11.775V5.775H4L9 0.775V16.775L4 11.775H0ZM11 12.775V4.725C11.7833 5.09167 12.3958 5.64167 12.8375 6.375C13.2792 7.10833 13.5 7.90833 13.5 8.775C13.5 9.625 13.2792 10.4125 12.8375 11.1375C12.3958 11.8625 11.7833 12.4083 11 12.775ZM7 5.625L4.85 7.775H2V9.775H4.85L7 11.925V5.625Z" fill="#5D5E61"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="VIDEO" onclick="document.getElementById('video-upload-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="16" viewBox="0 0 20 16" fill="none">
+                <path d="M2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14C14.55 0 15.0208 0.195833 15.4125 0.5875C15.8042 0.979167 16 1.45 16 2V6.5L20 2.5V13.5L16 9.5V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2ZM2 14H14V2H2V14ZM2 14V2V14Z" fill="#5D5E61"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Section 3: Add Resource Link -->
+          <div class="reading-card-add-link" data-module-id="{{ module_run.module.id }}" onclick="openLinkDialog(this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="none" class="add-link-icon">
+              <path d="M8.75 7.58333V5.83333H7V4.66667H8.75V2.91667H9.91667V4.66667H11.6667V5.83333H9.91667V7.58333H8.75ZM5.25 5.83333H2.91667C2.10972 5.83333 1.42188 5.54896 0.853125 4.98021C0.284375 4.41146 0 3.72361 0 2.91667C0 2.10972 0.284375 1.42188 0.853125 0.853125C1.42188 0.284375 2.10972 0 2.91667 0H5.25V1.16667H2.91667C2.43056 1.16667 2.01736 1.33681 1.67708 1.67708C1.33681 2.01736 1.16667 2.43056 1.16667 2.91667C1.16667 3.40278 1.33681 3.81597 1.67708 4.15625C2.01736 4.49653 2.43056 4.66667 2.91667 4.66667H5.25V5.83333ZM3.5 3.5V2.33333H8.16667V3.5H3.5ZM11.6667 2.91667H10.5C10.5 2.43056 10.3299 2.01736 9.98958 1.67708C9.64931 1.33681 9.23611 1.16667 8.75 1.16667H6.41667V0H8.75C9.55694 0 10.2448 0.284375 10.8135 0.853125C11.3823 1.42188 11.6667 2.10972 11.6667 2.91667Z" fill="#5D5E61"/>
+            </svg>
+            <span class="add-link-text">Add Resource Link</span>
+          </div>
+
+          <!-- Section 4: Uploaded Materials List -->
+          <div class="materials-list">
+            {% for material in course_materials %}
+            <div class="material-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none" class="material-icon">
+                <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+              </svg>
+              <span class="material-name">{{ material.title }}</span>
+              <button class="material-delete-btn" onclick="deleteMaterial('{{ material.id }}')" title="Delete material">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
+                  <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z" fill="#58413F"/>
+                </svg>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="reading-card">
+          <!-- Section 1: Header with icon and text -->
+          <div class="reading-card-header">
+            <div class="reading-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="20" viewBox="0 0 22 20" fill="none">
+                <path d="M11 19.5C10.2 18.8667 9.33333 18.375 8.4 18.025C7.46667 17.675 6.5 17.5 5.5 17.5C4.8 17.5 4.1125 17.5917 3.4375 17.775C2.7625 17.9583 2.11667 18.2167 1.5 18.55C1.15 18.7333 0.8125 18.725 0.4875 18.525C0.1625 18.325 0 18.0333 0 17.65V5.6C0 5.41667 0.0458333 5.24167 0.1375 5.075C0.229167 4.90833 0.366667 4.78333 0.55 4.7C1.31667 4.3 2.11667 4 2.95 3.8C3.78333 3.6 4.63333 3.5 5.5 3.5C6.46667 3.5 7.4125 3.625 8.3375 3.875C9.2625 4.125 10.15 4.5 11 5V17.1C11.85 16.5667 12.7417 16.1667 13.675 15.9C14.6083 15.6333 15.55 15.5 16.5 15.5C17.1 15.5 17.6875 15.55 18.2625 15.65C18.8375 15.75 19.4167 15.9 20 16.1V4.1C20.25 4.18333 20.4958 4.27083 20.7375 4.3625C20.9792 4.45417 21.2167 4.56667 21.45 4.7C21.6333 4.78333 21.7708 4.90833 21.8625 5.075C21.9542 5.24167 22 5.41667 22 5.6V17.65C22 18.0333 21.8375 18.325 21.5125 18.525C21.1875 18.725 20.85 18.7333 20.5 18.55C19.8833 18.2167 19.2375 17.9583 18.5625 17.775C17.8875 17.5917 17.2 17.5 16.5 17.5C15.5 17.5 14.5333 17.675 13.6 18.025C12.6667 18.375 11.8 18.8667 11 19.5ZM13 14.5V5L18 0V10L13 14.5ZM9 16.125V6.225C8.45 5.99167 7.87917 5.8125 7.2875 5.6875C6.69583 5.5625 6.1 5.5 5.5 5.5C4.88333 5.5 4.28333 5.55833 3.7 5.675C3.11667 5.79167 2.55 5.96667 2 6.2V16.125C2.58333 15.9083 3.1625 15.75 3.7375 15.65C4.3125 15.55 4.9 15.5 5.5 15.5C6.1 15.5 6.6875 15.55 7.2625 15.65C7.8375 15.75 8.41667 15.9083 9 16.125Z" fill="#921F22"/>
+              </svg>
+            </div>
+            <div class="reading-card-text">
+              <h5 class="reading-card-title">Required Reading</h5>
+              <p class="reading-card-description">Specify mandatory texts (e.g., primary book, 120 pages) or links.</p>
+            </div>
+          </div>
+
+          <!-- Section 2: Action Icons -->
+          <div class="reading-card-actions">
+            <!-- Hidden file inputs -->
+            <input type="file" id="pdf-upload-2-{{ module_run.id }}" accept=".pdf" style="display: none;" data-material-type="PDF" data-module-id="{{ module_run.module.id }}">
+            <input type="file" id="ppt-upload-2-{{ module_run.id }}" accept=".ppt,.pptx" style="display: none;" data-material-type="PPT" data-module-id="{{ module_run.module.id }}">
+            <input type="file" id="video-upload-2-{{ module_run.id }}" accept="video/*" style="display: none;" data-material-type="VIDEO" data-module-id="{{ module_run.module.id }}">
+            
+            <div class="reading-action-icon" data-upload-type="PDF" onclick="document.getElementById('pdf-upload-2-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M7 10.5H8V8.5H9C9.28333 8.5 9.52083 8.40417 9.7125 8.2125C9.90417 8.02083 10 7.78333 10 7.5V6.5C10 6.21667 9.90417 5.97917 9.7125 5.7875C9.52083 5.59583 9.28333 5.5 9 5.5H7V10.5ZM8 7.5V6.5H9V7.5H8ZM11 10.5H13C13.2833 10.5 13.5208 10.4042 13.7125 10.2125C13.9042 10.0208 14 9.78333 14 9.5V6.5C14 6.21667 13.9042 5.97917 13.7125 5.7875C13.5208 5.59583 13.2833 5.5 13 5.5H11V10.5ZM12 9.5V6.5H13V9.5H12ZM15 10.5H16V8.5H17V7.5H16V6.5H17V5.5H15V10.5ZM6 16C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H6ZM6 14H18V2H6V14ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4H2V18H16V20H2ZM6 2V14V2Z" fill="#BA1A1A"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="PPT" onclick="document.getElementById('ppt-upload-2-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
+                <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="VIDEO" onclick="document.getElementById('video-upload-2-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M11 17.5V15.45C12.5 15.0167 13.7083 14.1833 14.625 12.95C15.5417 11.7167 16 10.3167 16 8.75C16 7.18333 15.5417 5.78333 14.625 4.55C13.7083 3.31667 12.5 2.48333 11 2.05V0C13.0667 0.466667 14.75 1.5125 16.05 3.1375C17.35 4.7625 18 6.63333 18 8.75C18 10.8667 17.35 12.7375 16.05 14.3625C14.75 15.9875 13.0667 17.0333 11 17.5ZM0 11.775V5.775H4L9 0.775V16.775L4 11.775H0ZM11 12.775V4.725C11.7833 5.09167 12.3958 5.64167 12.8375 6.375C13.2792 7.10833 13.5 7.90833 13.5 8.775C13.5 9.625 13.2792 10.4125 12.8375 11.1375C12.3958 11.8625 11.7833 12.4083 11 12.775ZM7 5.625L4.85 7.775H2V9.775H4.85L7 11.925V5.625Z" fill="#5D5E61"/>
+              </svg>
+            </div>
+            <div class="reading-action-icon" data-upload-type="VIDEO" onclick="document.getElementById('video-upload-2-{{ module_run.id }}').click()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="16" viewBox="0 0 20 16" fill="none">
+                <path d="M2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14C14.55 0 15.0208 0.195833 15.4125 0.5875C15.8042 0.979167 16 1.45 16 2V6.5L20 2.5V13.5L16 9.5V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2ZM2 14H14V2H2V14ZM2 14V2V14Z" fill="#5D5E61"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Section 3: Add Resource Link -->
+          <div class="reading-card-add-link" data-module-id="{{ module_run.module.id }}" onclick="openLinkDialog(this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8" fill="none" class="add-link-icon">
+              <path d="M8.75 7.58333V5.83333H7V4.66667H8.75V2.91667H9.91667V4.66667H11.6667V5.83333H9.91667V7.58333H8.75ZM5.25 5.83333H2.91667C2.10972 5.83333 1.42188 5.54896 0.853125 4.98021C0.284375 4.41146 0 3.72361 0 2.91667C0 2.10972 0.284375 1.42188 0.853125 0.853125C1.42188 0.284375 2.10972 0 2.91667 0H5.25V1.16667H2.91667C2.43056 1.16667 2.01736 1.33681 1.67708 1.67708C1.33681 2.01736 1.16667 2.43056 1.16667 2.91667C1.16667 3.40278 1.33681 3.81597 1.67708 4.15625C2.01736 4.49653 2.43056 4.66667 2.91667 4.66667H5.25V5.83333ZM3.5 3.5V2.33333H8.16667V3.5H3.5ZM11.6667 2.91667H10.5C10.5 2.43056 10.3299 2.01736 9.98958 1.67708C9.64931 1.33681 9.23611 1.16667 8.75 1.16667H6.41667V0H8.75C9.55694 0 10.2448 0.284375 10.8135 0.853125C11.3823 1.42188 11.6667 2.10972 11.6667 2.91667Z" fill="#5D5E61"/>
+            </svg>
+            <span class="add-link-text">Add Resource Link</span>
+          </div>
+
+          <!-- Section 4: Uploaded Materials List -->
+          <div class="materials-list">
+            {% for material in course_materials %}
+            <div class="material-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none" class="material-icon">
+                <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+              </svg>
+              <span class="material-name">{{ material.title }}</span>
+              <button class="material-delete-btn" onclick="deleteMaterial('{{ material.id }}')" title="Delete material">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
+                  <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z" fill="#58413F"/>
+                </svg>
+              </button>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Content: Resources -->
+  <div id="resources-tab" class="module-tab-content" style="display: none;">
+    <div style="padding: 24px;">
+      <h4 style="color: #0F172A; font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; margin-bottom: 12px;">Resources</h4>
+      <p style="color: #64748B; font-family: Inter, sans-serif; font-size: 14px;">Additional course resources and materials will be displayed here. This section is coming soon.</p>
+    </div>
+  </div>
 </div>
+
+<!-- Link Dialog Modal -->
+<div id="linkDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Resource Link</h3>
+      <button class="link-dialog-close" onclick="closeLinkDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="linkTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="linkTitle" class="link-dialog-input" placeholder="Enter resource title">
+      </div>
+      <div class="link-dialog-field">
+        <label for="linkUrl" class="link-dialog-label">URL</label>
+        <input type="url" id="linkUrl" class="link-dialog-input" placeholder="https://example.com">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeLinkDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitLink()">Add Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentModuleId = null;
+
+// Open link dialog
+function openLinkDialog(element) {
+  currentModuleId = element.getAttribute('data-module-id');
+  document.getElementById('linkDialog').style.display = 'flex';
+  document.getElementById('linkTitle').value = '';
+  document.getElementById('linkUrl').value = '';
+}
+
+// Close link dialog
+function closeLinkDialog() {
+  document.getElementById('linkDialog').style.display = 'none';
+  currentModuleId = null;
+}
+
+// Submit link
+function submitLink() {
+  const title = document.getElementById('linkTitle').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+  
+  if (!title || !url) {
+    alert('Please fill in both title and URL');
+    return;
+  }
+  
+  if (!currentModuleId) {
+    alert('Module ID not found');
+    return;
+  }
+  
+  // Create FormData
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', url);
+  formData.append('material_type', 'LINK');
+  formData.append('module_id', currentModuleId);
+  
+  // Submit via AJAX
+  fetch('{% url "upload_course_material" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Link added successfully! The materials will appear in the Readings tab.');
+      closeLinkDialog();
+      // Store that we should show readings tab after reload
+      sessionStorage.setItem('activeModuleTab', 'readings-tab');
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add link'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while adding the link');
+  });
+}
+
+// Handle file uploads
+// Run immediately since this template is loaded dynamically
+(function() {
+  // Add change event listeners to all file inputs
+  const fileInputs = document.querySelectorAll('input[type="file"][data-material-type]');
+  
+  fileInputs.forEach(input => {
+    input.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) {
+        return;
+      }
+      
+      const materialType = this.getAttribute('data-material-type');
+      const moduleId = this.getAttribute('data-module-id');
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append('title', file.name);
+      formData.append('file_url', file);
+      formData.append('material_type', materialType);
+      formData.append('module_id', moduleId);
+
+      // Show loading indicator
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Uploading ' + file.name + '...';
+      loadingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #921F22; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000;';
+      document.body.appendChild(loadingMsg);
+      
+      // Submit via AJAX
+      fetch('{% url "upload_course_material" %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.body.removeChild(loadingMsg);
+        if (data.success) {
+          alert('File uploaded successfully! The materials will appear in the Readings tab.');
+          // Store that we should show readings tab after reload
+          sessionStorage.setItem('activeModuleTab', 'readings-tab');
+          location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to upload file'));
+        }
+      })
+      .catch(error => {
+        document.body.removeChild(loadingMsg);
+        console.error('Error:', error);
+        alert('An error occurred while uploading the file');
+      })
+      .finally(() => {
+        // Reset the input
+        e.target.value = '';
+      });
+    });
+  });
+  
+  // Check if we should activate the Readings tab after reload
+  const activeTab = sessionStorage.getItem('activeModuleTab');
+  if (activeTab === 'readings-tab') {
+    console.log('[UPLOAD JS] Restoring Readings tab after reload');
+    // Clear the stored value
+    sessionStorage.removeItem('activeModuleTab');
+    
+    // Find and click the Readings tab button
+    setTimeout(() => {
+      const readingsTabButton = document.querySelector('.module-tab-button[data-tab="readings-tab"]');
+      if (readingsTabButton) {
+        readingsTabButton.click();
+        console.log('[UPLOAD JS] Readings tab activated');
+      }
+    }, 100);
+  }
+})(); // End of IIFE
+
+// Publish materials function
+function publishMaterials() {
+  alert('Publishing materials?');
+  // TODO: Implement actual publish logic
+  // This could involve marking materials as published, sending notifications, etc.
+}
+
+// Delete material function
+function deleteMaterial(materialId) {
+  if (!confirm('Are you sure you want to delete this material? This action cannot be undone.')) {
+    return;
+  }
+  
+  // Show loading state
+  const loadingMsg = document.createElement('div');
+  loadingMsg.textContent = 'Deleting...';
+  loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10000;';
+  document.body.appendChild(loadingMsg);
+  
+  // Delete via AJAX
+  fetch(`/modules/delete-material/${materialId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.body.removeChild(loadingMsg);
+    if (data.success) {
+      alert('Material deleted successfully!');
+      // Reload the page to refresh the materials list
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to delete material'));
+    }
+  })
+  .catch(error => {
+    document.body.removeChild(loadingMsg);
+    console.error('Error:', error);
+    alert('An error occurred while deleting the material');
+  });
+}
+</script>
