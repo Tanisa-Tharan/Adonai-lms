@@ -1074,9 +1074,15 @@ def module_assignments_panel(request, module_run_id):
     if assignment_id:
         editing_assignment = get_object_or_404(Assignment, id=assignment_id, module_run=module_run)
     
-    # Fetch course materials for the module
-    course_materials = CourseMaterial.objects.filter(
-        module=module_run.module
+    # Fetch course materials for the module, separated by resource type
+    required_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type="REQUIRED"
+    ).select_related("uploaded_by").order_by("-created_at")
+    
+    recommended_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type="RECOMMENDED"
     ).select_related("uploaded_by").order_by("-created_at")
     
     return render(
@@ -1089,7 +1095,8 @@ def module_assignments_panel(request, module_run_id):
             "student_modules": student_modules,
             "submissions_by_assignment": submissions_by_assignment,
             "percentage_by_assignment": percentage_by_assignment,
-            "course_materials": course_materials,
+            "required_materials": required_materials,
+            "recommended_materials": recommended_materials,
         },
     )
 

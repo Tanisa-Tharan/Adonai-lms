@@ -27,9 +27,10 @@ def upload_course_material(request):
     try:
         title = request.POST.get('title')
         material_type = request.POST.get('material_type')
+        resource_type = request.POST.get('resource_type', 'REQUIRED')
         module_id = request.POST.get('module_id')
         
-        print(f"[UPLOAD] Received: title={title}, type={material_type}, module_id={module_id}")
+        print(f"[UPLOAD] Received: title={title}, type={material_type}, resource_type={resource_type}, module_id={module_id}")
         
         if not all([title, material_type, module_id]):
             error_msg = f'Missing required fields: title={bool(title)}, type={bool(material_type)}, module_id={bool(module_id)}'
@@ -45,6 +46,7 @@ def upload_course_material(request):
             module=module,
             title=title,
             material_type=material_type,
+            resource_type=resource_type,
             uploaded_by=request.user
         )
         
