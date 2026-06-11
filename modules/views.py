@@ -53,7 +53,7 @@ def upload_course_material(request):
         # Handle file upload or link
         if material_type == 'LINK':
             # For links, store the URL in file_url field
-            link_url = request.POST.get('file_url')
+            link_url = request.POST.get('link_url') or request.POST.get('file_url')
             if not link_url:
                 print("[UPLOAD ERROR] Link URL is missing")
                 return JsonResponse({'success': False, 'error': 'Link URL is required'}, status=400)
@@ -61,7 +61,7 @@ def upload_course_material(request):
             print(f"[UPLOAD] Link URL: {link_url}")
         else:
             # For files (PDF, PPT, VIDEO), handle file upload
-            uploaded_file = request.FILES.get('file_url')
+            uploaded_file = request.FILES.get('file') or request.FILES.get('file_url')
             if not uploaded_file:
                 print("[UPLOAD ERROR] File is missing from request.FILES")
                 return JsonResponse({'success': False, 'error': 'File is required'}, status=400)

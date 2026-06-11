@@ -3,6 +3,7 @@ from datetime import date as date_type
 from datetime import timedelta
 
 from django.shortcuts import get_object_or_404, render, redirect
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
@@ -982,40 +983,56 @@ def add_course_material(request):
     module_id = request.POST.get("module_id")
     title = (request.POST.get("title") or "").strip()
     material_type = request.POST.get("material_type")
-    link_url = (request.POST.get("link_url") or "").strip()
+    resource_type = request.POST.get("resource_type") or "REQUIRED"
+    link_url = (request.POST.get("link_url") or request.POST.get("file_url") or "").strip()
     upload = request.FILES.get("file")
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
 
-    if not module_id or not title or material_type not in {"PDF", "VIDEO", "LINK", "PPT"}:
+    if (
+        not module_id
+        or not title
+        or material_type not in {"PDF", "VIDEO", "LINK", "PPT"}
+        or resource_type not in {"REQUIRED", "RECOMMENDED", "RESOURCES"}
+    ):
+        if is_ajax:
+            return JsonResponse({"success": False, "error": "Invalid material data."}, status=400)
         return course_materials_panel(request)
 
     module = get_object_or_404(Module, id=module_id)
     if request.user.role == "FACULTY" and not ModuleRun.objects.filter(module=module, faculty=request.user).exists():
+        if is_ajax:
+            return JsonResponse({"success": False, "error": "You do not have permission to upload materials for this module."}, status=403)
         return course_materials_panel(request)
 
     if material_type == "LINK":
         if not link_url:
+            if is_ajax:
+                return JsonResponse({"success": False, "error": "Link URL is required."}, status=400)
             return course_materials_panel(request)
-        # For LINK type, we still store the URL as a string in file_url
-        # Note: This will need special handling since file_url is now a FileField
-        # For now, create with empty file and store link separately if needed
         CourseMaterial.objects.create(
             module=module,
             title=title,
-            file_url='',  # Empty for links - may need model adjustment
+            file_url=link_url,
             material_type=material_type,
+            resource_type=resource_type,
             uploaded_by=request.user,
         )
     else:
         if not upload:
+            if is_ajax:
+                return JsonResponse({"success": False, "error": "A file is required."}, status=400)
             return course_materials_panel(request)
-        # Directly assign the file object to FileField
         CourseMaterial.objects.create(
             module=module,
             title=title,
             file_url=upload,
             material_type=material_type,
+            resource_type=resource_type,
             uploaded_by=request.user,
         )
+
+    if is_ajax:
+        return JsonResponse({"success": True})
 
     # Preserve module filter after submit.
     request.GET = request.GET.copy()
@@ -1052,6 +1069,9 @@ def module_assignments_panel(request, module_run_id):
         .prefetch_related("files")
         .order_by("-due_date", "-id")
     )
+    assignment_files = AssignmentFile.objects.filter(
+        assignment__module_run=module_run
+    ).select_related("assignment", "uploaded_by").order_by("-uploaded_at")
     max_score_by_assignment = {str(a.id): a.max_score for a in assignments}
     student_modules = (
         StudentModule.objects.filter(module_run=module_run)
@@ -1084,6 +1104,11 @@ def module_assignments_panel(request, module_run_id):
         module=module_run.module,
         resource_type="RECOMMENDED"
     ).select_related("uploaded_by").order_by("-created_at")
+
+    resource_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type="RESOURCES"
+    ).select_related("uploaded_by").order_by("-created_at")
     
     return render(
         request,
@@ -1091,12 +1116,14 @@ def module_assignments_panel(request, module_run_id):
         {
             "module_run": module_run,
             "assignments": assignments,
+            "assignment_files": assignment_files,
             "editing_assignment": editing_assignment,
             "student_modules": student_modules,
             "submissions_by_assignment": submissions_by_assignment,
             "percentage_by_assignment": percentage_by_assignment,
             "required_materials": required_materials,
             "recommended_materials": recommended_materials,
+            "resource_materials": resource_materials,
         },
     )
 

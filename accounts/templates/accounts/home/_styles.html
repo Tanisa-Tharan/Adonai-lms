@@ -27,6 +27,9 @@
 
   .layout {
     min-height: 100vh;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: 300px 1fr;
   }
@@ -286,7 +289,15 @@
   }
 
   .content {
+    width: 100%;
+    max-width: 100%;
     padding: 28px;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
   }
 
   /* .shell {
@@ -1215,6 +1226,192 @@
     text-decoration: underline;
   }
 
+  .assignment-list-section {
+    width: 100%;
+    margin-top: 18px;
+  }
+
+  .assignment-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+  }
+
+  .assignment-card {
+    display: flex;
+    width: 100%;
+    max-width: 956px;
+    min-height: 571px;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: #FFF;
+  }
+
+  .assignment-card-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 24px;
+  }
+
+  .assignment-card-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .assignment-card-heading {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .assignment-card-heading-icon {
+    width: 16px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .assignment-card-heading-icon svg {
+    width: 16px;
+    height: 20px;
+    fill: #921F22;
+  }
+
+  .assignment-card-heading-text {
+    color: #1D1B1A;
+    font-family: Lexend, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px;
+  }
+
+  .assignment-card-status-wrap {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .assignment-card-status-label {
+    color: #5D5E61;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 24px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .assignment-card-status-badge {
+    display: flex;
+    padding: 4px 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 9999px;
+    background: #3DE5AD;
+    color: #186B4F;
+    font-family: Lexend, sans-serif;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .assignment-card-files-box {
+    display: flex;
+    height: 298px;
+    padding: 24px 16px;
+    flex-direction: column;
+    align-items: center;
+    gap: 15.25px;
+    align-self: stretch;
+    border-radius: 16px;
+    border: 1px solid #FEF8F5;
+    background: #FFF;
+  }
+
+  .assignment-card-files-header {
+    align-self: stretch;
+    color: #0F172A;
+    font-family: Inter, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px;
+  }
+
+  .assignment-card-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .assignment-card-label {
+    align-self: stretch;
+    color: #5D5E61;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+  }
+
+  .assignment-card-value {
+    align-self: stretch;
+    color: #6B7280;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    overflow-wrap: break-word;
+  }
+
+  .assignment-card-description-box {
+    display: flex;
+    min-height: 309px;
+    width: 100%;
+    padding: 16px 16px 232px 16px;
+    align-items: flex-start;
+    flex-shrink: 0;
+    align-self: stretch;
+    background: #FFF;
+    border-radius: 12px;
+    border: 1px solid #F1F5F9;
+  }
+
+  .assignment-card-description-content {
+    width: 100%;
+    color: #6B7280;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+
+  .assignment-card-empty {
+    min-height: auto;
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1808,6 +2005,242 @@
     }
   }
 
+  .resources-panel {
+    padding: 24px;
+  }
+
+  .resources-card {
+    display: flex;
+    width: 100%;
+    max-width: 957px;
+    min-height: 298px;
+    padding: 24px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15.25px;
+    border-radius: 16px;
+    border: 1px solid #FEF8F5;
+    background: #FFF;
+    box-sizing: border-box;
+  }
+
+  .resources-title-full {
+    width: 100%;
+  }
+
+  .resources-card-content {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 15.25px;
+  }
+
+  .resources-card-column {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .resources-card-column-left {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 12px;
+    padding-right: 8px;
+  }
+
+  .resources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .resource-item {
+    display: flex;
+    padding: 16.7px 16px 16px 16px;
+    align-items: center;
+    gap: 16px;
+    align-self: stretch;
+    border-radius: 12px;
+    border: 1px dashed #CBD5E1;
+    text-decoration: none;
+    background: #FFF;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .resource-item:hover {
+    border-color: #94A3B8;
+    background: #F8FAFC;
+  }
+
+  .resource-item-icon-box {
+    display: flex;
+    width: 48px;
+    height: 48px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    background: #F1F5F9;
+    flex-shrink: 0;
+  }
+
+  .resource-item-icon-box svg {
+    width: 25px;
+    height: 25px;
+    fill: #921F22;
+    flex-shrink: 0;
+  }
+
+  .resource-item-title {
+    color: #0F172A;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .resource-item-download-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .resource-item-download-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: #94A3B8;
+  }
+
+  .resources-empty-state {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px dashed #CBD5E1;
+    color: #64748B;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    background: #FFF;
+  }
+
+  .resources-card-column-right {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .resources-title {
+    margin: 0;
+    color: #0F172A;
+    font-family: Inter, sans-serif;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 28px;
+  }
+
+  .resources-description {
+    margin: 0;
+    color: #64748B;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    max-width: 360px;
+  }
+
+  .resources-upload-box {
+    position: relative;
+    display: flex;
+    width: 100%;
+    max-width: 448px;
+    min-height: 181px;
+    padding: 24px 32px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    border: 2px dashed #E2E8F0;
+    background: rgba(248, 250, 252, 0.50);
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .resources-upload-icon {
+    width: 16px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .resources-upload-icon svg {
+    width: 16px;
+    height: 20px;
+    fill: #921F22;
+  }
+
+  .resources-upload-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .resources-upload-title {
+    color: #0F172A;
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .resources-upload-subtitle {
+    color: #64748B;
+    text-align: center;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+  }
+
+  .resources-upload-button {
+    width: 167.72px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: #921F22;
+    color: #FFF;
+    text-align: center;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10);
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .resources-upload-button:hover {
+    background: #7A1A1C;
+    transform: translateY(-1px);
+  }
+
   /* Module Tabs Styling */
   .module-tabs {
     display: flex;
@@ -1957,6 +2390,47 @@
     }
   }
 
+  @media (max-width: 768px) {
+    .resources-panel {
+      padding: 16px;
+    }
+
+    .resources-card {
+      min-height: auto;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .resources-card-content {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .resources-card-column-left,
+    .resources-card-column-right {
+      width: 100%;
+    }
+
+    .resources-description {
+      max-width: 100%;
+    }
+
+    .resources-list {
+      gap: 10px;
+    }
+
+    .resource-item {
+      padding: 14px;
+      gap: 12px;
+    }
+
+    .resources-upload-box {
+      max-width: 100%;
+      min-height: 181px;
+      padding: 24px;
+    }
+  }
+
   @media (max-width: 480px) {
     .module-description-box {
       padding: 12px !important;
@@ -2032,6 +2506,31 @@
       line-height: 18px;
     }
 
+    .resources-list {
+      gap: 8px;
+    }
+
+    .resource-item {
+      padding: 12px;
+      gap: 10px;
+      border-radius: 10px;
+    }
+
+    .resource-item-icon-box {
+      width: 40px;
+      height: 40px;
+    }
+
+    .resource-item-icon-box svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .resource-item-title {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
     .module-tab-button {
       padding: 10px 12px;
       font-size: 12px;
@@ -2067,6 +2566,73 @@
       min-height: 150px;
       border-radius: 6px;
     }
+
+    .resources-panel {
+      padding: 8px;
+    }
+
+    .resources-card {
+      padding: 16px;
+      gap: 16px;
+      border-radius: 12px;
+    }
+
+    .resources-title {
+      font-size: 18px;
+      line-height: 24px;
+    }
+
+    .resources-description {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .resources-list {
+      gap: 8px;
+    }
+
+    .resource-item {
+      padding: 12px;
+      gap: 10px;
+      border-radius: 10px;
+    }
+
+    .resource-item-icon-box {
+      width: 40px;
+      height: 40px;
+    }
+
+    .resource-item-icon-box svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .resource-item-title {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .resources-upload-box {
+      min-height: 170px;
+      padding: 20px 16px;
+      border-radius: 12px;
+    }
+
+    .resources-upload-title {
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    .resources-upload-subtitle {
+      font-size: 11px;
+      line-height: 14px;
+    }
+
+    .resources-upload-button {
+      width: 100%;
+      max-width: 167.72px;
+      font-size: 13px;
+    }
   }
 
   @media (max-width: 900px) {
@@ -2088,6 +2654,21 @@
 
     .shell {
       padding: 20px;
+    }
+
+    .assignment-card {
+      min-height: auto;
+      gap: 24px;
+    }
+
+    .assignment-card-row {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .assignment-card-description-box {
+      min-height: 220px;
+      padding: 16px;
     }
 
     .topbar,

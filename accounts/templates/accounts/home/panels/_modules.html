@@ -76,14 +76,6 @@
               <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
 	              <div class="action-menu">
 	                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
-	                <button
-	                  type="button"
-	                  hx-get="{% url 'course_materials_panel' %}?module_id={{ module.id }}"
-	                  hx-target="#course-materials-drawer"
-	                  hx-swap="innerHTML"
-	                >
-	                  Materials
-	                </button>
 	                {% if latest_run %}
 	                  <button
 	                    type="button"
@@ -225,6 +217,5 @@
 
 	    <div id="module-students-drawer"></div>
 	    <div id="module-attendance-drawer"></div>
-	    <div id="course-materials-drawer"></div>
 	  </div>
 	</section>
