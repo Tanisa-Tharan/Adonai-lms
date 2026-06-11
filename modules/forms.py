@@ -19,6 +19,7 @@ class QuarterChoiceField(forms.ModelChoiceField):
 
 
 class CreateModuleForm(forms.Form):
+    moduleId = forms.CharField(max_length=100)
     title = forms.CharField(max_length=255)
     description = forms.CharField(
         required=False,

@@ -33,6 +33,7 @@ def assignment_submission_upload_path(instance, filename):
 
 class Module(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    moduleId = models.CharField(max_length=100, default="MODULE-ID-PENDING")
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     order_number = models.IntegerField()
@@ -45,7 +46,7 @@ class Module(models.Model):
         ordering = ["order_number", "title"]
 
     def __str__(self):
-        return self.title
+        return f"{self.moduleId} - {self.title}"
 
 
 class ModuleRun(models.Model):

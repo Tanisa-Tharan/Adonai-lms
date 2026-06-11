@@ -158,6 +158,7 @@ def _generate_session_dates(start_date, end_date, session_count):
 def _save_module_from_form(form):
     with transaction.atomic():
         module = Module.objects.create(
+            moduleId=form.cleaned_data["moduleId"],
             title=form.cleaned_data["title"],
             description=form.cleaned_data["description"],
             order_number=form.cleaned_data["order_number"],
@@ -200,6 +201,7 @@ def _build_module_form(module=None):
 
     latest_run = module.runs.select_related("quarter", "faculty").order_by("-created_at").first()
     initial = {
+        "moduleId": module.moduleId,
         "title": module.title,
         "description": module.description,
         "order_number": module.order_number,
@@ -222,6 +224,7 @@ def _build_module_form(module=None):
 
 def _update_module_from_form(form, module):
     with transaction.atomic():
+        module.moduleId = form.cleaned_data["moduleId"]
         module.title = form.cleaned_data["title"]
         module.description = form.cleaned_data["description"]
         module.order_number = form.cleaned_data["order_number"]
@@ -722,7 +725,7 @@ def home(request):
                 module = _update_module_from_form(module_form, editing_module)
             else:
                 module = _save_module_from_form(module_form)
-            return redirect(f"{reverse('home')}?tab=modules")
+            return redirect(f"{reverse('home')}?tab=assignments")
 
     return render(request, "accounts/home.html", _build_home_context(
         user_form=user_form,
@@ -1110,21 +1113,28 @@ def module_assignments_panel(request, module_run_id):
         resource_type="RESOURCES"
     ).select_related("uploaded_by").order_by("-created_at")
     
+    context = {
+        "module_run": module_run,
+        "assignments": assignments,
+        "assignment_files": assignment_files,
+        "editing_assignment": editing_assignment,
+        "student_modules": student_modules,
+        "submissions_by_assignment": submissions_by_assignment,
+        "percentage_by_assignment": percentage_by_assignment,
+        "required_materials": required_materials,
+        "recommended_materials": recommended_materials,
+        "resource_materials": resource_materials,
+    }
+    if request.headers.get("HX-Request") == "true" and editing_assignment:
+        return render(
+            request,
+            "accounts/home/panels/modules/_assignment_form.html",
+            context,
+        )
     return render(
         request,
         "accounts/home/panels/modules/_assignments.html",
-        {
-            "module_run": module_run,
-            "assignments": assignments,
-            "assignment_files": assignment_files,
-            "editing_assignment": editing_assignment,
-            "student_modules": student_modules,
-            "submissions_by_assignment": submissions_by_assignment,
-            "percentage_by_assignment": percentage_by_assignment,
-            "required_materials": required_materials,
-            "recommended_materials": recommended_materials,
-            "resource_materials": resource_materials,
-        },
+        context,
     )
 
 
@@ -1198,6 +1208,26 @@ def delete_module_assignment(request, module_run_id, assignment_id):
     if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
         return redirect("faculty_home")
     assignment.delete()
+    return module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@admin_or_faculty_required
+def delete_assignment_file(request, module_run_id, file_id):
+    if request.method != "POST":
+        return redirect("home")
+
+    assignment_file = get_object_or_404(
+        AssignmentFile.objects.select_related("assignment", "assignment__module_run"),
+        id=file_id,
+        assignment__module_run_id=module_run_id,
+    )
+    if request.user.role == "FACULTY" and assignment_file.assignment.module_run.faculty_id != request.user.id:
+        return redirect("faculty_home")
+
+    if assignment_file.file_url:
+        assignment_file.file_url.delete(save=False)
+    assignment_file.delete()
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 

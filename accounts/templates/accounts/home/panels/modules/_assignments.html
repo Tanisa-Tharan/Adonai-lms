@@ -60,7 +60,7 @@
   <!-- Tab Content: Assignments -->
   <div id="assignments-tab" class="module-tab-content active">
     <!-- Assignment Form Section (hidden by default) -->
-    <div id="assignment-form-section" style="display: none;">
+    <div id="assignment-form-section"{% if editing_assignment %} data-editing-assignment="1"{% endif %} style="display: none;">
       {% include "accounts/home/panels/modules/_assignment_form.html" %}
     </div>
 
@@ -173,6 +173,7 @@
             <div class="reading-card-text">
               <h5 class="reading-card-title">Recommended Reading</h5>
               <p class="reading-card-description">Suggest additional books or materials.</p>
+              <br>
             </div>
           </div>
 
@@ -545,6 +546,7 @@ function uploadResourcePdf(file, moduleId) {
   const assignmentFormSection = document.getElementById('assignment-form-section');
   const moduleTabButtons = document.querySelectorAll('.module-tab-button');
   const moduleTabContents = document.querySelectorAll('.module-tab-content');
+  const isEditingAssignment = assignmentFormSection && assignmentFormSection.dataset.editingAssignment === '1';
 
   function updateAddAssignmentButtonVisibility(activeTabId) {
     if (!addAssignmentButton) {
@@ -589,6 +591,13 @@ function uploadResourcePdf(file, moduleId) {
     }, 100);
   } else {
     updateAddAssignmentButtonVisibility('assignments-tab');
+  }
+
+  if (isEditingAssignment && assignmentFormSection) {
+    assignmentFormSection.style.display = 'block';
+    if (addAssignmentButton) {
+      addAssignmentButton.style.display = 'none';
+    }
   }
 })(); // End of IIFE
 

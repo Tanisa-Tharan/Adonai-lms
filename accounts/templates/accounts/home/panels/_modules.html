@@ -41,7 +41,7 @@
           <tr>
             <td>
               <strong>{{ module.title }}</strong><br>
-              <span class="mini-meta">Order {{ module.order_number }}</span>
+              <span class="mini-meta">{{ module.moduleId }} · Order {{ module.order_number }}</span>
             </td>
             <td>
               {% if latest_run %}
@@ -123,7 +123,7 @@
           <section class="user-form-section">
             <h4>{% if module_panel_mode == "edit" %}Edit Module{% else %}Module Details{% endif %}</h4>
 
-            <!-- Row 1: Module Title, Order Number -->
+            <!-- Row 1: Module Title, Module ID -->
             <div class="form-row">
               <div class="field-group">
                 <label for="{{ module_form.title.id_for_label }}">Module Title</label>
@@ -132,20 +132,24 @@
               </div>
               
               <div class="field-group">
+                <label for="{{ module_form.moduleId.id_for_label }}">Module ID</label>
+                {{ module_form.moduleId }}
+                {{ module_form.moduleId.errors }}
+              </div>
+            </div>
+
+            <!-- Row 2: Order Number, Session Count -->
+            <div class="form-row">
+              <div class="field-group">
                 <label for="{{ module_form.order_number.id_for_label }}">Order Number</label>
                 {{ module_form.order_number }}
                 {{ module_form.order_number.errors }}
               </div>
-            </div>
-
-            <!-- Row 2: Session Count -->
-            <div class="form-row">
               <div class="field-group">
                 <label for="{{ module_form.session_count.id_for_label }}">Session Count</label>
                 {{ module_form.session_count }}
                 {{ module_form.session_count.errors }}
               </div>
-              <div class="field-group" style="visibility: hidden;"></div>
             </div>
 
             <!-- Row 3: Description (full width) -->

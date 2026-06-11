@@ -14,9 +14,50 @@
             </div>
             <span class="assignment-card-heading-text">Assignment</span>
           </div>
-          <div class="assignment-card-cell assignment-card-status-wrap">
-            <span class="assignment-card-status-label">STATUS</span>
-            <span class="assignment-card-status-badge">PUBLISHED</span>
+          <div class="assignment-card-cell assignment-card-top-meta">
+            <div class="assignment-card-status-wrap assignment-card-status-actions-row">
+              <span class="assignment-card-status-label">STATUS</span>
+              <span class="assignment-card-status-badge">PUBLISHED</span>
+              <button
+                type="button"
+                class="assignment-card-icon-button"
+                title="Edit assignment"
+                hx-get="{% url 'module_assignments_detail' module_run.id %}?assignment_id={{ assignment.id }}"
+                hx-target="#assignment-form-section"
+                hx-swap="innerHTML"
+                hx-on::before-request="sessionStorage.setItem('activeModuleTab', 'assignments-tab');"
+                hx-on::after-request="
+                  const formSection = document.getElementById('assignment-form-section');
+                  if (formSection) {
+                    formSection.style.display = 'block';
+                  }
+                  const addButton = document.getElementById('add-assignment-btn');
+                  if (addButton) {
+                    addButton.style.display = 'none';
+                  }
+                "
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.625 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#921F22"/>
+                </svg>
+              </button>
+              <form
+                method="post"
+                action="{% url 'delete_module_assignment' module_run.id assignment.id %}"
+                onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment?');"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="assignment-card-icon-button assignment-card-icon-button-delete"
+                  title="Delete assignment"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" viewBox="0 0 16 18" fill="none">
+                    <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
+                  </svg>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
 
@@ -53,6 +94,26 @@
                 </svg>
               </div>
               <span class="resource-item-title">{{ assignment_file.file_name|default:assignment_file.file_url.name }}</span>
+              <form
+                method="post"
+                action="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
+                class="resource-item-action-form"
+                hx-post="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
+                hx-target="#assignments-detail-drawer"
+                hx-swap="innerHTML"
+                onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment file?');"
+              >
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="resource-item-delete-icon"
+                  title="Delete {{ assignment_file.file_name|default:assignment_file.file_url.name }}"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
+                    <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z" fill="#B42318"/>
+                  </svg>
+                </button>
+              </form>
               <a href="{{ assignment_file.file_url.url }}" download class="resource-item-download-icon" title="Download {{ assignment_file.file_name|default:assignment_file.file_url.name }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#94A3B8"/>

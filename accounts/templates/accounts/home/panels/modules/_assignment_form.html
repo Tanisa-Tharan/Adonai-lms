@@ -9,15 +9,7 @@
     hx-swap="innerHTML"
     hx-encoding="multipart/form-data"
     hx-on::after-request="
-      const moduleCard = document.getElementById('module-card-{{ module_run.id }}');
-      if (moduleCard) {
-        const countSpan = moduleCard.querySelector('.module-card-count');
-        if (countSpan) {
-          const currentCount = parseInt(countSpan.textContent.match(/\d+/)[0]);
-          const newCount = currentCount + 1;
-          countSpan.textContent = newCount + ' Assignment' + (newCount !== 1 ? 's' : '');
-        }
-      }
+      sessionStorage.setItem('activeModuleTab', 'assignments-tab');
     "
   >
     {% csrf_token %}
@@ -69,7 +61,10 @@
       <button
         type="button"
         class="button button-secondary"
-        onclick="document.getElementById('assignment-form-section').style.display='none'; document.getElementById('add-assignment-btn').style.display='inline-flex';"
+        hx-get="{% url 'module_assignments_detail' module_run.id %}"
+        hx-target="#assignments-detail-drawer"
+        hx-swap="innerHTML"
+        hx-on::before-request="sessionStorage.setItem('activeModuleTab', 'assignments-tab');"
       >
         Cancel
       </button>

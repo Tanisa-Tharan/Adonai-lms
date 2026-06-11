@@ -3,12 +3,8 @@
   
   <!-- Module Grid View (default view) -->
   <div id="assignments-grid-view">
-    <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}');">
-      <div>
-        <h3>My Modules</h3>
-        <p>Manage your active courses, syllabi, and student rosters for the current quarter.</p>
-      </div>
-    </div>
+    {% url 'home' as home_url %}
+    {% include 'accounts/home/_welcome_banner.html' with banner_title="Module Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url=home_url|add:"?tab=modules&mode=create" banner_button_text="Add Module" %}
 
     <div class="panel-card">
 
