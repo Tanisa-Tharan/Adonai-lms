@@ -33,11 +33,7 @@
       <button
         type="button"
         class="button button-secondary"
-        onclick="
-          document.getElementById('assignments-detail-drawer').innerHTML='';
-          document.getElementById('assignments-grid-view').style.display='block';
-          window.location.reload();
-        "
+        onclick="closeModuleDetailDrawer(this)"
       >
         Close
       </button>
@@ -358,7 +354,7 @@ function submitLink() {
   formData.append('module_id', currentModuleId);
   
   // Submit via AJAX
-  fetch('{% url "upload_course_material" %}', {
+  fetch('{% url "add_course_material" %}', {
     method: 'POST',
     headers: {
       'X-CSRFToken': '{{ csrf_token }}',
@@ -409,7 +405,7 @@ function uploadResourcePdf(file, moduleId) {
   formData.append('resource_type', 'RESOURCES');
   formData.append('module_id', moduleId);
 
-  fetch('{% url "upload_course_material" %}', {
+  fetch('{% url "add_course_material" %}', {
     method: 'POST',
     headers: {
       'X-CSRFToken': '{{ csrf_token }}',
@@ -510,7 +506,7 @@ function uploadResourcePdf(file, moduleId) {
       document.body.appendChild(loadingMsg);
       
       // Submit via AJAX
-      fetch('{% url "upload_course_material" %}', {
+      fetch('{% url "add_course_material" %}', {
         method: 'POST',
         headers: {
           'X-CSRFToken': '{{ csrf_token }}',
@@ -614,18 +610,26 @@ function deleteMaterial(materialId) {
   document.body.appendChild(loadingMsg);
   
   // Delete via AJAX
-  fetch(`/modules/delete-material/${materialId}/`, {
+  fetch(`{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}`.replace('00000000-0000-0000-0000-000000000000', materialId), {
     method: 'POST',
     headers: {
-      'X-CSRFToken': '{{ csrf_token }}'
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
     }
   })
-  .then(response => response.json())
+  .then(async response => {
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : {};
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to delete material');
+    }
+    return data;
+  })
   .then(data => {
     document.body.removeChild(loadingMsg);
     if (data.success) {
       alert('Material deleted successfully!');
-      // Reload the page to refresh the materials list
+      sessionStorage.setItem('activeModuleTab', 'readings-tab');
       location.reload();
     } else {
       alert('Error: ' + (data.error || 'Failed to delete material'));
@@ -634,7 +638,7 @@ function deleteMaterial(materialId) {
   .catch(error => {
     document.body.removeChild(loadingMsg);
     console.error('Error:', error);
-    alert('An error occurred while deleting the material');
+    alert('Error: ' + (error.message || 'An error occurred while deleting the material'));
   });
 }
 </script>

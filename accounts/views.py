@@ -400,6 +400,7 @@ def faculty_home(request):
         assignment__module_run__in=faculty_runs,
         student_module__in=student_modules,
     ).select_related("graded_by", "assignment")
+    pending_grades_count = submissions.filter(score__isnull=True, graded_by__isnull=True).count()
     has_submission = set()
     graded_by_faculty = set()
     next_ungraded_assignment_by_student_module = {}
@@ -424,6 +425,18 @@ def faculty_home(request):
         if grade_percent_count.get(sm_id)
     }
 
+    faculty_module_items = [
+        {
+            "id": str(run.id),
+            "title": run.module.title,
+            "subtitle": run.quarter.name,
+            "meta_icon": "assignments",
+            "meta_text": f"{run.assignments.count()} Assignment{'s' if run.assignments.count() != 1 else ''}",
+            "action_url": reverse("module_assignments_panel", args=[run.id]),
+        }
+        for run in faculty_runs
+    ]
+
     return render(
         request,
         "accounts/faculty/home.html",
@@ -436,6 +449,8 @@ def faculty_home(request):
             "faculty_student_graded": graded_by_faculty,
             "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
             "faculty_grade_percentage": grade_percentage_by_student_module,
+            "pending_grades_count": pending_grades_count,
+            "faculty_module_items": faculty_module_items,
         },
     )
 
@@ -517,6 +532,22 @@ def student_home(request):
         .order_by("due_date")
     )
 
+    student_module_items = [
+        {
+            "id": str(sm.id),
+            "title": sm.module_run.module.title,
+            "subtitle": sm.module_run.quarter.name,
+            "meta_icon": "modules",
+            "meta_text": (
+                f"{sm.attendance_percentage:.0f}% Attendance"
+                if sm.attendance_percentage is not None
+                else "Attendance not available"
+            ),
+            "action_url": reverse("student_module_assignments_panel", args=[sm.module_run.id]),
+        }
+        for sm in student_modules
+    ]
+
     return render(
         request,
         "accounts/student/home.html",
@@ -525,6 +556,7 @@ def student_home(request):
             "student_modules": student_modules,
             "due_assignments": due_assignments,
             "submission_by_assignment": submission_by_assignment,
+            "student_module_items": student_module_items,
         },
     )
 
@@ -1049,11 +1081,27 @@ def delete_course_material(request, material_id):
     if request.method != "POST":
         return redirect("home")
 
-    material = get_object_or_404(CourseMaterial, id=material_id)
-    if request.user.role == "FACULTY" and not ModuleRun.objects.filter(module_id=material.module_id, faculty=request.user).exists():
-        return course_materials_panel(request)
-    module_id = str(material.module_id)
-    material.delete()
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
+    try:
+        material = get_object_or_404(CourseMaterial, id=material_id)
+
+        if request.user.role == "FACULTY" and not ModuleRun.objects.filter(
+            module_id=material.module_id,
+            faculty_id=request.user.id,
+        ).exists():
+            if is_ajax:
+                return JsonResponse({"success": False, "error": f"Faculty {request.user.id} is not assigned to module {material.module_id} for this material."}, status=403)
+            return course_materials_panel(request)
+
+        module_id = str(material.module_id)
+        material.delete()
+
+        if is_ajax:
+            return JsonResponse({"success": True, "module_id": module_id})
+    except Exception as exc:
+        if is_ajax:
+            return JsonResponse({"success": False, "error": str(exc)}, status=500)
+        raise
 
     request.GET = request.GET.copy()
     request.GET["module_id"] = module_id

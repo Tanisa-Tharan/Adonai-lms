@@ -5,7 +5,7 @@
     method="post"
     enctype="multipart/form-data"
     hx-post="{% if editing_assignment %}{% url 'update_module_assignment' module_run.id editing_assignment.id %}{% else %}{% url 'add_module_assignment' module_run.id %}{% endif %}"
-    hx-target="#assignments-detail-drawer"
+    hx-target="closest [id$='detail-drawer']"
     hx-swap="innerHTML"
     hx-encoding="multipart/form-data"
     hx-on::after-request="
@@ -62,7 +62,7 @@
         type="button"
         class="button button-secondary"
         hx-get="{% url 'module_assignments_detail' module_run.id %}"
-        hx-target="#assignments-detail-drawer"
+        hx-target="closest [id$='detail-drawer']"
         hx-swap="innerHTML"
         hx-on::before-request="sessionStorage.setItem('activeModuleTab', 'assignments-tab');"
       >

@@ -87,6 +87,28 @@
     return confirm("Are you sure you want to delete this " + type + "? This action cannot be undone.");
   }
 
+  function closeModuleDetailDrawer(button) {
+    const detailDrawer = button.closest("[id$='detail-drawer']");
+    if (detailDrawer) {
+      detailDrawer.innerHTML = "";
+    }
+
+    const assignmentsGrid = document.getElementById("assignments-grid-view");
+    if (assignmentsGrid) {
+      assignmentsGrid.style.display = "block";
+    }
+
+    const facultyGrid = document.getElementById("faculty-modules-grid-view");
+    if (facultyGrid) {
+      facultyGrid.style.display = "block";
+    }
+
+    const studentGrid = document.getElementById("student-modules-grid-view");
+    if (studentGrid) {
+      studentGrid.style.display = "block";
+    }
+  }
+
   const tabButtons = document.querySelectorAll(".tab-link");
   const tabPanels = document.querySelectorAll(".tab-panel");
   const initialActiveTab = document.body.dataset.activeTab || "dashboard";
