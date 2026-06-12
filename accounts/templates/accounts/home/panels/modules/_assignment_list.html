@@ -18,6 +18,7 @@
             <div class="assignment-card-status-wrap assignment-card-status-actions-row">
               <span class="assignment-card-status-label">STATUS</span>
               <span class="assignment-card-status-badge">PUBLISHED</span>
+              {% if user.role != 'STUDENT' %}
               <button
                 type="button"
                 class="assignment-card-icon-button"
@@ -60,6 +61,7 @@
                   </svg>
                 </button>
               </form>
+              {% endif %}
             </div>
           </div>
         </div>
