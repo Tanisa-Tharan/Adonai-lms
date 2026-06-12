@@ -567,10 +567,11 @@ def student_home(request):
 @student_required
 def student_module_assignments_panel(request, module_run_id):
     student_module = get_object_or_404(
-        StudentModule.objects.select_related("module_run", "module_run__module"),
+        StudentModule.objects.select_related("module_run", "module_run__module", "module_run__faculty"),
         module_run_id=module_run_id,
         enrollment__student=request.user,
     )
+    module_run = student_module.module_run
     assignments = (
         Assignment.objects.filter(module_run_id=module_run_id)
         .prefetch_related("files")
@@ -578,14 +579,26 @@ def student_module_assignments_panel(request, module_run_id):
     )
     submissions = AssignmentSubmission.objects.filter(student_module=student_module, assignment__in=assignments)
     submission_by_assignment = {str(s.assignment_id): s for s in submissions}
+    
+    # Get course materials categorized by resource type
+    all_materials = CourseMaterial.objects.filter(module_id=module_run.module.id).select_related("uploaded_by").order_by("-created_at")
+    required_materials = all_materials.filter(resource_type="REQUIRED")
+    recommended_materials = all_materials.filter(resource_type="RECOMMENDED")
+    resource_materials = all_materials.filter(resource_type="RESOURCES")
+    
     now = timezone.now()
+    # Use the same template as faculty/admin but with student-specific context
     return render(
         request,
-        "accounts/student/panels/modules/_assignments.html",
+        "accounts/home/panels/modules/_assignments.html",
         {
             "student_module": student_module,
+            "module_run": module_run,
             "assignments": assignments,
             "submission_by_assignment": submission_by_assignment,
+            "required_materials": required_materials,
+            "recommended_materials": recommended_materials,
+            "resource_materials": resource_materials,
             "now": now,
         },
     )
