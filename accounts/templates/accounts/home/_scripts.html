@@ -66,6 +66,225 @@
   // Re-initialize after HTMX content swap
   document.body.addEventListener('htmx:afterSwap', function(event) {
     setTimeout(initQuillEditor, 100);
+    setTimeout(initSubmissionEditors, 100);
+  });
+
+  // Initialize Quill editors for assignment submissions
+  let submissionEditors = {};
+  
+  function initSubmissionEditors() {
+    document.querySelectorAll('[id^="quill-submission-editor-"]').forEach(function(editorContainer) {
+      const assignmentId = editorContainer.id.replace('quill-submission-editor-', '');
+      const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
+      
+      if (!hiddenTextarea || submissionEditors[assignmentId]) {
+        return;
+      }
+
+      // Initialize Quill
+      submissionEditors[assignmentId] = new Quill(editorContainer, {
+        theme: 'snow',
+        placeholder: 'Enter your answer with formatting...',
+        modules: {
+          toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            [{ 'align': [] }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['link'],
+            ['clean']
+          ]
+        }
+      });
+
+      // Set initial content if editing
+      const initialContent = hiddenTextarea.value;
+      if (initialContent) {
+        submissionEditors[assignmentId].root.innerHTML = initialContent;
+      }
+
+      // Sync content to hidden textarea on change
+      submissionEditors[assignmentId].on('text-change', function() {
+        hiddenTextarea.value = submissionEditors[assignmentId].root.innerHTML;
+      });
+    });
+  }
+
+  // Show submission form
+  function showSubmissionForm(assignmentId) {
+    // Hide all assignment cards except the one being submitted
+    document.querySelectorAll('.assignment-card').forEach(function(card) {
+      const formInCard = card.querySelector('#submission-form-' + assignmentId);
+      if (!formInCard) {
+        card.style.display = 'none';
+      }
+    });
+
+    // Show the submission form with full width
+    const form = document.getElementById('submission-form-' + assignmentId);
+    if (form) {
+      form.style.display = 'block';
+      form.style.width = '100%';
+      form.style.maxWidth = '100%';
+      
+      // Show the submission header
+      const header = document.getElementById('submission-header-' + assignmentId);
+      if (header) {
+        header.style.display = 'flex';
+      }
+      
+      // Initialize editor if not already done
+      setTimeout(function() {
+        const editorContainer = document.getElementById('quill-submission-editor-' + assignmentId);
+        const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
+        
+        if (editorContainer && hiddenTextarea && !submissionEditors[assignmentId]) {
+          // Clear any existing content
+          editorContainer.innerHTML = '';
+          
+          // Initialize Quill
+          submissionEditors[assignmentId] = new Quill(editorContainer, {
+            theme: 'snow',
+            placeholder: 'Enter your answer with formatting...',
+            modules: {
+              toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                [{ 'color': [] }, { 'background': [] }],
+                ['link'],
+                ['clean']
+              ]
+            }
+          });
+
+          // Set initial content if editing
+          const initialContent = hiddenTextarea.value;
+          if (initialContent) {
+            submissionEditors[assignmentId].root.innerHTML = initialContent;
+          }
+
+          // Sync content to hidden textarea on change
+          submissionEditors[assignmentId].on('text-change', function() {
+            hiddenTextarea.value = submissionEditors[assignmentId].root.innerHTML;
+          });
+        }
+      }, 200);
+    }
+
+    // Hide the submit button
+    const submitBtn = document.getElementById('submit-btn-' + assignmentId);
+    if (submitBtn) {
+      submitBtn.style.display = 'none';
+    }
+  }
+
+  // Hide submission form
+  function hideSubmissionForm(assignmentId) {
+    // Show all assignment cards
+    document.querySelectorAll('.assignment-card').forEach(function(card) {
+      card.style.display = 'block';
+    });
+
+    // Hide the submission form
+    const form = document.getElementById('submission-form-' + assignmentId);
+    if (form) {
+      form.style.display = 'none';
+    }
+
+    // Hide the submission header if no submission exists
+    const header = document.getElementById('submission-header-' + assignmentId);
+    const submittedSection = document.querySelector('.assignment-card-submission-box');
+    if (header && !submittedSection) {
+      header.style.display = 'none';
+    }
+
+    // Show the submit button
+    const submitBtn = document.getElementById('submit-btn-' + assignmentId);
+    if (submitBtn) {
+      submitBtn.style.display = 'flex';
+    }
+  }
+
+  // Handle submission form submit
+  function handleSubmissionSubmit(event, assignmentId, moduleRunId) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    // Ensure description is synced
+    const editor = submissionEditors[assignmentId];
+    const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
+    if (editor && hiddenTextarea) {
+      const content = editor.root.innerHTML;
+      hiddenTextarea.value = content;
+      formData.set('description', content);
+      console.log('Submitting description:', content);
+    } else {
+      console.error('Editor or textarea not found for assignment:', assignmentId);
+    }
+
+    // Get CSRF token from form or cookie
+    let csrfToken = form.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+      csrfToken = csrfToken.value;
+    } else {
+      csrfToken = getCookie('csrftoken');
+    }
+
+    console.log('Submitting to:', '/student/submit-assignment/' + assignmentId + '/');
+    console.log('FormData entries:', Array.from(formData.entries()));
+
+    // Submit via fetch
+    fetch('/student/submit-assignment/' + assignmentId + '/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+      body: formData,
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        return response.text();
+      }
+      if (response.status === 403) {
+        throw new Error('Authentication failed. Please refresh the page and try again.');
+      }
+      throw new Error('Submission failed with status: ' + response.status);
+    })
+    .then(html => {
+      console.log('Submission successful, updating UI');
+      // Reload the assignments panel
+      const detailDrawer = document.querySelector('[id$="detail-drawer"]');
+      if (detailDrawer) {
+        detailDrawer.innerHTML = html;
+        setTimeout(function() {
+          initQuillEditor();
+          initSubmissionEditors();
+        }, 100);
+      } else {
+        // If no drawer, reload the page
+        window.location.reload();
+      }
+    })
+    .catch(error => {
+      alert('Error submitting assignment: ' + error.message);
+      console.error('Submission error:', error);
+    });
+
+    return false;
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initSubmissionEditors, 100);
   });
 </script>
 <script>

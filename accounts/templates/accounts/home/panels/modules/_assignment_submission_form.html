@@ -1,0 +1,94 @@
+<div class="assignment-submission-form-container" id="submission-form-{{ assignment.id }}" style="display: none; margin-top: 24px; padding: 24px; background: #F9FAFB; border-radius: 8px; border: 1px solid #E5E7EB;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <h3 style="color: #1D1B1A; font-family: Lexend, sans-serif; font-size: 20px; font-weight: 600; margin: 0;">Submit Assignment</h3>
+    <button 
+      type="button" 
+      onclick="hideSubmissionForm('{{ assignment.id }}')"
+      style="background: none; border: none; cursor: pointer; color: #6B7280; font-size: 24px; line-height: 1; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
+      title="Close"
+    >
+      ×
+    </button>
+  </div>
+
+  <form 
+    method="post" 
+    id="assignment-submission-form-{{ assignment.id }}"
+    onsubmit="return handleSubmissionSubmit(event, '{{ assignment.id }}', '{{ module_run.id }}')"
+  >
+    {% csrf_token %}
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 8px;">
+        Title
+      </label>
+      <input 
+        type="text" 
+        value="{{ assignment.title }}" 
+        readonly
+        style="width: 100%; padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: #F3F4F6; color: #6B7280; font-family: Lexend, sans-serif; font-size: 14px;"
+      />
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 8px;">
+        Due Date
+      </label>
+      <input
+        type="text"
+        value="{{ assignment.due_date|date:'Y-m-d' }}"
+        readonly
+        style="width: 100%; padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: #F3F4F6; color: #6B7280; font-family: Lexend, sans-serif; font-size: 14px;"
+      />
+    </div>
+
+    {% if user.role == 'ADMIN' %}
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 8px;">
+        Submit as Student <span style="color: #DC2626;">*</span>
+      </label>
+      <select
+        name="student_module_id"
+        id="student-module-select-{{ assignment.id }}"
+        required
+        style="width: 100%; padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; cursor: pointer;"
+      >
+        <option value="">Select a student...</option>
+        {% for student_mod in module_run.student_modules.all %}
+        <option value="{{ student_mod.id }}">
+          {{ student_mod.enrollment.student.first_name }} {{ student_mod.enrollment.student.last_name }}
+          ({{ student_mod.enrollment.student.email }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 8px;">
+        Your Answer <span style="color: #DC2626;">*</span>
+      </label>
+      <div id="quill-submission-editor-{{ assignment.id }}" style="background: white; min-height: 200px; border: 1px solid #D1D5DB; border-radius: 6px;"></div>
+      <textarea 
+        name="description" 
+        id="submission-description-{{ assignment.id }}" 
+        style="display: none;" 
+        required
+      ></textarea>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 24px;">
+      <button 
+        type="submit"
+        style="display: flex; width: 130px; height: 37px; padding: 4px 0; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; border-radius: 4px; background: #921F22; border: none; cursor: pointer; transition: background-color 0.2s;"
+        onmouseover="this.style.backgroundColor='#7a1a1c'"
+        onmouseout="this.style.backgroundColor='#921F22'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" style="width: 16px; height: 16px;">
+          <path d="M7 16V7.85L4.4 10.45L3 9L8 4L13 9L11.6 10.45L9 7.85V16H7ZM0 5V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14C14.55 0 15.0208 0.195833 15.4125 0.5875C15.8042 0.979167 16 1.45 16 2V5H14V2H2V5H0Z" fill="white"/>
+        </svg>
+        <span style="color: #FFF; text-align: center; font-family: Lexend, sans-serif; font-size: 16px; font-style: normal; font-weight: 500; line-height: 24px;">Submit</span>
+      </button>
+    </div>
+  </form>
+</div>

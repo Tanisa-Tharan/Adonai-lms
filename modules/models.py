@@ -234,6 +234,7 @@ class AssignmentSubmission(models.Model):
         on_delete=models.CASCADE,
         related_name="assignment_submissions",
     )
+    description = models.TextField(blank=True)
     file_url = models.FileField(upload_to=assignment_submission_upload_path)
     submitted_at = models.DateTimeField(auto_now_add=True)
     score = models.FloatField(null=True, blank=True)

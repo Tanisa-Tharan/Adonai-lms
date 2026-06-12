@@ -428,6 +428,7 @@ def faculty_home(request):
     faculty_module_items = [
         {
             "id": str(run.id),
+            "module_id": str(run.module.id),
             "title": run.module.title,
             "subtitle": run.quarter.name,
             "meta_icon": "assignments",
@@ -535,6 +536,7 @@ def student_home(request):
     student_module_items = [
         {
             "id": str(sm.id),
+            "module_id": str(sm.module_run.module.id),
             "title": sm.module_run.module.title,
             "subtitle": sm.module_run.quarter.name,
             "meta_icon": "modules",
@@ -590,34 +592,129 @@ def student_module_assignments_panel(request, module_run_id):
 
 
 @login_required
-@student_required
-def student_submit_assignment(request, assignment_id, module_run_id):
+def student_submit_assignment(request, assignment_id, module_run_id=None):
     if request.method != "POST":
-        return redirect("student_home")
+        if request.user.role == "STUDENT":
+            return redirect("student_home")
+        return redirect("home")
 
-    student_module = get_object_or_404(
-        StudentModule,
-        module_run_id=module_run_id,
-        enrollment__student=request.user,
-    )
+    # Handle both URL patterns - with and without module_run_id
+    if not module_run_id:
+        assignment = get_object_or_404(Assignment, id=assignment_id)
+        module_run_id = assignment.module_run_id
+    
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
-    if timezone.now() > assignment.due_date:
-        return student_module_assignments_panel(request, module_run_id=module_run_id)
-
+    
+    # For ADMIN, allow selecting which student to submit for
+    # For STUDENT, use their own enrollment
+    if request.user.role == "ADMIN":
+        # Check if a student_module_id was provided in the request
+        student_module_id = request.POST.get("student_module_id")
+        
+        if student_module_id:
+            # Admin selected a specific student
+            student_module = get_object_or_404(
+                StudentModule,
+                id=student_module_id,
+                module_run_id=module_run_id
+            )
+        else:
+            # No student selected, check if admin has their own enrollment
+            admin_enrollment = Enrollment.objects.filter(student=request.user).first()
+            if admin_enrollment:
+                # Admin is also a student, use their student module
+                student_module, created = StudentModule.objects.get_or_create(
+                    module_run_id=module_run_id,
+                    enrollment=admin_enrollment
+                )
+            else:
+                # Admin is not a student, create enrollment with proper fields
+                from academics.models import AcademicYear
+                academic_year = AcademicYear.objects.first()
+                if not academic_year:
+                    messages.error(request, "No academic year found. Please create one first.")
+                    return module_assignments_panel(request, module_run_id=module_run_id)
+                
+                # Calculate expected completion date (1 year from start)
+                from datetime import timedelta
+                start_date = timezone.now().date()
+                expected_completion = start_date + timedelta(days=365)
+                
+                # Create enrollment for admin with all required fields
+                admin_enrollment, _ = Enrollment.objects.get_or_create(
+                    student=request.user,
+                    defaults={
+                        'academic_year': academic_year,
+                        'track': 'FULL_TIME',
+                        'start_date': start_date,
+                        'expected_completion_date': expected_completion,
+                    }
+                )
+                
+                # Create student module
+                student_module, created = StudentModule.objects.get_or_create(
+                    module_run_id=module_run_id,
+                    enrollment=admin_enrollment
+                )
+    else:
+        # Student user
+        student_module = get_object_or_404(
+            StudentModule,
+            module_run_id=module_run_id,
+            enrollment__student=request.user,
+        )
+    
+    # Get description from POST data
+    description = request.POST.get("description", "")
     upload = request.FILES.get("file")
-    if not upload:
+    
+    # Allow submission with description only (no file required)
+    if not description and not upload:
+        if request.user.role == "STUDENT":
+            return student_module_assignments_panel(request, module_run_id=module_run_id)
+        # For admin, return to the module assignments panel
+        return module_assignments_panel(request, module_run_id=module_run_id)
+
+    # Update or create submission
+    defaults = {
+        "description": description,
+    }
+    
+    # Only update file if provided
+    if upload:
+        defaults["file_url"] = upload
+    
+    try:
+        submission, created = AssignmentSubmission.objects.update_or_create(
+            assignment=assignment,
+            student_module=student_module,
+            defaults=defaults,
+        )
+        
+        # Log the submission for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Assignment submission {'created' if created else 'updated'}: "
+                   f"Assignment={assignment.id}, StudentModule={student_module.id}, "
+                   f"Description length={len(description)}, Has file={bool(upload)}")
+        
+        # # Add success message
+        # if created:
+        #     messages.success(request, "Assignment submitted successfully!")
+        # else:
+        #     messages.success(request, "Assignment updated successfully!")
+            
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error saving assignment submission: {str(e)}")
+        messages.error(request, f"Error submitting assignment: {str(e)}")
+
+    # Return appropriate panel based on user role
+    if request.user.role == "STUDENT":
         return student_module_assignments_panel(request, module_run_id=module_run_id)
-
-    # Directly assign the file object to FileField
-    AssignmentSubmission.objects.update_or_create(
-        assignment=assignment,
-        student_module=student_module,
-        defaults={
-            "file_url": upload,
-        },
-    )
-
-    return student_module_assignments_panel(request, module_run_id=module_run_id)
+    else:
+        return module_assignments_panel(request, module_run_id=module_run_id)
 
 
 @login_required
@@ -755,9 +852,14 @@ def home(request):
         if module_form.is_valid():
             if module_panel_mode == "edit" and editing_module:
                 module = _update_module_from_form(module_form, editing_module)
+                messages.success(request, "Module updated successfully.")
             else:
                 module = _save_module_from_form(module_form)
-            return redirect(f"{reverse('home')}?tab=assignments")
+                messages.success(request, "Module created successfully.")
+            
+            # Redirect to the return tab if specified, otherwise default to modules
+            return_tab = request.GET.get("return_tab", "modules")
+            return redirect(f"{reverse('home')}?tab={return_tab}")
 
     return render(request, "accounts/home.html", _build_home_context(
         user_form=user_form,

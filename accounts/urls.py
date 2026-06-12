@@ -107,6 +107,11 @@ urlpatterns = [
         name="student_submit_assignment",
     ),
     path(
+        "student/submit-assignment/<uuid:assignment_id>/",
+        student_submit_assignment,
+        name="student_submit_assignment_simple",
+    ),
+    path(
         "student/module-runs/<uuid:module_run_id>/assignments/<uuid:assignment_id>/delete/",
         student_delete_submission,
         name="student_delete_submission",
