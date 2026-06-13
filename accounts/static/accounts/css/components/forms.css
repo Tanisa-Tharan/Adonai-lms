@@ -254,6 +254,172 @@
   justify-content: space-between;
 }
 
+/* Assignment Submission Form Styles */
+.submission-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.submission-form-header h4 {
+  margin: 0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6B7280;
+  font-size: 24px;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-base);
+}
+
+.btn-close:hover {
+  color: var(--text);
+}
+
+.form-input-readonly {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.btn-draft {
+  display: flex;
+  width: 130px;
+  height: 37px;
+  padding: 12px 0;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brand-accent);
+  background: var(--panel);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.btn-draft:hover {
+  background: var(--brand-bg);
+}
+
+.btn-draft svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--brand-accent);
+  flex-shrink: 0;
+}
+
+.btn-draft span {
+  color: var(--brand-accent);
+  text-align: center;
+  font-family: var(--font-brand);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+.btn-submit-assignment {
+  display: flex;
+  width: 130px;
+  height: 37px;
+  padding: 4px 0;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--brand-accent);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.btn-submit-assignment:hover {
+  background: #7a1a1c;
+}
+
+.btn-submit-assignment svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.btn-submit-assignment span {
+  color: var(--panel);
+  text-align: center;
+  font-family: var(--font-brand);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+}
+
+.btn-discard {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #5D5E61;
+  text-align: center;
+  font-family: var(--font-brand);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  transition: color var(--transition-base);
+}
+
+.btn-discard:hover {
+  color: #3f4044;
+}
+
+.form-actions-split {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-xl);
+  gap: var(--spacing-lg);
+}
+
+.form-actions-group {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Mobile Responsiveness for Assignment Submission Form */
+@media (max-width: 600px) {
+  .form-actions-split {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+
+  .form-actions-group {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-draft,
+  .btn-submit-assignment {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .btn-discard {
+    text-align: center;
+    width: 100%;
+  }
+}
+
 /* Responsive Forms */
 @media (max-width: 600px) {
   .form-row {
@@ -266,6 +432,36 @@
   
   .form-actions .btn {
     width: 100%;
+  }
+
+  .assignment-submission-form-container {
+    padding: var(--spacing-lg);
+  }
+
+  .assignment-submission-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .form-actions-split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-discard {
+    order: 3;
+    text-align: center;
+    margin-top: var(--spacing-sm);
+  }
+
+  .form-actions-group {
+    order: 1;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .btn-draft,
+  .btn-submit-assignment {
+    width: 100% !important;
   }
 }
 

@@ -177,7 +177,15 @@
             <div class="assignment-card-cell assignment-card-top-meta">
               <div class="assignment-card-status-wrap assignment-card-status-actions-row">
                 <span class="assignment-card-status-label">STATUS</span>
-                <span class="assignment-card-status-badge" style="background: #16A34A;">SUBMITTED</span>
+                {% if submission.status == 'draft' %}
+                <span class="assignment-card-status-badge status-draft" style="background: #6B7280 !important; color: #FFFFFF !important;">DRAFT</span>
+                {% elif submission.status == 'submitted' %}
+                <span class="assignment-card-status-badge status-submitted" style="background: #16A34A !important; color: #FFFFFF !important;">SUBMITTED</span>
+                {% elif submission.status == 'graded' %}
+                <span class="assignment-card-status-badge status-graded" style="background: #2563EB !important; color: #FFFFFF !important;">GRADED</span>
+                {% else %}
+                <span class="assignment-card-status-badge status-submitted" style="background: #16A34A !important; color: #FFFFFF !important;">SUBMITTED</span>
+                {% endif %}
                 <button
                   type="button"
                   class="assignment-card-icon-button"

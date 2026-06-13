@@ -677,8 +677,9 @@ def student_submit_assignment(request, assignment_id, module_run_id=None):
             enrollment__student=request.user,
         )
     
-    # Get description from POST data
+    # Get description and status from POST data
     description = request.POST.get("description", "")
+    status = request.POST.get("status", "submitted")  # Default to 'submitted' for backward compatibility
     upload = request.FILES.get("file")
     
     # Allow submission with description only (no file required)
@@ -691,6 +692,7 @@ def student_submit_assignment(request, assignment_id, module_run_id=None):
     # Update or create submission
     defaults = {
         "description": description,
+        "status": status,
     }
     
     # Only update file if provided

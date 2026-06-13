@@ -211,11 +211,14 @@
   }
 
   // Handle submission form submit
-  function handleSubmissionSubmit(event, assignmentId, moduleRunId) {
+  function handleSubmissionSubmit(event, assignmentId, moduleRunId, status) {
     event.preventDefault();
     
     const form = event.target;
     const formData = new FormData(form);
+    
+    // Add status to form data
+    formData.set('status', status || 'submitted');
     
     // Ensure description is synced
     const editor = submissionEditors[assignmentId];
@@ -237,7 +240,7 @@
       csrfToken = getCookie('csrftoken');
     }
 
-    console.log('Submitting to:', '/student/submit-assignment/' + assignmentId + '/');
+    console.log('Submitting to:', '/student/submit-assignment/' + assignmentId + '/', 'Status:', status);
     console.log('FormData entries:', Array.from(formData.entries()));
 
     // Submit via fetch
@@ -277,6 +280,98 @@
     .catch(error => {
       alert('Error submitting assignment: ' + error.message);
       console.error('Submission error:', error);
+
+  // Handle Save Draft button
+  function handleSaveDraft(event, assignmentId, moduleRunId) {
+    event.preventDefault();
+    
+    const form = document.getElementById('assignment-submission-form-' + assignmentId);
+    const formData = new FormData(form);
+    
+    // Set status to draft
+    formData.set('status', 'draft');
+    
+    // Ensure description is synced
+    const editor = submissionEditors[assignmentId];
+    const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
+    if (editor && hiddenTextarea) {
+      const content = editor.root.innerHTML;
+      hiddenTextarea.value = content;
+      formData.set('description', content);
+      console.log('Saving draft with description:', content);
+    } else {
+      console.error('Editor or textarea not found for assignment:', assignmentId);
+    }
+
+    // Get CSRF token from form or cookie
+    let csrfToken = form.querySelector('[name=csrfmiddlewaretoken]');
+    if (csrfToken) {
+      csrfToken = csrfToken.value;
+    } else {
+      csrfToken = getCookie('csrftoken');
+    }
+
+    console.log('Saving draft to:', '/student/submit-assignment/' + assignmentId + '/');
+
+    // Submit via fetch
+    fetch('/student/submit-assignment/' + assignmentId + '/', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+      body: formData,
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      console.log('Response status:', response.status);
+      if (response.ok) {
+        return response.text();
+      }
+      if (response.status === 403) {
+        throw new Error('Authentication failed. Please refresh the page and try again.');
+      }
+      throw new Error('Draft save failed with status: ' + response.status);
+    })
+    .then(html => {
+      console.log('Draft saved successfully, updating UI');
+      // Reload the assignments panel
+      const detailDrawer = document.querySelector('[id$="detail-drawer"]');
+      if (detailDrawer) {
+        detailDrawer.innerHTML = html;
+        setTimeout(function() {
+          initQuillEditor();
+          initSubmissionEditors();
+        }, 100);
+      } else {
+        // If no drawer, reload the page
+        window.location.reload();
+      }
+      // Show success message
+      alert('Draft saved successfully!');
+    })
+    .catch(error => {
+      alert('Error saving draft: ' + error.message);
+      console.error('Draft save error:', error);
+    });
+
+    return false;
+  }
+
+  // Handle Discard Changes button
+  function handleDiscardChanges(assignmentId) {
+    if (confirm('Are you sure you want to discard all changes? This action cannot be undone.')) {
+      // Clear the editor content
+      const editor = submissionEditors[assignmentId];
+      if (editor) {
+        editor.setContents([]);
+      }
+      
+      // Hide the submission form
+      hideSubmissionForm(assignmentId);
+      
+      console.log('Changes discarded for assignment:', assignmentId);
+    }
+  }
     });
 
     return false;

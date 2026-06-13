@@ -214,6 +214,12 @@ class AssignmentFile(FileCleanupMixin, models.Model):
 
 
 class AssignmentSubmission(FileCleanupMixin, models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('submitted', 'Submitted'),
+        ('graded', 'Graded'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions")
     student_module = models.ForeignKey(
@@ -223,6 +229,7 @@ class AssignmentSubmission(FileCleanupMixin, models.Model):
     )
     description = models.TextField(blank=True)
     file_url = models.FileField(upload_to=assignment_submission_upload_path)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(auto_now_add=True)
     score = models.FloatField(null=True, blank=True)
     feedback = models.TextField(blank=True)

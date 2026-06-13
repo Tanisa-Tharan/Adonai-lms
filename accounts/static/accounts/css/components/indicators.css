@@ -247,3 +247,34 @@
 }
 
 /* Made with Bob */
+
+/**
+ * Status Badge Styles
+ * Color-coded status indicators
+ */
+
+.assignment-card-status-badge {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-family: var(--font-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-draft {
+  background: #6B7280 !important;
+  color: #FFFFFF !important;
+}
+
+.status-submitted {
+  background: #16A34A !important;
+  color: #FFFFFF !important;
+}
+
+.status-graded {
+  background: #2563EB !important;
+  color: #FFFFFF !important;
+}
