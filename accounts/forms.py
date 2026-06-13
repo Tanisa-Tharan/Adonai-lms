@@ -48,9 +48,11 @@ class CreateUserForm(forms.Form):
         required=False
     )
     
-    start_quarter = forms.ModelChoiceField(
+    quarters = forms.ModelMultipleChoiceField(
         queryset=Quarter.objects.all(),
-        required=False
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="Select all quarters the student will be enrolled in"
     )
 
     def clean(self):

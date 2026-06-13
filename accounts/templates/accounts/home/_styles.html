@@ -1182,6 +1182,54 @@
     font-size: 13px;
   }
 
+  /* Quarters checkbox styling */
+  #id_quarters {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  #id_quarters > div {
+    list-style: none;
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  #id_quarters > div:hover {
+    background: #F8FAFC;
+    border-color: #921F22;
+  }
+
+  #id_quarters label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    margin: 0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    color: #1f2937;
+    width: 100%;
+  }
+
+  #id_quarters input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #921F22;
+    flex-shrink: 0;
+  }
+
+  #id_quarters label:has(input[type="checkbox"]:checked) {
+    font-weight: 500;
+  }
+
   .mini-meta {
     color: var(--muted);
     font-size: 13px;

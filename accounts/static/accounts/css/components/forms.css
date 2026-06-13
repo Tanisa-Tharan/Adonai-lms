@@ -465,4 +465,53 @@
   }
 }
 
+/* Quarters Checkbox Styling */
+#id_quarters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+#id_quarters li {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  transition: all 0.2s;
+  gap: 12px;
+}
+
+#id_quarters li:hover {
+  background: #F8FAFC;
+  border-color: #921F22;
+}
+
+#id_quarters label {
+  cursor: pointer;
+  margin: 0;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  color: #0F172A;
+  order: 2;
+  flex: 1;
+}
+
+#id_quarters input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #921F22;
+  flex-shrink: 0;
+  order: 1;
+}
+
+#id_quarters li:has(input[type="checkbox"]:checked) label {
+  font-weight: 500;
+}
+
 /* Made with Bob */

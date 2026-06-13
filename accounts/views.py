@@ -70,7 +70,7 @@ def _build_user_form(user=None, role=None):
             "start_date": enrollment.start_date,
             "expected_completion_date": enrollment.expected_completion_date,
             "academic_year": enrollment.academic_year,
-            "start_quarter": enrollment.start_quarter,
+            "quarters": enrollment.quarters.all(),
         })
 
     return CreateUserForm(initial=initial)
@@ -128,16 +128,22 @@ def _save_user_from_form(form, user=None):
     profile.save()
 
     if user.role == "STUDENT":
-        Enrollment.objects.update_or_create(
+        enrollment, created = Enrollment.objects.update_or_create(
             student=user,
             defaults={
                 "academic_year": form.cleaned_data.get("academic_year"),
                 "track": form.cleaned_data.get("track"),
                 "start_date": form.cleaned_data.get("start_date"),
                 "expected_completion_date": form.cleaned_data.get("expected_completion_date"),
-                "start_quarter": form.cleaned_data.get("start_quarter"),
             },
         )
+        
+        # Handle ManyToMany quarters field
+        quarters = form.cleaned_data.get("quarters")
+        if quarters:
+            enrollment.quarters.set(quarters)
+            # Auto-enroll student in all modules from selected quarters
+            _auto_enroll_student_in_quarter_modules(enrollment, quarters)
     else:
         Enrollment.objects.filter(student=user).delete()
 
@@ -153,6 +159,79 @@ def _generate_session_dates(start_date, end_date, session_count):
         start_date + timedelta(days=round((span_days * index) / (session_count - 1)))
         for index in range(session_count)
     ]
+
+
+def _auto_enroll_students_in_module(module_run):
+    """
+    Automatically enroll all students from the module's quarter into the module.
+    Creates StudentModule records for all active enrollments in the quarter.
+    """
+    quarter = module_run.quarter
+    
+    # Get all active enrollments that include this quarter
+    enrollments = Enrollment.objects.filter(
+        academic_year=quarter.academic_year,
+        status="ACTIVE",
+        quarters=quarter
+    ).select_related("student")
+    
+    # Create StudentModule records for students who aren't already enrolled
+    student_modules_to_create = []
+    for enrollment in enrollments:
+        # Check if student is already enrolled in this module run
+        if not StudentModule.objects.filter(
+            enrollment=enrollment,
+            module_run=module_run
+        ).exists():
+            student_modules_to_create.append(
+                StudentModule(
+                    enrollment=enrollment,
+                    module_run=module_run,
+                    status="NOT_STARTED"
+                )
+            )
+    
+    # Bulk create all student module records
+    if student_modules_to_create:
+        StudentModule.objects.bulk_create(student_modules_to_create)
+    
+    return len(student_modules_to_create)
+
+
+def _auto_enroll_student_in_quarter_modules(enrollment, quarters):
+    """
+    Automatically enroll a student in all modules from their selected quarters.
+    Creates StudentModule records for all module runs in the specified quarters.
+    """
+    if not quarters:
+        return 0
+    
+    # Get all module runs for the selected quarters
+    module_runs = ModuleRun.objects.filter(
+        quarter__in=quarters
+    ).select_related("module", "quarter")
+    
+    # Create StudentModule records for modules the student isn't already enrolled in
+    student_modules_to_create = []
+    for module_run in module_runs:
+        # Check if student is already enrolled in this module run
+        if not StudentModule.objects.filter(
+            enrollment=enrollment,
+            module_run=module_run
+        ).exists():
+            student_modules_to_create.append(
+                StudentModule(
+                    enrollment=enrollment,
+                    module_run=module_run,
+                    status="NOT_STARTED"
+                )
+            )
+    
+    # Bulk create all student module records
+    if student_modules_to_create:
+        StudentModule.objects.bulk_create(student_modules_to_create)
+    
+    return len(student_modules_to_create)
 
 
 def _save_module_from_form(form):
@@ -191,6 +270,9 @@ def _save_module_from_form(form):
                 start=1,
             )
         ])
+        
+        # Auto-enroll all students from the selected quarter
+        _auto_enroll_students_in_module(module_run)
 
     return module
 
@@ -268,6 +350,9 @@ def _update_module_from_form(form, module):
                 start=1,
             )
         ])
+        
+        # Auto-enroll all students from the selected quarter
+        _auto_enroll_students_in_module(module_run)
 
     return module
 
@@ -433,7 +518,7 @@ def faculty_home(request):
             "subtitle": run.quarter.name,
             "meta_icon": "assignments",
             "meta_text": f"{run.assignments.count()} Assignment{'s' if run.assignments.count() != 1 else ''}",
-            "action_url": reverse("module_assignments_panel", args=[run.id]),
+            "action_url": reverse("faculty_view_class_panel", args=[run.id]),
         }
         for run in faculty_runs
     ]
@@ -511,6 +596,34 @@ def faculty_students_panel(request):
             "faculty_grade_percentage": grade_percentage_by_student_module,
         },
     )
+
+@login_required
+@faculty_required
+def faculty_view_class_panel(request, module_run_id):
+    """View class details with enrolled students for faculty"""
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related("module", "faculty", "quarter"),
+        id=module_run_id,
+        faculty=request.user
+    )
+    
+    enrolled_students = StudentModule.objects.filter(
+        module_run=module_run
+    ).select_related(
+        "enrollment",
+        "enrollment__student",
+        "enrollment__academic_year"
+    ).order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    
+    return render(
+        request,
+        "accounts/faculty/panels/_view_class.html",
+        {
+            "module_run": module_run,
+            "enrolled_students": enrolled_students,
+        },
+    )
+
 
 
 @login_required
@@ -867,10 +980,8 @@ def home(request):
         if module_form.is_valid():
             if module_panel_mode == "edit" and editing_module:
                 module = _update_module_from_form(module_form, editing_module)
-                messages.success(request, "Module updated successfully.")
             else:
                 module = _save_module_from_form(module_form)
-                messages.success(request, "Module created successfully.")
             
             # Redirect to the return tab if specified, otherwise default to modules
             return_tab = request.GET.get("return_tab", "modules")

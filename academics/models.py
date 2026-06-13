@@ -48,12 +48,11 @@ class Enrollment(models.Model):
         null=True,
         blank=True)
 
-    start_quarter = models.ForeignKey(
+    quarters = models.ManyToManyField(
         'Quarter',
-        on_delete=models.SET_NULL,
-        null=True,
+        related_name='enrollments',
         blank=True,
-        related_name='enrollments')
+        help_text='Quarters the student is enrolled in')
 
     track = models.CharField(max_length=20, choices=TRACK_CHOICES)
 

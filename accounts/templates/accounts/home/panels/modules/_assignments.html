@@ -1,48 +1,7 @@
 {% load template_extras %}
 
 <div class="panel-card" style="margin-top: 18px;">
-  <!-- Welcome Banner -->
-  {% load static %}
-  <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
-    <div>
-      <h3>{{ module_run.module.title }}</h3>
-      <p>Instructor: {{ module_run.faculty.first_name }} {{ module_run.faculty.last_name }}</p>
-    </div>
-    <button
-      type="button"
-      id="add-assignment-btn"
-      class="banner-action-button"
-      onclick="document.getElementById('assignment-form-section').style.display='block'; this.style.display='none';"
-      style="display: inline-flex; cursor: pointer; border: none;"
-    >
-      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
-        <path d="M4.28571 5.71428H0V4.28571H4.28571V0H5.71428V4.28571H10V5.71428H5.71428V10H4.28571V5.71428Z" fill="#921F22"/>
-      </svg>
-      Add Assignment
-    </button>
-  </div>
-
-  <!-- Module Description Section -->
-  <div class="module-description-box" style="display: flex; max-width: 957px; width: 100%; padding: 24px; flex-direction: column; align-items: flex-start; gap: 15.25px; border-radius: 16px; border: 1px solid #FEF8F5; background: #FFF; margin-top: 24px;">
-    <h4 style="color: #0F172A; font-family: Inter, sans-serif; font-size: 24px; font-style: normal; font-weight: 700; line-height: 32px; margin: 0;">Description</h4>
-    <p style="align-self: stretch; color: #475569; font-family: Inter, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; line-height: 22.75px; margin: 0;">{{ module_run.module.description|default:"No description available for this module." }}</p>
-  </div>
-
-  <div style="margin-top: 18px; margin-bottom: 24px;">
-      <button
-        type="button"
-        onclick="closeModuleDetailDrawer(this)"
-        style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: transparent; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; transition: all 0.2s; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500;"
-        onmouseover="this.style.backgroundColor='#F3F4F6'; this.style.borderColor='#9CA3AF';"
-        onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#D1D5DB';"
-        title="Go back"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style="width: 20px; height: 20px;">
-          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>Back</span>
-      </button>
-    </div>
+  {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=True %}
 
   <!-- Tabs Navigation -->
   <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">

@@ -1,0 +1,48 @@
+{% load static %}
+
+<div class="panel-card" style="margin-top: 18px;">
+  {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=False %}
+
+  <!-- Enrolled Students Section -->
+  <div style="margin-top: 24px;">
+    <h4 style="color: #0F172A; font-family: Inter, sans-serif; font-size: 20px; font-style: normal; font-weight: 700; line-height: 28px; margin-bottom: 16px;">Enrolled Students</h4>
+    
+    <div style="border-radius: 12px; border: 1px solid #E2E8F0; background: #FFF; overflow: hidden;">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
+            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Student Name</th>
+            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Date Joined</th>
+            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Course Enrolled</th>
+            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student_module in enrolled_students %}
+          <tr style="border-bottom: 1px solid #E2E8F0;">
+            <td style="padding: 16px; color: #0F172A; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;">
+              {{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}
+            </td>
+            <td style="padding: 16px; color: #64748B; font-family: Inter, sans-serif; font-size: 14px;">
+              {{ student_module.created_at|date:"M d, Y" }}
+            </td>
+            <td style="padding: 16px; color: #64748B; font-family: Inter, sans-serif; font-size: 14px;">
+              {{ module_run.module.title }}
+            </td>
+            <td style="padding: 16px;">
+              <!-- Action column - kept blank as requested -->
+              <span style="color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">—</span>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="padding: 32px; text-align: center; color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">
+              No students enrolled in this module yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
