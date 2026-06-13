@@ -1,0 +1,23 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+
+{% block body_attrs %}data-active-tab="{{ active_tab|default:'dashboard' }}" hx-indicator="#htmx-indicator"{% endblock %}
+
+{% block content %}
+<div class="layout">
+  {% block sidebar %}
+  <!-- Sidebar will be included by child templates -->
+  {% endblock %}
+
+  <main class="content" {% block content_attrs %}{% endblock %}>
+    <div class="shell">
+      {% include "accounts/home/_messages.html" %}
+      {% block main_content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% include "accounts/home/_scripts.html" %}
+{% endblock %}

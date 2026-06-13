@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{% block title %}LMS - Learning Management System{% endblock %}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="{% static 'accounts/favicon.ico' %}">
+  
+  <!-- Main CSS -->
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+  
+  <!-- Page-specific CSS -->
+  {% block extra_css %}{% endblock %}
+  
+  <!-- Meta tags for SEO -->
+  <meta name="description" content="{% block meta_description %}Learning Management System{% endblock %}">
+  <meta name="keywords" content="{% block meta_keywords %}LMS, education, learning{% endblock %}">
+</head>
+<body {% block body_attrs %}{% endblock %}>
+  {% block content %}{% endblock %}
+  
+  <!-- HTMX Indicator -->
+  <div id="htmx-indicator" class="htmx-indicator" aria-hidden="true">
+    <span class="spinner" aria-label="Loading"></span>
+  </div>
+  
+  <!-- Scripts -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -3,11 +3,10 @@ import os
 
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
 
 from academics.models import Enrollment
 from academics.models import Quarter
+from core.models.mixins import FileCleanupMixin
 
 
 def course_material_upload_path(instance, filename):
@@ -144,7 +143,7 @@ class AttendanceRecord(models.Model):
         ]
 
 
-class CourseMaterial(models.Model):
+class CourseMaterial(FileCleanupMixin, models.Model):
     MATERIAL_TYPE_CHOICES = (
         ("PDF", "PDF"),
         ("VIDEO", "Video"),
@@ -174,12 +173,6 @@ class CourseMaterial(models.Model):
     class Meta:
         db_table = "course_materials"
         ordering = ["-created_at"]
-    
-    def delete(self, *args, **kwargs):
-        # Delete the file from storage when the model instance is deleted
-        if self.file_url:
-            self.file_url.delete(save=False)
-        super().delete(*args, **kwargs)
 
 
 class Assignment(models.Model):
@@ -201,7 +194,7 @@ class Assignment(models.Model):
         ordering = ["-due_date", "-id"]
 
 
-class AssignmentFile(models.Model):
+class AssignmentFile(FileCleanupMixin, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="files")
     file_url = models.FileField(upload_to=assignment_file_upload_path)
@@ -218,15 +211,9 @@ class AssignmentFile(models.Model):
     class Meta:
         db_table = "assignment_files"
         ordering = ["-uploaded_at"]
-    
-    def delete(self, *args, **kwargs):
-        # Delete the file from storage when the model instance is deleted
-        if self.file_url:
-            self.file_url.delete(save=False)
-        super().delete(*args, **kwargs)
 
 
-class AssignmentSubmission(models.Model):
+class AssignmentSubmission(FileCleanupMixin, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="submissions")
     student_module = models.ForeignKey(
@@ -252,31 +239,3 @@ class AssignmentSubmission(models.Model):
         constraints = [
             models.UniqueConstraint(fields=["assignment", "student_module"], name="uniq_assignment_submission"),
         ]
-    
-    def delete(self, *args, **kwargs):
-        # Delete the file from storage when the model instance is deleted
-        if self.file_url:
-            self.file_url.delete(save=False)
-        super().delete(*args, **kwargs)
-
-
-# Signal handlers to delete files when models are deleted via cascade
-@receiver(post_delete, sender=CourseMaterial)
-def delete_course_material_file(sender, instance, **kwargs):
-    """Delete file from storage when CourseMaterial is deleted"""
-    if instance.file_url:
-        instance.file_url.delete(save=False)
-
-
-@receiver(post_delete, sender=AssignmentFile)
-def delete_assignment_file(sender, instance, **kwargs):
-    """Delete file from storage when AssignmentFile is deleted"""
-    if instance.file_url:
-        instance.file_url.delete(save=False)
-
-
-@receiver(post_delete, sender=AssignmentSubmission)
-def delete_assignment_submission_file(sender, instance, **kwargs):
-    """Delete file from storage when AssignmentSubmission is deleted"""
-    if instance.file_url:
-        instance.file_url.delete(save=False)

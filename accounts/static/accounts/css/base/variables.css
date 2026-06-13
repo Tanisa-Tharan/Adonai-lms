@@ -1,0 +1,107 @@
+/**
+ * CSS Custom Properties (Variables)
+ * Centralized design tokens for consistent theming
+ */
+
+:root {
+  /* Color Palette */
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-soft: #eef3f9;
+  --line: #d7e0ea;
+  --text: #1f2937;
+  --muted: #64748b;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --danger: #b91c1c;
+  --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  
+  /* Brand Colors */
+  --brand-primary: #000;
+  --brand-accent: #921F22;
+  --brand-muted: #78716C;
+  --brand-bg: #FEF8F5;
+  
+  /* Sidebar Colors */
+  --sidebar-bg: #FFF;
+  --sidebar-border: #E7E5E4;
+  --sidebar-text: #57534e;
+  --sidebar-active-bg: rgba(113, 2, 14, 0.06);
+  --sidebar-active-text: #921f22;
+  --sidebar-hover-bg: rgba(113, 2, 14, 0.04);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  
+  /* Typography */
+  --font-primary: "Plus Jakarta Sans", sans-serif;
+  --font-brand: "Lexend", sans-serif;
+  --font-brand-script: "BackBone Melavita", cursive;
+  --font-ui: "Roboto", sans-serif;
+  
+  --font-size-xs: 10px;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 30px;
+  
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  
+  /* Z-index Scale */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  
+  /* Breakpoints (for reference in media queries) */
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 900px;
+  --breakpoint-lg: 1200px;
+  --breakpoint-xl: 1536px;
+}
+
+/* Dark mode support (if needed in future) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Can add dark mode variables here */
+  }
+}
+
+/* Made with Bob */
