@@ -467,6 +467,7 @@ def login_view(request):
 @faculty_required
 def faculty_home(request):
     active_tab = request.GET.get("tab", "dashboard")
+    assignment_mode = request.GET.get("mode", "table")  # 'table' or 'create'
 
     faculty_runs = (
         ModuleRun.objects.filter(faculty=request.user)
@@ -523,11 +524,19 @@ def faculty_home(request):
         for run in faculty_runs
     ]
 
+    # Get all assignments for faculty
+    faculty_assignments = (
+        Assignment.objects.filter(module_run__in=faculty_runs)
+        .select_related("module_run", "module_run__module")
+        .order_by("-due_date")
+    )
+
     return render(
         request,
         "accounts/faculty/home.html",
         {
             "active_tab": active_tab,
+            "assignment_mode": assignment_mode,
             "faculty_runs": faculty_runs,
             "modules": modules,
             "student_modules": student_modules,
@@ -537,6 +546,7 @@ def faculty_home(request):
             "faculty_grade_percentage": grade_percentage_by_student_module,
             "pending_grades_count": pending_grades_count,
             "faculty_module_items": faculty_module_items,
+            "faculty_assignments": faculty_assignments,
         },
     )
 
@@ -1342,12 +1352,26 @@ def module_assignments_panel(request, module_run_id):
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
     if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
         return redirect("faculty_home")
-    assignments = (
-        Assignment.objects.filter(module_run=module_run)
-        .select_related("created_by", "module", "module_run")
-        .prefetch_related("files")
-        .order_by("-due_date", "-id")
-    )
+    
+    # Check if viewing a specific assignment (from faculty assignments page)
+    view_assignment_id = request.GET.get("view_assignment_id")
+    
+    if view_assignment_id:
+        # Show only the specific assignment
+        assignments = (
+            Assignment.objects.filter(module_run=module_run, id=view_assignment_id)
+            .select_related("created_by", "module", "module_run")
+            .prefetch_related("files")
+            .order_by("-due_date", "-id")
+        )
+    else:
+        # Show all assignments for the module
+        assignments = (
+            Assignment.objects.filter(module_run=module_run)
+            .select_related("created_by", "module", "module_run")
+            .prefetch_related("files")
+            .order_by("-due_date", "-id")
+        )
     assignment_files = AssignmentFile.objects.filter(
         assignment__module_run=module_run
     ).select_related("assignment", "uploaded_by").order_by("-uploaded_at")
@@ -1389,6 +1413,14 @@ def module_assignments_panel(request, module_run_id):
         resource_type="RESOURCES"
     ).select_related("uploaded_by").order_by("-created_at")
     
+    # Combine all course materials for the readings tab
+    course_materials = CourseMaterial.objects.filter(
+        module=module_run.module
+    ).select_related("uploaded_by").order_by("-created_at")
+    
+    # Check if this is being called from faculty assignments page
+    from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
+    
     context = {
         "module_run": module_run,
         "assignments": assignments,
@@ -1400,6 +1432,8 @@ def module_assignments_panel(request, module_run_id):
         "required_materials": required_materials,
         "recommended_materials": recommended_materials,
         "resource_materials": resource_materials,
+        "course_materials": course_materials,
+        "from_faculty_assignments": from_faculty_assignments,
     }
     if request.headers.get("HX-Request") == "true" and editing_assignment:
         return render(
@@ -1407,6 +1441,14 @@ def module_assignments_panel(request, module_run_id):
             "accounts/home/panels/modules/_assignment_form.html",
             context,
         )
+    
+    if from_faculty_assignments:
+        return render(
+            request,
+            "accounts/faculty/panels/modules/_assignments_detail.html",
+            context,
+        )
+    
     return render(
         request,
         "accounts/home/panels/modules/_assignments.html",
@@ -1427,6 +1469,7 @@ def add_module_assignment(request, module_run_id):
     description = (request.POST.get("description") or "").strip()
     due_date = request.POST.get("due_date")
     max_score = request.POST.get("max_score")
+    status = request.POST.get("status", "DRAFT")  # Default to DRAFT if not provided
 
     if not title or not due_date or not max_score:
         return module_assignments_panel(request, module_run_id=module_run_id)
@@ -1456,6 +1499,7 @@ def add_module_assignment(request, module_run_id):
         description=description,
         due_date=due_dt,
         max_score=max_score_int,
+        status=status,
         created_by=request.user,
     )
 
@@ -1471,19 +1515,72 @@ def add_module_assignment(request, module_run_id):
             uploaded_by=request.user,
         )
 
+    # Check if this is from faculty assignments page
+    from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
+    
+    if from_faculty_assignments and request.user.role == "FACULTY":
+        # Return the full assignments panel with updated data
+        faculty_runs = (
+            ModuleRun.objects.filter(faculty=request.user)
+            .select_related("module", "quarter", "quarter__academic_year")
+            .prefetch_related("sessions")
+            .order_by("-created_at")
+        )
+        faculty_assignments = (
+            Assignment.objects.filter(module_run__in=faculty_runs)
+            .select_related("module_run", "module_run__module")
+            .order_by("-due_date")
+        )
+        return render(
+            request,
+            "accounts/faculty/panels/_assignments.html",
+            {
+                "active_tab": "assignments",
+                "faculty_runs": faculty_runs,
+                "faculty_assignments": faculty_assignments,
+            },
+        )
+    
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 
 @login_required
 @admin_or_faculty_required
 def delete_module_assignment(request, module_run_id, assignment_id):
-    if request.method != "POST":
+    if request.method not in ["POST", "DELETE"]:
         return redirect("home")
 
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
     if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
         return redirect("faculty_home")
     assignment.delete()
+    
+    # Check if this is from faculty assignments page
+    from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
+    
+    if from_faculty_assignments and request.user.role == "FACULTY":
+        # Return the full assignments panel with updated data
+        faculty_runs = (
+            ModuleRun.objects.filter(faculty=request.user)
+            .select_related("module", "quarter", "quarter__academic_year")
+            .prefetch_related("sessions")
+            .order_by("-created_at")
+        )
+        faculty_assignments = (
+            Assignment.objects.filter(module_run__in=faculty_runs)
+            .select_related("module_run", "module_run__module")
+            .order_by("-due_date")
+        )
+        return render(
+            request,
+            "accounts/faculty/panels/_assignments.html",
+            {
+                "active_tab": "assignments",
+                "faculty_runs": faculty_runs,
+                "faculty_assignments": faculty_assignments,
+            },
+        )
+    
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 
@@ -1562,6 +1659,32 @@ def update_module_assignment(request, module_run_id, assignment_id):
             uploaded_by=request.user,
         )
 
+    # Check if this is from faculty assignments page
+    from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
+    
+    if from_faculty_assignments and request.user.role == "FACULTY":
+        # Return the full assignments panel with updated data
+        faculty_runs = (
+            ModuleRun.objects.filter(faculty=request.user)
+            .select_related("module", "quarter", "quarter__academic_year")
+            .prefetch_related("sessions")
+            .order_by("-created_at")
+        )
+        faculty_assignments = (
+            Assignment.objects.filter(module_run__in=faculty_runs)
+            .select_related("module_run", "module_run__module")
+            .order_by("-due_date")
+        )
+        return render(
+            request,
+            "accounts/faculty/panels/_assignments.html",
+            {
+                "active_tab": "assignments",
+                "faculty_runs": faculty_runs,
+                "faculty_assignments": faculty_assignments,
+            },
+        )
+    
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 
@@ -1713,4 +1836,205 @@ def delete_assignment_submission(request, assignment_id, student_module_id):
     assignment = get_object_or_404(Assignment.objects.select_related("module_run"), id=assignment_id)
     student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
     AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).delete()
+
+
+@login_required
+@faculty_required
+def faculty_assignment_detail_view(request, assignment_id):
+    """
+    Display a comprehensive assignment view panel for faculty.
+    Shows module information with tabs for assignments and readings.
+    Renders as a panel fragment within the faculty home page.
+    """
+    assignment = get_object_or_404(
+        Assignment.objects.select_related(
+            'module_run',
+            'module_run__module',
+            'module_run__quarter',
+            'module_run__faculty'
+        ).prefetch_related('files'),
+        id=assignment_id,
+        module_run__faculty=request.user
+    )
+    
+    module_run = assignment.module_run
+    
+    # Get course materials for readings tab
+    required_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type='REQUIRED'
+    ).select_related('uploaded_by').order_by('-created_at')
+    
+    recommended_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type='RECOMMENDED'
+    ).select_related('uploaded_by').order_by('-created_at')
+    
+    # Check if this is an HTMX request
+    is_htmx = request.headers.get('HX-Request') == 'true'
+    
+    context = {
+        'assignments': [assignment],
+        'module_run': module_run,
+        'required_materials': required_materials,
+        'recommended_materials': recommended_materials,
+    }
+    
+    if is_htmx:
+        # Return just the panel fragment for HTMX requests
+        return render(request, 'accounts/faculty/panels/_assignment_detail_page.html', context)
+    else:
+        # Return full page with faculty home structure for direct navigation
+        return render(request, 'accounts/faculty/home.html', {
+            **context,
+            'active_tab': 'assignments',
+        })
     return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
+
+
+@faculty_required
+def module_run_readings(request, module_run_id):
+    """
+    Load readings content for a specific module run.
+    Used for AJAX loading in the faculty assignments add page.
+    """
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related('module', 'quarter', 'quarter__academic_year'),
+        id=module_run_id,
+        faculty=request.user
+    )
+    
+    # Get course materials for this module
+    required_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type='REQUIRED'
+    ).order_by('-created_at')
+    
+    recommended_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type='RECOMMENDED'
+    ).order_by('-created_at')
+    
+    context = {
+        'module_run': module_run,
+        'required_materials': required_materials,
+        'recommended_materials': recommended_materials,
+    }
+    
+    return render(request, 'accounts/shared/_readings_tab.html', context)
+
+
+@faculty_required
+def faculty_assignment_detail_ajax(request, assignment_id):
+    """
+    Load assignment details for AJAX request.
+    Returns JSON with assignment info and readings HTML.
+    """
+    assignment = get_object_or_404(
+        Assignment.objects.select_related('module_run', 'module_run__module', 'module_run__quarter', 'module_run__faculty'),
+        id=assignment_id,
+        module_run__faculty=request.user
+    )
+    
+    # Get assignment files
+    assignment_files = AssignmentFile.objects.filter(assignment=assignment).order_by('uploaded_at')
+    
+    # Get course materials for this module
+    required_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        resource_type='REQUIRED'
+    ).order_by('-created_at')
+    
+    recommended_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        resource_type='RECOMMENDED'
+    ).order_by('-created_at')
+    
+    # Render assignment info HTML
+    assignment_html = f'''
+    <div style="display: flex; width: 956px; max-width: 100%; padding: 16px; flex-direction: column; align-items: flex-start; gap: 32px; border-radius: 16px; background: #FFF;">
+      <!-- Due Date, Max Score, and Action Icons -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; gap: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; flex: 1;">
+          <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Due Date</h4>
+            <p style="font-size: 16px; color: #1F2937; margin: 0;">{assignment.due_date.strftime("%B %d, %Y")}</p>
+          </div>
+          <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Max Score</h4>
+            <p style="font-size: 16px; color: #1F2937; margin: 0;">{assignment.max_score}</p>
+          </div>
+        </div>
+        
+        <!-- Action Icons -->
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button
+            onclick="editAssignment('{assignment.id}')"
+            title="Edit Assignment"
+            style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; transition: all 0.2s; padding: 0;"
+            onmouseover="this.querySelector('svg path').setAttribute('fill', '#7A1A1C');"
+            onmouseout="this.querySelector('svg path').setAttribute('fill', '#921F22');">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="none">
+              <path d="M2 11.5V14H4.5L11.8733 6.62667L9.37333 4.12667L2 11.5ZM13.8067 4.69333C14.0667 4.43333 14.0667 4.01333 13.8067 3.75333L12.2467 2.19333C11.9867 1.93333 11.5667 1.93333 11.3067 2.19333L10.0867 3.41333L12.5867 5.91333L13.8067 4.69333Z" fill="#921F22"/>
+            </svg>
+          </button>
+          <button
+            onclick="deleteAssignment('{assignment.id}')"
+            title="Delete Assignment"
+            style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; transition: all 0.2s; padding: 0;"
+            onmouseover="this.querySelector('svg path').setAttribute('fill', '#7A1A1C');"
+            onmouseout="this.querySelector('svg path').setAttribute('fill', '#921F22');">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="none">
+              <path d="M4 12.6667C4 13.4 4.6 14 5.33333 14H10.6667C11.4 14 12 13.4 12 12.6667V4.66667H4V12.6667ZM12.6667 2.66667H10.3333L9.66667 2H6.33333L5.66667 2.66667H3.33333V4H12.6667V2.66667Z" fill="#921F22"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Description -->
+      <div style="width: 100%;">
+        <h4 style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0;">Description</h4>
+        <div style="display: flex; height: 422px; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch; border-radius: 8px; border: 1px solid #D1D5DB; background: #FFF; padding: 16px; overflow-y: auto; color: #4B5563; line-height: 1.6;">
+          {assignment.description or 'No description provided.'}
+        </div>
+      </div>
+    '''
+    
+    if assignment_files.exists():
+        assignment_html += '''
+      <div style="width: 100%;">
+        <h4 style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0;">Attached Files</h4>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+    '''
+        for file in assignment_files:
+            assignment_html += f'''
+          <a href="{file.file_url.url}" download style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; text-decoration: none; color: #1F2937; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0;">
+              <path d="M5 7H15V9H5V7ZM5 11H15V13H5V11ZM3 20C2.45 20 1.97917 19.8042 1.5875 19.4125C1.19583 19.0208 1 18.55 1 18V2C1 1.45 1.19583 0.979167 1.5875 0.5875C1.97917 0.195833 2.45 0 3 0H11L19 8V18C19 18.55 18.8042 19.0208 18.4125 19.4125C18.0208 19.8042 17.55 20 17 20H3ZM10 9V2H3V18H17V9H10Z" fill="#921F22"/>
+            </svg>
+            <span style="flex: 1;">{file.file_url.name.split('/')[-1]}</span>
+          </a>
+    '''
+        assignment_html += '''
+        </div>
+      </div>
+    '''
+    
+    assignment_html += '</div>'
+    
+    # Render readings HTML
+    readings_context = {
+        'module_run': assignment.module_run,
+        'required_materials': required_materials,
+        'recommended_materials': recommended_materials,
+    }
+    readings_html = render(request, 'accounts/shared/_readings_tab.html', readings_context).content.decode('utf-8')
+    
+    return JsonResponse({
+        'success': True,
+        'title': assignment.title,
+        'module_name': assignment.module_run.module.title,
+        'due_date': assignment.due_date.strftime("%B %d, %Y"),
+        'assignment_html': assignment_html,
+        'readings_html': readings_html,
+    })

@@ -1,0 +1,623 @@
+{% load static %}
+
+<!-- Div 1: Welcome Banner with Module Info -->
+<div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3>Select Module</h3>
+    <p>Choose a module to create an assignment for</p>
+  </div>
+</div>
+
+<!-- Back Button -->
+<div style="margin-top: 18px; margin-bottom: 18px;">
+  <button
+    type="button"
+    onclick="window.location.href='{% url 'faculty_home' %}?tab=assignments'"
+    class="back-button-primary"
+    title="Go back to assignments">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style="width: 20px; height: 20px;">
+      <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Back</span>
+  </button>
+</div>
+
+<!-- Div 2: Module Grid -->
+<div id="module-grid-view" class="panel-card" style="margin-top: 18px;">
+  <div class="module-grid">
+    {% for item in faculty_module_items %}
+    <div class="module-card" id="module-card-{{ item.id }}">
+      <h4 class="module-card-title">{{ item.title }}</h4>
+      <p class="module-card-subtitle">{{ item.subtitle }}</p>
+
+      <div class="module-card-info">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 15 17" fill="none">
+          <path d="M6.33333 12.5417L12.2083 6.66667L11.0417 5.5L6.33333 10.2083L3.95833 7.83333L2.79167 9L6.33333 12.5417ZM1.66667 16.6667C1.20833 16.6667 0.815972 16.5035 0.489583 16.1771C0.163194 15.8507 0 15.4583 0 15V3.33333C0 2.875 0.163194 2.48264 0.489583 2.15625C0.815972 1.82986 1.20833 1.66667 1.66667 1.66667H5.16667C5.34722 1.16667 5.64931 0.763889 6.07292 0.458333C6.49653 0.152778 6.97222 0 7.5 0C8.02778 0 8.50347 0.152778 8.92708 0.458333C9.35069 0.763889 9.65278 1.16667 9.83333 1.66667H13.3333C13.7917 1.66667 14.184 1.82986 14.5104 2.15625C14.8368 2.48264 15 2.875 15 3.33333V15C15 15.4583 14.8368 15.8507 14.5104 16.1771C14.184 16.5035 13.7917 16.6667 13.3333 16.6667H1.66667Z" fill="#921F22"/>
+        </svg>
+        <span class="module-card-count">{{ item.meta_text }}</span>
+      </div>
+
+      <button
+        type="button"
+        class="module-card-button"
+        onclick="showModuleDetail('{{ item.id }}', '{{ item.title }}', '{{ item.subtitle }}')"
+      >
+        Create Assignment
+      </button>
+    </div>
+    {% empty %}
+    <div class="placeholder">
+      <p>No modules found. You need to be assigned to modules before creating assignments.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Div 3: Module Detail with Tabs (Hidden by default) -->
+<div id="module-detail-view" class="panel-card" style="margin-top: 18px; display: none; position: relative;">
+  <!-- Close Icon -->
+  <button
+    type="button"
+    onclick="hideModuleDetail()"
+    class="close-icon-button"
+    title="Close"
+    style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; cursor: pointer; border-radius: 4px; transition: background 0.2s ease;"
+    onmouseover="this.style.background='#F3F4F6'"
+    onmouseout="this.style.background='transparent'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M15 5L5 15M5 5L15 15" stroke="#57534E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <!-- Module Header -->
+  <div style="margin-bottom: 24px; padding-right: 40px;">
+    <h3 id="module-detail-title" style="font-size: 24px; font-weight: 600; color: #1f2937; margin: 0 0 8px 0;"></h3>
+    <p id="module-detail-subtitle" style="font-size: 14px; color: #64748b; margin: 0;"></p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">
+    <button class="module-tab-button active" data-tab="assignments-tab" type="button">
+      Assignments
+    </button>
+    <button class="module-tab-button" data-tab="readings-tab" type="button">
+      Readings
+    </button>
+  </div>
+
+  <!-- Tab Content: Assignments -->
+  <div id="assignments-tab" class="module-tab-content active">
+    <div class="panel-card" style="margin-top: 12px;">
+      <form
+        id="assignment-form"
+        method="post"
+        enctype="multipart/form-data"
+        onsubmit="return handleAssignmentSubmit(event)"
+      >
+        {% csrf_token %}
+        <input type="hidden" id="module-run-id" name="module_run_id" value="">
+
+        <div class="user-form-grid" style="grid-template-columns: 1fr;">
+          <section class="user-form-section">
+            <h4>New Assignment</h4>
+
+            <!-- Row 1: Title (full width) -->
+            <div class="form-row-single">
+              <div class="field-group">
+                <label for="assignment-title">Title</label>
+                <input type="text" name="title" id="assignment-title" required placeholder="e.g. Assignment 1">
+              </div>
+            </div>
+
+            <!-- Row 2: Description (full width) with Rich Text Editor -->
+            <div class="form-row-single">
+              <div class="field-group">
+                <label for="assignment-description">Description</label>
+                <div id="quill-assignment-editor" style="background: white; min-height: 250px; border: 1px solid #D1D5DB; border-radius: 6px;"></div>
+                <textarea
+                  name="description"
+                  id="assignment-description"
+                  style="display: none;"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Row 3: Files (full width) -->
+            <div class="form-row-single">
+              <div class="field-group">
+                <label for="assignment-files">Files (optional)</label>
+                <input type="file" name="files" id="assignment-files" multiple>
+              </div>
+            </div>
+
+            <!-- Row 4: Due Date and Max Score (half width each) -->
+            <div class="form-row-half">
+              <div class="field-group">
+                <label for="assignment-due-date">Due Date</label>
+                <input type="date" name="due_date" id="assignment-due-date" required>
+              </div>
+              <div class="field-group">
+                <label for="assignment-max-score">Max Score</label>
+                <input type="number" name="max_score" id="assignment-max-score" required min="0" step="1" value="100">
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="form-actions" style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <button
+            type="button"
+            class="button button-secondary"
+            onclick="hideModuleDetail()"
+          >
+            Cancel
+          </button>
+          <div style="display: flex; gap: 12px;">
+            <button
+              type="button"
+              onclick="handleSaveDraft(event)"
+              class="btn-draft"
+              style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #FFF; border: 1px solid #921F22; border-radius: 6px; color: #921F22; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;"
+              onmouseover="this.style.backgroundColor='#FFF5F5';"
+              onmouseout="this.style.backgroundColor='#FFF';"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M18 4V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14L18 4ZM16 4.85L13.15 2H2V16H16V4.85ZM9 15C9.83333 15 10.5417 14.7083 11.125 14.125C11.7083 13.5417 12 12.8333 12 12C12 11.1667 11.7083 10.4583 11.125 9.875C10.5417 9.29167 9.83333 9 9 9C8.16667 9 7.45833 9.29167 6.875 9.875C6.29167 10.4583 6 11.1667 6 12C6 12.8333 6.29167 13.5417 6.875 14.125C7.45833 14.7083 8.16667 15 9 15ZM3 7H12V3H3V7ZM2 4.85V16V2V4.85Z" fill="#921F22"/>
+              </svg>
+              <span>Save Draft</span>
+            </button>
+            <button type="submit" class="button button-primary">Create Assignment</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tab Content: Readings -->
+  <div id="readings-tab" class="module-tab-content">
+    <div id="readings-content-container">
+      <p style="padding: 20px; text-align: center; color: #64748b;">
+        Select a module to view and manage readings.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Link Dialog Modal -->
+<div id="linkDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Resource Link</h3>
+      <button class="link-dialog-close" onclick="closeLinkDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="linkTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="linkTitle" class="link-dialog-input" placeholder="Enter resource title">
+      </div>
+      <div class="link-dialog-field">
+        <label for="linkUrl" class="link-dialog-label">URL</label>
+        <input type="url" id="linkUrl" class="link-dialog-input" placeholder="https://example.com">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeLinkDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitLink()">Add Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Variables for readings functionality
+let currentModuleId = null;
+let currentResourceType = null;
+
+// Open link dialog
+function openLinkDialog(element) {
+  currentModuleId = element.getAttribute('data-module-id');
+  currentResourceType = element.getAttribute('data-resource-type');
+  document.getElementById('linkDialog').style.display = 'flex';
+  document.getElementById('linkTitle').value = '';
+  document.getElementById('linkUrl').value = '';
+}
+
+// Close link dialog
+function closeLinkDialog() {
+  document.getElementById('linkDialog').style.display = 'none';
+  currentModuleId = null;
+  currentResourceType = null;
+}
+
+// Submit link
+function submitLink() {
+  const title = document.getElementById('linkTitle').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+  
+  if (!title || !url) {
+    alert('Please fill in both title and URL');
+    return;
+  }
+  
+  if (!currentModuleId) {
+    alert('Module ID not found');
+    return;
+  }
+  
+  // Create FormData
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', url);
+  formData.append('material_type', 'LINK');
+  formData.append('resource_type', currentResourceType || 'REQUIRED');
+  formData.append('module_id', currentModuleId);
+  
+  // Submit via AJAX
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Link added successfully!');
+      closeLinkDialog();
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add link'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while adding the link');
+  });
+}
+
+// Delete material function
+function deleteMaterial(materialId) {
+  if (!confirm('Are you sure you want to delete this material? This action cannot be undone.')) {
+    return;
+  }
+  
+  // Show loading state
+  const loadingMsg = document.createElement('div');
+  loadingMsg.textContent = 'Deleting...';
+  loadingMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10000;';
+  document.body.appendChild(loadingMsg);
+  
+  // Delete via AJAX
+  fetch(`{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}`.replace('00000000-0000-0000-0000-000000000000', materialId), {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(async response => {
+    const contentType = response.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await response.json() : {};
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to delete material');
+    }
+    return data;
+  })
+  .then(data => {
+    document.body.removeChild(loadingMsg);
+    if (data.success) {
+      alert('Material deleted successfully!');
+      location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to delete material'));
+    }
+  })
+  .catch(error => {
+    document.body.removeChild(loadingMsg);
+    console.error('Error:', error);
+    alert('Error: ' + (error.message || 'An error occurred while deleting the material'));
+  });
+}
+
+// Initialize Quill editor
+let quillAssignmentEditor;
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if Quill is available
+  if (typeof Quill !== 'undefined') {
+    quillAssignmentEditor = new Quill('#quill-assignment-editor', {
+      theme: 'snow',
+      placeholder: 'Enter assignment description...',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'indent': '-1'}, { 'indent': '+1' }],
+          ['link'],
+          ['clean']
+        ]
+      }
+    });
+  }
+
+  // Add change event listeners to all file inputs for readings
+  const fileInputs = document.querySelectorAll('input[type="file"][data-material-type]');
+  
+  fileInputs.forEach(input => {
+    input.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const materialType = this.getAttribute('data-material-type');
+      const resourceType = this.getAttribute('data-resource-type');
+      const moduleId = this.getAttribute('data-module-id');
+      
+      // Create FormData
+      const formData = new FormData();
+      formData.append('title', file.name);
+      formData.append('file', file);
+      formData.append('material_type', materialType);
+      formData.append('resource_type', resourceType || 'REQUIRED');
+      formData.append('module_id', moduleId);
+
+      // Show loading indicator
+      const loadingMsg = document.createElement('div');
+      loadingMsg.textContent = 'Uploading ' + file.name + '...';
+      loadingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #921F22; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000;';
+      document.body.appendChild(loadingMsg);
+      
+      // Submit via AJAX
+      fetch('{% url "add_course_material" %}', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.body.removeChild(loadingMsg);
+        if (data.success) {
+          alert('File uploaded successfully!');
+          location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to upload file'));
+        }
+      })
+      .catch(error => {
+        document.body.removeChild(loadingMsg);
+        console.error('Error:', error);
+        alert('An error occurred while uploading the file');
+      })
+      .finally(() => {
+        // Reset the input
+        e.target.value = '';
+      });
+    });
+  });
+});
+
+// Show module detail view
+function showModuleDetail(moduleId, title, subtitle) {
+  document.getElementById('module-grid-view').style.display = 'none';
+  document.getElementById('module-detail-view').style.display = 'block';
+  document.getElementById('module-detail-title').textContent = title;
+  document.getElementById('module-detail-subtitle').textContent = subtitle;
+  
+  // Store module ID in hidden input for form submission
+  document.getElementById('module-run-id').value = moduleId;
+  document.getElementById('module-detail-view').dataset.moduleId = moduleId;
+  
+  // Reset form
+  document.getElementById('assignment-form').reset();
+  document.getElementById('assignment-max-score').value = '100';
+  
+  // Reset Quill editor
+  if (quillAssignmentEditor) {
+    quillAssignmentEditor.setText('');
+  }
+  
+  // Load readings for this module
+  loadReadingsForModule(moduleId);
+}
+
+// Load readings content for a specific module
+function loadReadingsForModule(moduleRunId) {
+  const readingsContainer = document.getElementById('readings-content-container');
+  readingsContainer.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading readings...</p>';
+  
+  // Fetch readings content from the server
+  fetch(`/module-runs/${moduleRunId}/readings/`, {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to load readings');
+    }
+    return response.text();
+  })
+  .then(html => {
+    readingsContainer.innerHTML = html;
+    
+    // Re-attach event listeners for file inputs after loading new content
+    const fileInputs = readingsContainer.querySelectorAll('input[type="file"][data-material-type]');
+    fileInputs.forEach(input => {
+      input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const materialType = this.getAttribute('data-material-type');
+        const resourceType = this.getAttribute('data-resource-type');
+        const moduleId = this.getAttribute('data-module-id');
+        
+        const formData = new FormData();
+        formData.append('title', file.name);
+        formData.append('file', file);
+        formData.append('material_type', materialType);
+        formData.append('resource_type', resourceType || 'REQUIRED');
+        formData.append('module_id', moduleId);
+
+        const loadingMsg = document.createElement('div');
+        loadingMsg.textContent = 'Uploading ' + file.name + '...';
+        loadingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #921F22; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000;';
+        document.body.appendChild(loadingMsg);
+        
+        fetch('{% url "add_course_material" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.body.removeChild(loadingMsg);
+          if (data.success) {
+            alert('File uploaded successfully!');
+            loadReadingsForModule(moduleRunId);
+          } else {
+            alert('Error: ' + (data.error || 'Failed to upload file'));
+          }
+        })
+        .catch(error => {
+          document.body.removeChild(loadingMsg);
+          console.error('Error:', error);
+          alert('An error occurred while uploading the file');
+        })
+        .finally(() => {
+          e.target.value = '';
+        });
+      });
+    });
+  })
+  .catch(error => {
+    console.error('Error loading readings:', error);
+    readingsContainer.innerHTML = '<p style="padding: 20px; text-align: center; color: #dc2626;">Failed to load readings. Please try again.</p>';
+  });
+}
+
+// Hide module detail view and show grid
+function hideModuleDetail() {
+  document.getElementById('module-detail-view').style.display = 'none';
+  document.getElementById('module-grid-view').style.display = 'block';
+  
+  // Reset form
+  document.getElementById('assignment-form').reset();
+}
+
+// Handle Save Draft button click
+function handleSaveDraft(event) {
+  event.preventDefault();
+  
+  // Sync Quill editor content to hidden textarea
+  if (quillAssignmentEditor) {
+    const description = quillAssignmentEditor.root.innerHTML;
+    document.getElementById('assignment-description').value = description;
+  }
+  
+  const form = document.getElementById('assignment-form');
+  const formData = new FormData(form);
+  const moduleRunId = document.getElementById('module-run-id').value;
+  
+  // Add status as DRAFT
+  formData.append('status', 'DRAFT');
+  
+  // Submit via fetch
+  fetch(`/module-runs/${moduleRunId}/assignments/add/?from_faculty_assignments=true`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  })
+  .then(response => {
+    if (response.ok) {
+      alert('Assignment saved as draft successfully!');
+      // Redirect back to assignments table
+      window.location.href = '{% url "faculty_home" %}?tab=assignments';
+    } else {
+      alert('Error saving draft. Please try again.');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error saving draft. Please try again.');
+  });
+  
+  return false;
+}
+
+// Handle assignment form submission (Create Assignment button)
+function handleAssignmentSubmit(event) {
+  event.preventDefault();
+  
+  // Sync Quill editor content to hidden textarea
+  if (quillAssignmentEditor) {
+    const description = quillAssignmentEditor.root.innerHTML;
+    document.getElementById('assignment-description').value = description;
+  }
+  
+  const form = event.target;
+  const formData = new FormData(form);
+  const moduleRunId = document.getElementById('module-run-id').value;
+  
+  // Add status as PUBLISHED
+  formData.append('status', 'PUBLISHED');
+  
+  // Submit via fetch
+  fetch(`/module-runs/${moduleRunId}/assignments/add/?from_faculty_assignments=true`, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+  })
+  .then(response => {
+    if (response.ok) {
+      // Redirect back to assignments table
+      window.location.href = '{% url "faculty_home" %}?tab=assignments';
+    } else {
+      alert('Error creating assignment. Please try again.');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error creating assignment. Please try again.');
+  });
+  
+  return false;
+}
+
+// Tab switching functionality
+(function() {
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('module-tab-button')) {
+      const targetTab = e.target.getAttribute('data-tab');
+      const tabButtons = document.querySelectorAll('.module-tab-button');
+      const tabContents = document.querySelectorAll('.module-tab-content');
+      
+      // Remove active class from all buttons and contents
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Add active class to clicked button and show corresponding content
+      e.target.classList.add('active');
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    }
+  });
+})();
+</script>

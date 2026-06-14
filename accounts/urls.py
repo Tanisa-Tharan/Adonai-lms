@@ -9,6 +9,8 @@ from .views import (
     faculty_home,
     faculty_students_panel,
     faculty_view_class_panel,
+    faculty_assignment_detail_view,
+    faculty_assignment_detail_ajax,
     student_home,
     student_module_assignments_panel,
     student_submit_assignment,
@@ -31,6 +33,7 @@ from .views import (
     module_students_panel,
     remove_student_from_module_run,
     save_module_attendance,
+    module_run_readings,
 )
 
 urlpatterns = [
@@ -39,6 +42,8 @@ urlpatterns = [
     path("faculty/", faculty_home, name="faculty_home"),
     path("faculty/students/panel/", faculty_students_panel, name="faculty_students_panel"),
     path("faculty/module-runs/<uuid:module_run_id>/view-class/", faculty_view_class_panel, name="faculty_view_class_panel"),
+    path("faculty/assignments/<uuid:assignment_id>/", faculty_assignment_detail_view, name="faculty_assignment_detail_view"),
+    path("faculty/assignments/<uuid:assignment_id>/detail/", faculty_assignment_detail_ajax, name="faculty_assignment_detail_ajax"),
     path("student/", student_home, name="student_home"),
     path("logout/", logout_view, name="logout"),
     path("users/delete/<uuid:user_id>/", delete_user, name="delete_user"),
@@ -122,5 +127,10 @@ urlpatterns = [
         "student/modules/<uuid:module_id>/materials/",
         student_module_materials_panel,
         name="student_module_materials_panel",
+    ),
+    path(
+        "module-runs/<uuid:module_run_id>/readings/",
+        module_run_readings,
+        name="module_run_readings",
     ),
 ]

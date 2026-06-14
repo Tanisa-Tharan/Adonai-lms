@@ -117,4 +117,35 @@
   color: var(--muted);
 }
 
+/* Table Action Links */
+.assignment-view-link {
+  align-self: stretch;
+  color: #921F22;
+  text-align: center;
+  font-family: Lexend, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 20px; /* 142.857% */
+  text-decoration: none;
+  display: inline-block;
+  padding: 6px 12px;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.assignment-view-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .assignment-view-link {
+    font-size: 12px;
+    padding: 4px 8px;
+    line-height: 18px;
+  }
+}
+
 /* Made with Bob */

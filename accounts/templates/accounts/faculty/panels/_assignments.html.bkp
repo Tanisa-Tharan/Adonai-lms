@@ -1,0 +1,58 @@
+<section class="tab-panel {% if active_tab == 'assignments' %}active{% endif %}" id="assignments-panel">
+  {% url 'faculty_home' as faculty_home_url %}
+  
+  <!-- Main View: All Assignments Table -->
+  <div id="assignments-table-view">
+    {% include 'accounts/home/_welcome_banner.html' with banner_title="Assignment Management" banner_description="Manage and track all assignments for your modules. Create new assignments, set due dates, and monitor student submissions to ensure academic progress." banner_button_url=faculty_home_url|add:"?tab=assignments&mode=create" banner_button_text="Add Assignment" %}
+
+    <div class="panel-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Assignment Name</th>
+            <th>Module Name</th>
+            <th>Due Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for assignment in faculty_assignments %}
+          <tr>
+            <td>{{ assignment.title }}</td>
+            <td>{{ assignment.module_run.module.title }}</td>
+            <td>{{ assignment.due_date|date:"M d, Y" }}</td>
+            <td>
+              <a
+                href="{% url 'faculty_assignment_detail_view' assignment.id %}"
+                class="btn btn-sm"
+                title="View Assignment"
+                aria-label="View {{ assignment.title }}"
+                style="padding: 6px 12px; font-size: 14px; text-decoration: none; display: inline-block;">
+                View
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #64748b;">
+              No assignments found. Click "Add Assignment" to create your first assignment.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<script>
+// Handle Add Assignment button click
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('tab') === 'assignments' && urlParams.get('mode') === 'create') {
+    document.getElementById('assignments-table-view').style.display = 'none';
+    document.getElementById('assignments-module-selection').style.display = 'block';
+  }
+});
+</script>

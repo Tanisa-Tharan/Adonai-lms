@@ -4,13 +4,19 @@
   <form
     method="post"
     enctype="multipart/form-data"
-    hx-post="{% if editing_assignment %}{% url 'update_module_assignment' module_run.id editing_assignment.id %}{% else %}{% url 'add_module_assignment' module_run.id %}{% endif %}"
+    hx-post="{% if editing_assignment %}{% url 'update_module_assignment' module_run.id editing_assignment.id %}?from_faculty_assignments=true{% else %}{% url 'add_module_assignment' module_run.id %}?from_faculty_assignments=true{% endif %}"
+    {% if from_faculty_assignments %}
+    hx-target="#assignments-panel"
+    hx-swap="outerHTML"
+    hx-encoding="multipart/form-data"
+    {% else %}
     hx-target="closest [id$='detail-drawer']"
     hx-swap="innerHTML"
     hx-encoding="multipart/form-data"
     hx-on::after-request="
       sessionStorage.setItem('activeModuleTab', 'assignments-tab');
     "
+    {% endif %}
   >
     {% csrf_token %}
 
@@ -58,6 +64,15 @@
     </div>
 
     <div class="form-actions" style="margin-top: 10px;">
+      {% if from_faculty_assignments %}
+      <button
+        type="button"
+        class="button button-secondary"
+        onclick="document.getElementById('assignments-detail-view').style.display='none'; document.getElementById('assignments-detail-view').innerHTML=''; document.getElementById('assignments-module-selection').style.display='block';"
+      >
+        Cancel
+      </button>
+      {% else %}
       <button
         type="button"
         class="button button-secondary"
@@ -68,6 +83,7 @@
       >
         Cancel
       </button>
+      {% endif %}
       <button type="submit" class="button button-primary">{% if editing_assignment %}Update Assignment{% else %}Create Assignment{% endif %}</button>
     </div>
   </form>

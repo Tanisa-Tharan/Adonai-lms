@@ -2794,6 +2794,8 @@
     .assignment-card-description-box {
       min-height: 220px;
       padding: 16px;
+    }
+
     .assignment-card-submission-box {
       width: 100% !important;
       box-sizing: border-box;
@@ -2824,6 +2826,33 @@
 
     .assignment-card-top-meta {
       width: 100%;
+    }
+  }
+
+  /* Icon button styles for actions */
+  .icon-button {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-button:hover {
+    background: #F8FAFC;
+  }
+
+  .icon-button.danger:hover {
+    background: #FEE2E2;
+  }
+
+  .icon-button:active {
+    transform: scale(0.95);
+  }
   .module-card-edit-icon {
     position: absolute !important;
     top: 16px;
@@ -2853,10 +2882,7 @@
     flex-shrink: 0;
   }
 
-    }
-
-    }
-
+  @media (max-width: 480px) {
     .topbar,
     .panel-header {
       flex-direction: column;
@@ -2869,6 +2895,109 @@
 
     .user-form-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Assignment View Link Styling */
+  .assignment-view-link {
+    align-self: stretch;
+    color: #921F22 !important;
+    text-align: center;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    text-decoration: none !important;
+    display: inline-block;
+    padding: 6px 12px;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .assignment-view-link:hover {
+    opacity: 0.8;
+    text-decoration: underline !important;
+  }
+
+  @media (max-width: 768px) {
+    .assignment-view-link {
+      font-size: 12px;
+      padding: 4px 8px;
+      line-height: 18px;
+    }
+  }
+
+  /* Back Button Primary */
+  .back-button-primary {
+    display: flex;
+    width: 130px;
+    height: 37px;
+    padding: 12px 0;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 4px;
+    border: 1px solid #921F22;
+    background: #FFF;
+    color: #921F22;
+    text-align: center;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 24px;
+    cursor: pointer;
+  }
+
+  /* Assignment Status Badge Styling */
+  .assignment-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: Lexend, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-draft {
+    background: #6B7280 !important;
+    color: #FFFFFF !important;
+  }
+
+  .status-published {
+    background: #16A34A !important;
+    color: #FFFFFF !important;
+  }
+
+  @media (max-width: 768px) {
+    .assignment-status-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+    }
+  }
+    transition: all 0.2s ease;
+  }
+
+  .back-button-primary:hover {
+    background: #FEF8F5;
+    border-color: #7A1A1C;
+  }
+
+  .back-button-primary:active {
+    background: #FDE8E9;
+  }
+
+  @media (max-width: 768px) {
+    .back-button-primary {
+      width: 110px;
+      height: 34px;
+      font-size: 14px;
+      line-height: 20px;
+      padding: 10px 0;
     }
   }
 </style>

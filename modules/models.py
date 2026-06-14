@@ -176,6 +176,11 @@ class CourseMaterial(FileCleanupMixin, models.Model):
 
 
 class Assignment(models.Model):
+    STATUS_CHOICES = [
+        ('DRAFT', 'Draft'),
+        ('PUBLISHED', 'Published'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="assignments")
     module_run = models.ForeignKey(ModuleRun, on_delete=models.CASCADE, related_name="assignments")
@@ -183,6 +188,7 @@ class Assignment(models.Model):
     description = models.TextField(blank=True)
     due_date = models.DateTimeField()
     max_score = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

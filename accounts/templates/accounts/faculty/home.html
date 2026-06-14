@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +12,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{% static 'accounts/css/main.css' %}">
+  
   {% include "accounts/home/_styles.html" %}
 </head>
 <body data-active-tab="{{ active_tab }}" hx-indicator="#htmx-indicator">
@@ -23,6 +28,7 @@
         {% include "accounts/faculty/panels/_dashboard.html" %}
         {% include "accounts/faculty/panels/_modules.html" %}
         {% include "accounts/faculty/panels/_students.html" %}
+        {% include "accounts/faculty/panels/_assignments.html" %}
       </div>
     </main>
   </div>

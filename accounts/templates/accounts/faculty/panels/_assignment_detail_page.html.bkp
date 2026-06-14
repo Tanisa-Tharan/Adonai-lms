@@ -1,0 +1,62 @@
+{% load template_extras %}
+{% load static %}
+
+<!-- Welcome Banner without buttons -->
+<div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}'); display: flex; justify-content: space-between; align-items: center;">
+  <div>
+    <h3>{{ module_run.module.title }}</h3>
+    <p>Instructor: {{ module_run.faculty.first_name }} {{ module_run.faculty.last_name }}</p>
+  </div>
+</div>
+
+<!-- Tabs Section -->
+<div class="panel-card" style="margin-top: 18px;">
+  <!-- Tabs Navigation -->
+  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0;">
+    <button class="module-tab-button active" data-tab="assignments-tab" type="button">
+      Assignments
+    </button>
+    <button class="module-tab-button" data-tab="readings-tab" type="button">
+      Readings
+    </button>
+  </div>
+
+  <!-- Tab Content: Assignments -->
+  <div id="assignments-tab" class="module-tab-content active">
+    {% include "accounts/home/panels/modules/_assignment_list.html" %}
+  </div>
+
+  <!-- Tab Content: Readings -->
+  <div id="readings-tab" class="module-tab-content" style="display: none;">
+    {% include "accounts/shared/_readings_tab.html" %}
+  </div>
+</div>
+
+<script>
+// Tab switching functionality
+(function() {
+  const tabButtons = document.querySelectorAll('.module-tab-button');
+  const tabContents = document.querySelectorAll('.module-tab-content');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const targetTab = this.getAttribute('data-tab');
+      
+      // Remove active class from all buttons and contents
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+      });
+      
+      // Add active class to clicked button and show corresponding content
+      this.classList.add('active');
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) {
+        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+      }
+    });
+  });
+})();
+</script>
