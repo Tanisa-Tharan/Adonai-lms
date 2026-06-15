@@ -4,39 +4,37 @@
   {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=False %}
 
   <!-- Enrolled Students Section -->
-  <div style="margin-top: 24px;">
-    <h4 style="color: #0F172A; font-family: Inter, sans-serif; font-size: 20px; font-style: normal; font-weight: 700; line-height: 28px; margin-bottom: 16px;">Enrolled Students</h4>
-    
-    <div style="border-radius: 12px; border: 1px solid #E2E8F0; background: #FFF; overflow: hidden;">
-      <table style="width: 100%; border-collapse: collapse;">
+  <div id="enrolled-students-section" style="margin-top: 24px;">
+    <div class="panel-card">
+      <table>
         <thead>
-          <tr style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0;">
-            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Student Name</th>
-            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Date Joined</th>
-            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Course Enrolled</th>
-            <th style="padding: 12px 16px; text-align: left; color: #475569; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Action</th>
+          <tr>
+            <th>Student Name</th>
+            <th>Date Joined</th>
+            <th>Course Enrolled</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for student_module in enrolled_students %}
-          <tr style="border-bottom: 1px solid #E2E8F0;">
-            <td style="padding: 16px; color: #0F172A; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;">
-              {{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}
-            </td>
-            <td style="padding: 16px; color: #64748B; font-family: Inter, sans-serif; font-size: 14px;">
-              {{ student_module.created_at|date:"M d, Y" }}
-            </td>
-            <td style="padding: 16px; color: #64748B; font-family: Inter, sans-serif; font-size: 14px;">
-              {{ module_run.module.title }}
-            </td>
-            <td style="padding: 16px;">
-              <!-- Action column - kept blank as requested -->
-              <span style="color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">—</span>
+          <tr>
+            <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
+            <td>{{ student_module.created_at|date:"M d, Y" }}</td>
+            <td>{{ module_run.module.title }}</td>
+            <td>
+              <a
+                href="#"
+                onclick="showStudentSubmissions('{{ student_module.id }}', '{{ module_run.id }}'); return false;"
+                class="assignment-view-link"
+                title="View Submission"
+                aria-label="View submissions for {{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}">
+                View Submission
+              </a>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" style="padding: 32px; text-align: center; color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">
+            <td colspan="4" style="text-align: center; padding: 40px; color: #64748b;">
               No students enrolled in this module yet.
             </td>
           </tr>
@@ -45,4 +43,214 @@
       </table>
     </div>
   </div>
+  
+  <!-- Student Submissions Detail View (hidden by default) -->
+  <div id="student-submissions-view" style="display: none; margin-top: 24px;">
+      <div style="border-radius: 12px; border: 1px solid #E2E8F0; background: #FFF; padding: 24px; position: relative;">
+        <!-- Close Button -->
+        <button
+          onclick="hideStudentSubmissions()"
+          style="position: absolute; top: 20px; right: 20px; background: transparent; border: none; font-size: 24px; color: #6B7280; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all 0.2s;"
+          onmouseover="this.style.backgroundColor='#F3F4F6'; this.style.color='#1F2937';"
+          onmouseout="this.style.backgroundColor='transparent'; this.style.color='#6B7280';"
+          title="Close"
+          aria-label="Close submissions view">
+          ×
+        </button>
+  
+        <!-- Student Info Header -->
+        <div style="margin-bottom: 24px; padding-right: 40px;">
+          <h3 id="student-name-header" style="font-size: 24px; font-weight: 600; color: #1f2937; margin: 0 0 8px 0;"></h3>
+          <p id="student-info-subtitle" style="font-size: 14px; color: #64748b; margin: 0;"></p>
+        </div>
+  
+        <!-- Submissions Table -->
+        <div id="submissions-content">
+          <p style="text-align: center; color: #64748b; padding: 20px;">Loading submissions...</p>
+        </div>
+      </div>
+  </div>
+
+  <!-- Submission Grading View (hidden by default) -->
+  <div id="submission-grading-view" style="display: none;">
+    <!-- Content will be loaded dynamically -->
+  </div>
 </div>
+
+<script>
+// Show student submissions view
+function showStudentSubmissions(studentModuleId, moduleRunId) {
+  const enrolledSection = document.getElementById('enrolled-students-section');
+  const submissionsView = document.getElementById('student-submissions-view');
+  
+  enrolledSection.style.display = 'none';
+  submissionsView.style.display = 'block';
+  
+  // Load student submissions
+  loadStudentSubmissions(studentModuleId, moduleRunId);
+}
+
+// Hide student submissions view
+function hideStudentSubmissions() {
+  const enrolledSection = document.getElementById('enrolled-students-section');
+  const submissionsView = document.getElementById('student-submissions-view');
+  
+  submissionsView.style.display = 'none';
+  enrolledSection.style.display = 'block';
+}
+  
+  // Load student submissions
+  function loadStudentSubmissions(studentModuleId, moduleRunId) {
+    const submissionsContent = document.getElementById('submissions-content');
+    
+    submissionsContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading submissions...</p>';
+    
+    // Fetch student submissions
+    fetch(`/faculty/student-submissions/${studentModuleId}/${moduleRunId}/`, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to load submissions');
+      }
+      return response.text();
+    })
+    .then(html => {
+      submissionsContent.innerHTML = html;
+    })
+    .catch(error => {
+      console.error('Error loading submissions:', error);
+      submissionsContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #EF4444;">Failed to load submissions. Please try again.</p>';
+    });
+}
+
+// Show submission grading view
+function showSubmissionGrading(assignmentId, submissionId) {
+  const submissionsView = document.getElementById('student-submissions-view');
+  const gradingView = document.getElementById('submission-grading-view');
+  
+  submissionsView.style.display = 'none';
+  gradingView.style.display = 'block';
+  
+  // Load grading view
+  loadSubmissionGrading(assignmentId, submissionId);
+}
+
+// Hide submission grading view
+function hideSubmissionGrading() {
+  const submissionsView = document.getElementById('student-submissions-view');
+  const gradingView = document.getElementById('submission-grading-view');
+  
+  gradingView.style.display = 'none';
+  submissionsView.style.display = 'block';
+}
+
+// Load submission grading view
+function loadSubmissionGrading(assignmentId, submissionId) {
+  const gradingView = document.getElementById('submission-grading-view');
+  
+  gradingView.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading grading view...</p>';
+  
+  // Fetch grading view
+  fetch(`/faculty/grade-submission-view/${assignmentId}/${submissionId}/`, {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to load grading view');
+    }
+    return response.text();
+  })
+  .then(html => {
+    gradingView.innerHTML = html;
+    // Initialize the grading form after HTML is loaded
+    initializeGradingForm(assignmentId, submissionId);
+  })
+  .catch(error => {
+    console.error('Error loading grading view:', error);
+    gradingView.innerHTML = '<p style="padding: 20px; text-align: center; color: #EF4444;">Failed to load grading view. Please try again.</p>';
+  });
+}
+
+// Initialize grading form after it's loaded via AJAX
+function initializeGradingForm(assignmentId, submissionId) {
+  console.log('Initializing grading form for assignment:', assignmentId, 'submission:', submissionId);
+  
+  const form = document.getElementById('grading-form');
+  if (!form) {
+    console.error('Grading form not found after loading!');
+    return;
+  }
+  
+  console.log('Grading form found, attaching submit handler');
+  
+  // Remove any existing listeners to avoid duplicates
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+  
+  // Handle form submission
+  newForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log('Form submit event triggered');
+    
+    const formData = new FormData(this);
+    
+    console.log('Submitting grade - Assignment:', assignmentId, 'Submission:', submissionId);
+    console.log('Form data:', {
+      score: formData.get('score'),
+      feedback: formData.get('feedback'),
+      graded_by_id: formData.get('graded_by_id'),
+      csrf: formData.get('csrfmiddlewaretoken') ? 'present' : 'MISSING'
+    });
+    
+    const url = `/faculty/grade-submission/${assignmentId}/${submissionId}/`;
+    console.log('Fetch URL:', url);
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+      },
+      body: formData,
+    })
+    .then(response => {
+      console.log('Response received - Status:', response.status, 'OK:', response.ok);
+      if (!response.ok) {
+        return response.text().then(text => {
+          console.error('Error response body:', text);
+          throw new Error('Failed to submit grade: ' + response.status);
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Response data:', data);
+      if (data.success) {
+        alert('Grade submitted successfully!');
+        hideSubmissionGrading();
+        // Reload the current student's submissions
+        const gradingContainer = document.querySelector('.grading-container');
+        if (gradingContainer) {
+          const currentStudentModuleId = gradingContainer.dataset.studentModuleId;
+          const currentModuleRunId = gradingContainer.dataset.moduleRunId;
+          if (currentStudentModuleId && currentModuleRunId) {
+            loadStudentSubmissions(currentStudentModuleId, currentModuleRunId);
+          }
+        }
+      } else {
+        alert('Error: ' + (data.error || 'Failed to submit grade'));
+      }
+    })
+    .catch(error => {
+      console.error('Error submitting grade:', error);
+      alert('Failed to submit grade. Please try again. Check console for details.');
+    });
+  });
+}
+</script>

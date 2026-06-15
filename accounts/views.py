@@ -637,6 +637,186 @@ def faculty_view_class_panel(request, module_run_id):
 
 
 @login_required
+@faculty_required
+def faculty_student_submissions(request, student_module_id, module_run_id):
+    """Get all assignment submissions for a specific student in a module"""
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related(
+            "enrollment",
+            "enrollment__student",
+            "module_run",
+            "module_run__module"
+        ),
+        id=student_module_id,
+        module_run_id=module_run_id
+    )
+    
+    # Verify faculty has access to this module
+    if student_module.module_run.faculty_id != request.user.id:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    # Get all assignments for this module
+    assignments = Assignment.objects.filter(
+        module_run_id=module_run_id
+    ).order_by('due_date')
+    
+    # Get all submissions for this student
+    submissions = AssignmentSubmission.objects.filter(
+        student_module=student_module
+    ).select_related('assignment')
+    
+    # Create a dictionary of submissions by assignment_id
+    submissions_dict = {sub.assignment_id: sub for sub in submissions}
+    
+    # Attach submission to each assignment
+    assignments_with_submissions = []
+    for assignment in assignments:
+        assignment.submission = submissions_dict.get(assignment.id)
+        assignments_with_submissions.append(assignment)
+    
+    # Update header with student info
+    student = student_module.enrollment.student
+    student_name = f"{student.first_name} {student.last_name}"
+    module_title = student_module.module_run.module.title
+    
+    context = {
+        "student_module": student_module,
+        "assignments": assignments_with_submissions,
+        "student_name": student_name,
+        "module_title": module_title,
+    }
+    
+    # Render and return the template with header update script
+    response = render(request, "accounts/faculty/panels/_student_submissions_table.html", context)
+    
+    # Add script to update header
+    header_script = f"""
+<script>
+document.getElementById('student-name-header').textContent = '{student_name}';
+document.getElementById('student-info-subtitle').textContent = '{module_title}';
+</script>
+"""
+    
+    # Append script to response content
+    content = response.content.decode('utf-8') + header_script
+    response.content = content.encode('utf-8')
+    
+    return response
+
+
+@login_required
+@faculty_required
+def faculty_grade_submission_view(request, assignment_id, submission_id):
+    """Display the grading view for a specific submission"""
+    assignment = get_object_or_404(
+        Assignment.objects.select_related('module_run', 'module_run__faculty'),
+        id=assignment_id
+    )
+    
+    # Verify faculty has access to this assignment
+    if assignment.module_run.faculty_id != request.user.id:
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    submission = get_object_or_404(
+        AssignmentSubmission.objects.select_related(
+            'student_module',
+            'student_module__enrollment',
+            'student_module__enrollment__student'
+        ),
+        id=submission_id,
+        assignment=assignment
+    )
+    
+    context = {
+        'assignment': assignment,
+        'submission': submission,
+        'student_module': submission.student_module,
+    }
+    
+    return render(request, 'accounts/faculty/panels/_submission_grading_view.html', context)
+
+
+@login_required
+@faculty_required
+def faculty_grade_submission_submit(request, assignment_id, submission_id):
+    """Handle the submission of a grade"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"Grade submission request received - Assignment: {assignment_id}, Submission: {submission_id}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"POST data: {request.POST}")
+    
+    if request.method != 'POST':
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    
+    assignment = get_object_or_404(
+        Assignment.objects.select_related('module_run'),
+        id=assignment_id
+    )
+    
+    logger.info(f"Assignment found: {assignment.title}, Faculty: {assignment.module_run.faculty_id}, Current user: {request.user.id}")
+    
+    # Verify faculty has access to this assignment
+    if assignment.module_run.faculty_id != request.user.id:
+        logger.error(f"Unauthorized access attempt by user {request.user.id}")
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+    
+    submission = get_object_or_404(
+        AssignmentSubmission,
+        id=submission_id,
+        assignment=assignment
+    )
+    
+    logger.info(f"Submission found: {submission.id}, Current status: {submission.status}")
+    
+    # Get form data
+    score = request.POST.get('score')
+    feedback = request.POST.get('feedback', '').strip()
+    graded_by_id = request.POST.get('graded_by_id')
+    
+    logger.info(f"Form data - Score: {score}, Feedback length: {len(feedback)}, Graded by: {graded_by_id}")
+    
+    # Validate score
+    if not score:
+        logger.error("Score is missing")
+        return JsonResponse({"success": False, "error": "Score is required"}, status=400)
+    
+    try:
+        score_value = float(score)
+    except ValueError:
+        logger.error(f"Invalid score value: {score}")
+        return JsonResponse({"success": False, "error": "Invalid score value"}, status=400)
+    
+    if score_value < 0 or score_value > assignment.max_score:
+        logger.error(f"Score out of range: {score_value}, Max: {assignment.max_score}")
+        return JsonResponse({
+            "success": False,
+            "error": f"Score must be between 0 and {assignment.max_score}"
+        }, status=400)
+    
+    # Verify graded_by is the current user
+    if str(graded_by_id) != str(request.user.id):
+        logger.error(f"Grader mismatch: {graded_by_id} vs {request.user.id}")
+        return JsonResponse({"success": False, "error": "Invalid grader"}, status=400)
+    
+    # Update submission
+    logger.info(f"Updating submission - Score: {score_value}, Status: graded")
+    submission.score = score_value
+    submission.feedback = feedback
+    submission.graded_by = request.user
+    submission.status = 'graded'
+    submission.save()
+    
+    logger.info(f"Submission updated successfully - ID: {submission.id}")
+    
+    return JsonResponse({
+        "success": True,
+        "message": "Grade submitted successfully"
+    })
+
+
+@login_required
 @student_required
 def student_home(request):
     active_tab = request.GET.get("tab", "dashboard")

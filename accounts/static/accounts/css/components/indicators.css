@@ -269,12 +269,34 @@
   color: #FFFFFF !important;
 }
 
-.status-submitted {
+.status-published {
   background: #16A34A !important;
   color: #FFFFFF !important;
 }
 
-.status-graded {
-  background: #2563EB !important;
+.status-submitted {
+  background: #3B82F6 !important;
   color: #FFFFFF !important;
+}
+
+.status-graded {
+  background: #059669 !important;
+  color: #FFFFFF !important;
+}
+
+.status-not-submitted {
+  background: #F3F4F6 !important;
+  color: #6B7280 !important;
+}
+
+/* Assignment status badge base styles */
+.assignment-status-badge {
+  display: inline-flex;
+  padding: 4px 12px;
+  align-items: center;
+  gap: 4px;
+  border-radius: 16px;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
 }

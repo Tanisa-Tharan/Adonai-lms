@@ -1,0 +1,62 @@
+<div class="panel-card" style="margin-top: 18px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Assignment Name</th>
+        <th>Status</th>
+        <th>Grade</th>
+        <th>Grade %</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assignment in assignments %}
+      <tr>
+        <td>{{ assignment.title }}</td>
+        <td>
+          {% if assignment.submission %}
+            <span class="assignment-status-badge status-{{ assignment.submission.status }}">{{ assignment.submission.get_status_display }}</span>
+          {% else %}
+            <span class="assignment-status-badge status-not-submitted">Not Submitted</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if assignment.submission and assignment.submission.score is not None %}
+            <span style="color: #1F2937; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;">{{ assignment.submission.score }}/{{ assignment.max_score }}</span>
+          {% else %}
+            <span style="color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if assignment.submission and assignment.submission.score is not None and assignment.max_score > 0 %}
+            {% widthratio assignment.submission.score assignment.max_score 100 as percentage %}
+            <span style="color: #1F2937; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;">{{ percentage }}%</span>
+          {% else %}
+            <span style="color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if assignment.submission %}
+            <a
+              href="#"
+              onclick="showSubmissionGrading('{{ assignment.id }}', '{{ assignment.submission.id }}'); return false;"
+              class="assignment-view-link"
+              title="View Submission Details"
+              aria-label="View submission for {{ assignment.title }}">
+              View
+            </a>
+          {% else %}
+            <span style="color: #94A3B8; font-family: Inter, sans-serif; font-size: 14px;">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">
+          No assignments found for this module.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
