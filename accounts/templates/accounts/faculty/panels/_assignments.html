@@ -1,3 +1,18 @@
+<!-- Loading Spinner Overlay -->
+<div id="assignment-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center;">
+  <div style="background: white; padding: 30px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #921F22; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+    <p style="color: #1F2937; font-family: Lexend, sans-serif; font-size: 16px; font-weight: 500; margin: 0;">Updating assignment...</p>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
 <section class="tab-panel {% if active_tab == 'assignments' %}active{% endif %}" id="assignments-panel">
   {% url 'faculty_home' as faculty_home_url %}
   
@@ -160,12 +175,263 @@ function loadAssignmentDetails(assignmentId) {
   });
 }
 
+// Global variable to store current assignment data
+let currentAssignmentData = null;
+let quillEditorInstance = null;
+
 // Edit assignment function
 function editAssignment(assignmentId) {
-  // TODO: Implement edit functionality
-  // This will navigate to edit mode or open edit form
-  console.log('Edit assignment:', assignmentId);
-  alert('Edit functionality will be implemented soon.');
+  // Fetch assignment data first
+  fetch(`/faculty/assignments/${assignmentId}/detail/`, {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    currentAssignmentData = data;
+    showEditMode(data);
+  })
+  .catch(error => {
+    console.error('Error loading assignment for edit:', error);
+    alert('Failed to load assignment data. Please try again.');
+  });
+}
+
+// Show edit mode
+function showEditMode(data) {
+  const infoContent = document.getElementById('assignment-info-content');
+  
+  // Create edit form HTML
+  const editFormHTML = `
+    <form id="assignment-edit-form" style="padding: 20px 0;">
+      <div style="display: flex; width: 956px; max-width: 100%; padding: 16px; flex-direction: column; align-items: flex-start; gap: 32px; border-radius: 16px; background: #FFF;">
+        <!-- Due Date, Max Score, Status -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; width: 100%;">
+          <div>
+            <label style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 8px 0; display: block;">Due Date</label>
+            <input type="date" id="edit-due-date" name="due_date" required
+              style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif;">
+          </div>
+          <div>
+            <label style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 8px 0; display: block;">Max Score</label>
+            <input type="number" id="edit-max-score" name="max_score" required min="1"
+              style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif;">
+          </div>
+          <div>
+            <label style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 8px 0; display: block;">Status</label>
+            <span class="assignment-status-badge ${data.status === 'DRAFT' ? 'status-draft' : 'status-published'}">${data.status === 'DRAFT' ? 'Draft' : 'Published'}</span>
+          </div>
+        </div>
+        
+        <!-- Description Editor -->
+        <div style="width: 100%;">
+          <label style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0; display: block;">Description</label>
+          <div id="edit-description-editor" style="height: 300px; border: 1px solid #D1D5DB; border-radius: 8px;"></div>
+          <input type="hidden" id="edit-description" name="description">
+        </div>
+        
+        <!-- File Upload -->
+        <div style="width: 100%;">
+          <label style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0; display: block;">Attached Files</label>
+          <div id="existing-files-list" style="margin-bottom: 12px;"></div>
+          <input type="file" id="edit-files" name="files" multiple
+            style="width: 100%; padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif;">
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="form-actions" style="display: flex; gap: 12px;">
+          <button
+            type="button"
+            onclick="handleUpdateDraft(event)"
+            class="btn-draft"
+            style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #FFF; border: 1px solid #921F22; border-radius: 6px; color: #921F22; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.backgroundColor='#FFF5F5';"
+            onmouseout="this.style.backgroundColor='#FFF';">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M18 4V16C18 16.55 17.8042 17.0208 17.4125 17.4125C17.0208 17.8042 16.55 18 16 18H2C1.45 18 0.979167 17.8042 0.5875 17.4125C0.195833 17.0208 0 16.55 0 16V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H14L18 4ZM16 4.85L13.15 2H2V16H16V4.85ZM9 15C9.83333 15 10.5417 14.7083 11.125 14.125C11.7083 13.5417 12 12.8333 12 12C12 11.1667 11.7083 10.4583 11.125 9.875C10.5417 9.29167 9.83333 9 9 9C8.16667 9 7.45833 9.29167 6.875 9.875C6.29167 10.4583 6 11.1667 6 12C6 12.8333 6.29167 13.5417 6.875 14.125C7.45833 14.7083 8.16667 15 9 15ZM3 7H12V3H3V7ZM2 4.85V16V2V4.85Z" fill="#921F22"/>
+            </svg>
+            <span>Save Draft</span>
+          </button>
+          <button type="button" onclick="handleUpdateAssignment(event)" class="button-primary">Update Assignment</button>
+        </div>
+      </div>
+    </form>
+  `;
+  
+  infoContent.innerHTML = editFormHTML;
+  
+  // Initialize Quill editor
+  if (typeof Quill !== 'undefined') {
+    quillEditorInstance = new Quill('#edit-description-editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['link'],
+          ['clean']
+        ]
+      }
+    });
+    
+    // Set existing description
+    if (data.description) {
+      quillEditorInstance.root.innerHTML = data.description;
+    }
+  }
+  
+  // Populate form fields
+  // Convert date format from "Month DD, YYYY" to "YYYY-MM-DD"
+  const dueDateInput = document.getElementById('edit-due-date');
+  if (data.due_date) {
+    const dateObj = new Date(data.due_date);
+    dueDateInput.value = dateObj.toISOString().split('T')[0];
+  }
+  
+  document.getElementById('edit-max-score').value = data.max_score || '';
+  
+  // Show existing files
+  displayExistingFiles(data.files || []);
+}
+
+// Display existing files
+function displayExistingFiles(files) {
+  const filesList = document.getElementById('existing-files-list');
+  if (!files || files.length === 0) {
+    filesList.innerHTML = '<p style="color: #6B7280; font-size: 14px;">No files attached</p>';
+    return;
+  }
+  
+  let filesHTML = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+  files.forEach(file => {
+    filesHTML += `
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px;">
+        <span style="color: #1F2937;">${file.name}</span>
+        <button type="button" onclick="removeFile('${file.id}')" style="color: #DC2626; background: none; border: none; cursor: pointer; font-size: 14px;">Remove</button>
+      </div>
+    `;
+  });
+  filesHTML += '</div>';
+  filesList.innerHTML = filesHTML;
+}
+
+// Cancel edit mode
+function cancelEdit() {
+  if (currentAssignmentData) {
+    loadAssignmentDetails(currentAssignmentData.id);
+  }
+}
+
+// Handle update draft
+function handleUpdateDraft(event) {
+  event.preventDefault();
+  submitAssignmentUpdate('DRAFT');
+}
+
+// Handle update assignment
+function handleUpdateAssignment(event) {
+  event.preventDefault();
+  submitAssignmentUpdate('PUBLISHED');
+}
+
+// Show loading spinner
+function showLoadingSpinner() {
+  const overlay = document.getElementById('assignment-loading-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+  }
+}
+
+// Hide loading spinner
+function hideLoadingSpinner() {
+  const overlay = document.getElementById('assignment-loading-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+}
+
+// Submit assignment update
+function submitAssignmentUpdate(status) {
+  if (!currentAssignmentData) return;
+  
+  // Show loading spinner
+  showLoadingSpinner();
+  
+  const formData = new FormData();
+  formData.append('due_date', document.getElementById('edit-due-date').value);
+  formData.append('max_score', document.getElementById('edit-max-score').value);
+  formData.append('status', status);
+  
+  // Get description from Quill
+  if (quillEditorInstance) {
+    formData.append('description', quillEditorInstance.root.innerHTML);
+  }
+  
+  // Add files
+  const filesInput = document.getElementById('edit-files');
+  if (filesInput.files.length > 0) {
+    for (let i = 0; i < filesInput.files.length; i++) {
+      formData.append('files', filesInput.files[i]);
+    }
+  }
+  
+  // Submit update
+  fetch(`/faculty/assignments/${currentAssignmentData.id}/update/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: formData
+  })
+  .then(response => {
+    // Log response for debugging
+    console.log('Response status:', response.status);
+    return response.json().then(data => ({
+      status: response.status,
+      data: data
+    }));
+  })
+  .then(result => {
+    hideLoadingSpinner();
+    console.log('Response data:', result.data);
+    
+    if (result.status === 200 && result.data.success) {
+      alert('Assignment updated successfully!');
+      // Reload the assignment details
+      loadAssignmentDetails(currentAssignmentData.id);
+      // Reload the table
+      location.reload();
+    } else {
+      const errorMsg = result.data.error || 'Failed to update assignment';
+      console.error('Update failed:', errorMsg);
+      alert('Error: ' + errorMsg);
+    }
+  })
+  .catch(error => {
+    hideLoadingSpinner();
+    console.error('Error updating assignment:', error);
+    alert('Failed to update assignment. Please check console for details.');
+  });
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
 }
 
 // Delete assignment function

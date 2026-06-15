@@ -1953,7 +1953,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     # Render assignment info HTML
     assignment_html = f'''
     <div style="display: flex; width: 956px; max-width: 100%; padding: 16px; flex-direction: column; align-items: flex-start; gap: 32px; border-radius: 16px; background: #FFF;">
-      <!-- Due Date, Max Score, and Action Icons -->
+      <!-- Due Date, Max Score, Status, and Action Icons -->
       <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; gap: 16px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; flex: 1;">
           <div>
@@ -1963,6 +1963,10 @@ def faculty_assignment_detail_ajax(request, assignment_id):
           <div>
             <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Max Score</h4>
             <p style="font-size: 16px; color: #1F2937; margin: 0;">{assignment.max_score}</p>
+          </div>
+          <div>
+            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Status</h4>
+            {'<span class="assignment-status-badge status-draft">Draft</span>' if assignment.status == 'DRAFT' else '<span class="assignment-status-badge status-published">Published</span>'}
           </div>
         </div>
         
@@ -2002,20 +2006,37 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     
     if assignment_files.exists():
         assignment_html += '''
-      <div style="width: 100%;">
-        <h4 style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0;">Attached Files</h4>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="assignment-card-files-box">
+        <div class="assignment-card-files-header">Uploaded Assignments</div>
+        <div class="assignment-card-files-list">
     '''
         for file in assignment_files:
+            file_name = file.file_url.name.split('/')[-1]
             assignment_html += f'''
-          <a href="{file.file_url.url}" download style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 6px; text-decoration: none; color: #1F2937; transition: all 0.2s;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0;">
-              <path d="M5 7H15V9H5V7ZM5 11H15V13H5V11ZM3 20C2.45 20 1.97917 19.8042 1.5875 19.4125C1.19583 19.0208 1 18.55 1 18V2C1 1.45 1.19583 0.979167 1.5875 0.5875C1.97917 0.195833 2.45 0 3 0H11L19 8V18C19 18.55 18.8042 19.0208 18.4125 19.4125C18.0208 19.8042 17.55 20 17 20H3ZM10 9V2H3V18H17V9H10Z" fill="#921F22"/>
-            </svg>
-            <span style="flex: 1;">{file.file_url.name.split('/')[-1]}</span>
-          </a>
+          <div class="resource-item">
+            <div class="resource-item-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
+                <path d="M8.75 13.125H10V10.625H11.25C11.6042 10.625 11.901 10.5052 12.1406 10.2656C12.3802 10.026 12.5 9.72917 12.5 9.375V8.125C12.5 7.77083 12.3802 7.47396 12.1406 7.23438C11.901 6.99479 11.6042 6.875 11.25 6.875H8.75V13.125ZM10 9.375V8.125H11.25V9.375H10ZM13.75 13.125H16.25C16.6042 13.125 16.901 13.0052 17.1406 12.7656C17.3802 12.526 17.5 12.2292 17.5 11.875V8.125C17.5 7.77083 17.3802 7.47396 17.1406 7.23438C16.901 6.99479 16.6042 6.875 16.25 6.875H13.75V13.125ZM15 11.875V8.125H16.25V11.875H15ZM18.75 13.125H20V10.625H21.25V9.375H20V8.125H21.25V6.875H18.75V13.125ZM7.5 20C6.8125 20 6.22396 19.7552 5.73438 19.2656C5.24479 18.776 5 18.1875 5 17.5V2.5C5 1.8125 5.24479 1.22396 5.73438 0.734375C6.22396 0.244792 6.8125 0 7.5 0H22.5C23.1875 0 23.776 0.244792 24.2656 0.734375C24.7552 1.22396 25 1.8125 25 2.5V17.5C25 18.1875 24.7552 18.776 24.2656 19.2656C23.776 19.7552 23.1875 20 22.5 20H7.5ZM7.5 17.5H22.5V2.5H7.5V17.5ZM2.5 25C1.8125 25 1.22396 24.7552 0.734375 24.2656C0.244792 23.776 0 23.1875 0 22.5V5H2.5V22.5H20V25H2.5ZM7.5 2.5V17.5V2.5Z" fill="#921F22"/>
+              </svg>
+            </div>
+            <span class="resource-item-title">{file_name}</span>
+            <a href="{file.file_url.url}" download class="resource-item-download-icon" title="Download {file_name}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#94A3B8"/>
+              </svg>
+            </a>
+          </div>
     '''
         assignment_html += '''
+        </div>
+      </div>
+    '''
+    else:
+        assignment_html += '''
+      <div class="assignment-card-files-box">
+        <div class="assignment-card-files-header">Uploaded Assignments</div>
+        <div class="assignment-card-files-list">
+          <div class="resources-empty-state">No assignment files uploaded yet.</div>
         </div>
       </div>
     '''
@@ -2030,11 +2051,87 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     }
     readings_html = render(request, 'accounts/shared/_readings_tab.html', readings_context).content.decode('utf-8')
     
+    # Prepare files data
+    files_data = []
+    for file in assignment_files:
+        files_data.append({
+            'id': str(file.id),
+            'name': file.file_url.name.split('/')[-1],
+            'url': file.file_url.url
+        })
+    
     return JsonResponse({
         'success': True,
+        'id': str(assignment.id),
         'title': assignment.title,
         'module_name': assignment.module_run.module.title,
         'due_date': assignment.due_date.strftime("%B %d, %Y"),
+        'max_score': assignment.max_score,
+        'description': assignment.description,
+        'status': assignment.status,
+        'files': files_data,
         'assignment_html': assignment_html,
         'readings_html': readings_html,
     })
+
+@login_required
+@faculty_required
+def faculty_assignment_update(request, assignment_id):
+    """
+    Update an existing assignment
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+    
+    try:
+        assignment = Assignment.objects.get(id=assignment_id, module_run__faculty=request.user)
+    except Assignment.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Assignment not found'}, status=404)
+    
+    try:
+        # Validate required fields
+        due_date = request.POST.get('due_date')
+        max_score = request.POST.get('max_score')
+        
+        if not due_date:
+            return JsonResponse({
+                'success': False,
+                'error': 'Due date is required'
+            }, status=400)
+        
+        if not max_score:
+            return JsonResponse({
+                'success': False,
+                'error': 'Max score is required'
+            }, status=400)
+        
+        # Update basic fields
+        assignment.due_date = due_date
+        assignment.max_score = int(max_score)
+        assignment.description = request.POST.get('description', '')
+        assignment.status = request.POST.get('status', 'DRAFT')
+        assignment.save()
+        
+        # Handle file uploads
+        files = request.FILES.getlist('files')
+        for file in files:
+            AssignmentFile.objects.create(
+                assignment=assignment,
+                file_url=file,
+                uploaded_by=request.user
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Assignment updated successfully'
+        })
+    except ValueError as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Invalid data format: {str(e)}'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Error updating assignment: {str(e)}'
+        }, status=400)
