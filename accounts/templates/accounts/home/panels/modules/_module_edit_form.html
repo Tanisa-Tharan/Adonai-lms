@@ -92,6 +92,15 @@
             {{ module_form.status.errors }}
           </div>
         </div>
+
+        <!-- Row 4: Is Active (checkbox) -->
+        <div class="form-row-single">
+          <div class="field-group" style="display: flex; align-items: center; gap: 8px;">
+            {{ module_form.is_active }}
+            <label for="{{ module_form.is_active.id_for_label }}" style="margin: 0; cursor: pointer;">Module is Active</label>
+            {{ module_form.is_active.errors }}
+          </div>
+        </div>
       </section>
     </div>
 

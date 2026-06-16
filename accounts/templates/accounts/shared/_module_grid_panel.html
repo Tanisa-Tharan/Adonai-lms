@@ -16,10 +16,10 @@
       <div class="module-grid" id="{{ grid_id }}">
         {% for item in module_items %}
         <div class="module-card" id="module-card-{{ item.id }}" style="position: relative;">
-          {% if user.role == 'ADMIN' %}
-          <a
-            href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ item.module_id }}"
-            class="module-card-edit-icon"
+                 {% if user.role == 'ADMIN' %}
+                 <a
+                   href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ item.module_id }}{% if return_tab %}&return_tab={{ return_tab }}{% endif %}"
+                   class="module-card-edit-icon"
             title="Edit module"
             style="position: absolute !important; top: 16px; right: 16px; width: 32px; height: 32px; display: flex !important; align-items: center; justify-content: center; background: #FFF; border: 1px solid #E7E5E4; border-radius: 6px; cursor: pointer; transition: all 0.2s; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none;"
             onmouseover="this.style.background='#FEF8F5'; this.style.borderColor='#921F22'; this.style.boxShadow='0 4px 8px rgba(146, 31, 34, 0.2)';"

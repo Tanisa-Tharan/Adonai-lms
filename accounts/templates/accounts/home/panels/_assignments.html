@@ -2,9 +2,9 @@
   {% load static %}
   
   <!-- Module Grid View (default view) -->
-  <div id="assignments-grid-view">
+  <div id="assignments-grid-view" style="display: {% if assignment_panel_mode == 'edit' or assignment_panel_mode == 'create' %}none{% else %}block{% endif %};">
     {% url 'home' as home_url %}
-    {% include 'accounts/home/_welcome_banner.html' with banner_title="Module Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url=home_url|add:"?tab=modules&mode=create" banner_button_text="Add Module" %}
+    {% include 'accounts/home/_welcome_banner.html' with banner_title="Module Management" banner_description="Oversee the academic community of Adonai Bible School. Manage permissions, monitor enrollment status, and maintain accurate records for faculty and students." banner_button_url="#" banner_button_text="Add Module" %}
 
     <div class="panel-card">
 
@@ -13,12 +13,13 @@
         <div class="module-card" id="module-card-{{ module_run.id }}" style="position: relative;">
           {% if user.role == 'ADMIN' %}
           <a
-            href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module_run.module.id }}&return_tab=assignments"
+            href="{% url 'home' %}?tab=assignments&mode=edit&module_id={{ module_run.module.id }}"
             class="module-card-edit-icon"
             title="Edit module"
             style="position: absolute !important; top: 16px; right: 16px; width: 32px; height: 32px; display: flex !important; align-items: center; justify-content: center; background: #FFF; border: 1px solid #E7E5E4; border-radius: 6px; cursor: pointer; transition: all 0.2s; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-decoration: none;"
             onmouseover="this.style.background='#FEF8F5'; this.style.borderColor='#921F22'; this.style.boxShadow='0 4px 8px rgba(146, 31, 34, 0.2)';"
             onmouseout="this.style.background='#FFF'; this.style.borderColor='#E7E5E4'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"
+            onclick="event.preventDefault(); showModuleLoader(); window.location.href=this.href;"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 18 18" fill="none">
               <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.625 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#921F22"/>
@@ -57,4 +58,191 @@
 
   <!-- Drawer for assignment details -->
   <div id="assignments-detail-drawer"></div>
+
+  <!-- Loading Overlay -->
+  <div id="module-loading-overlay" class="loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); z-index: 9999;">
+    <div style="text-align: center;">
+      <div class="spinner" style="width: 50px; height: 50px; border: 4px solid #E7E5E4; border-top-color: #921F22; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;"></div>
+      <p style="color: #78716C; font-size: 14px; font-weight: 500;">Loading module details...</p>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    function showModuleLoader() {
+      document.getElementById('module-loading-overlay').style.display = 'flex';
+      document.getElementById('module-loading-overlay').style.alignItems = 'center';
+      document.getElementById('module-loading-overlay').style.justifyContent = 'center';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle Add Module button
+      const addModuleBtn = document.querySelector('#assignments-grid-view .welcome-banner .banner-action-button');
+      if (addModuleBtn) {
+        addModuleBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.getElementById('assignments-grid-view').style.display = 'none';
+          document.getElementById('assignments-form-view').style.display = 'block';
+        });
+      }
+
+      // Handle Back to Modules button
+      const backBtn = document.querySelector('#assignments-form-view .welcome-banner .banner-action-button');
+      if (backBtn) {
+        backBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.getElementById('assignments-form-view').style.display = 'none';
+          document.getElementById('assignments-grid-view').style.display = 'block';
+        });
+      }
+
+      // Hide loader when page is fully loaded (for edit mode)
+      if (document.getElementById('module-loading-overlay').style.display === 'flex') {
+        document.getElementById('module-loading-overlay').style.display = 'none';
+      }
+    });
+  </script>
+
+  <!-- Module Form View (hidden by default) -->
+  <div id="assignments-form-view" style="display: {% if assignment_panel_mode == 'edit' or assignment_panel_mode == 'create' %}block{% else %}none{% endif %};">
+    {% url 'home' as home_url %}
+    {% if assignment_panel_mode == 'edit' %}
+      {% include 'accounts/home/_welcome_banner.html' with banner_title="Edit Module" banner_description="Configure module details, schedule, and faculty assignment." banner_button_url="#" banner_button_text="Back to Modules" banner_button_hide_icon=True %}
+    {% else %}
+      {% include 'accounts/home/_welcome_banner.html' with banner_title="Create Module" banner_description="Configure module details, schedule, and faculty assignment." banner_button_url="#" banner_button_text="Back to Modules" banner_button_hide_icon=True %}
+    {% endif %}
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const backBtn = document.querySelector('#assignments-form-view .welcome-banner .banner-action-button');
+        if (backBtn) {
+          backBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('assignments-form-view').style.display = 'none';
+            document.getElementById('assignments-grid-view').style.display = 'block';
+          });
+        }
+      });
+    </script>
+
+    <div class="panel-card">
+      <div class="user-form-shell">
+        <form method="post" action="{% if assignment_panel_mode == 'edit' and editing_module %}{% url 'home' %}?tab=assignments&mode=edit&module_id={{ editing_module.id }}{% else %}{% url 'home' %}?tab=assignments&mode=create{% endif %}">
+          {% csrf_token %}
+
+          <div class="user-form-grid">
+            <section class="user-form-section">
+              <h4>{% if assignment_panel_mode == "edit" %}Edit Module{% else %}Module Details{% endif %}</h4>
+
+              <!-- Row 1: Module Title, Module ID -->
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="{{ module_form.title.id_for_label }}">Module Title</label>
+                  {{ module_form.title }}
+                  {{ module_form.title.errors }}
+                </div>
+                
+                <div class="field-group">
+                  <label for="{{ module_form.moduleId.id_for_label }}">Module ID</label>
+                  {{ module_form.moduleId }}
+                  {{ module_form.moduleId.errors }}
+                </div>
+              </div>
+
+              <!-- Row 2: Order Number, Session Count -->
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="{{ module_form.order_number.id_for_label }}">Order Number</label>
+                  {{ module_form.order_number }}
+                  {{ module_form.order_number.errors }}
+                </div>
+                <div class="field-group">
+                  <label for="{{ module_form.session_count.id_for_label }}">Session Count</label>
+                  {{ module_form.session_count }}
+                  {{ module_form.session_count.errors }}
+                </div>
+              </div>
+
+              <!-- Row 3: Description (full width) -->
+              <div class="form-row-single">
+                <div class="field-group">
+                  <label for="{{ module_form.description.id_for_label }}">Description</label>
+                  {{ module_form.description }}
+                  {{ module_form.description.errors }}
+                </div>
+              </div>
+            </section>
+
+            <section class="user-form-section">
+              <h4>Details</h4>
+
+              <!-- Row 1: Quarter, Faculty -->
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="{{ module_form.quarter.id_for_label }}">Quarter</label>
+                  {{ module_form.quarter }}
+                  {{ module_form.quarter.errors }}
+                </div>
+                
+                <div class="field-group">
+                  <label for="{{ module_form.faculty.id_for_label }}">Faculty</label>
+                  {{ module_form.faculty }}
+                  {{ module_form.faculty.errors }}
+                </div>
+              </div>
+
+              <!-- Row 2: Start Date, End Date -->
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="{{ module_form.start_date.id_for_label }}">Start Date</label>
+                  {{ module_form.start_date }}
+                  {{ module_form.start_date.errors }}
+                </div>
+                
+                <div class="field-group">
+                  <label for="{{ module_form.end_date.id_for_label }}">End Date</label>
+                  {{ module_form.end_date }}
+                  {{ module_form.end_date.errors }}
+                </div>
+              </div>
+
+              <!-- Row 3: Max Students, Run Status -->
+              <div class="form-row">
+                <div class="field-group">
+                  <label for="{{ module_form.max_students.id_for_label }}">Max Students</label>
+                  {{ module_form.max_students }}
+                  {{ module_form.max_students.errors }}
+                </div>
+                
+                <div class="field-group">
+                  <label for="{{ module_form.status.id_for_label }}">Run Status</label>
+                  {{ module_form.status }}
+                  {{ module_form.status.errors }}
+                </div>
+              </div>
+
+              <!-- Row 4: Is Active (checkbox) -->
+              <div class="form-row-single">
+                <div class="field-group" style="display: flex; align-items: center; gap: 8px;">
+                  {{ module_form.is_active }}
+                  <label for="{{ module_form.is_active.id_for_label }}" style="margin: 0; cursor: pointer;">Module is Active</label>
+                  {{ module_form.is_active.errors }}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="form-actions">
+            <a href="{% url 'home' %}?tab=assignments" class="button button-secondary">Discard</a>
+            <button type="submit" class="button button-primary">{% if assignment_panel_mode == "edit" %}Update Module{% else %}Create Module{% endif %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </section>

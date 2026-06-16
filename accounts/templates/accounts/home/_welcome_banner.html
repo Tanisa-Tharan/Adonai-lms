@@ -6,9 +6,11 @@
   </div>
   {% if banner_button_url and banner_button_text %}
     <a href="{{ banner_button_url }}" class="banner-action-button">
+      {% if not banner_button_hide_icon %}
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px;">
         <path d="M4.28571 5.71428H0V4.28571H4.28571V0H5.71428V4.28571H10V5.71428H5.71428V10H4.28571V5.71428Z" fill="#921F22"/>
       </svg>
+      {% endif %}
       {{ banner_button_text }}
     </a>
   {% endif %}

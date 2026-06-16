@@ -17,6 +17,17 @@
         <strong>{{ module_stats.total_students }}</strong>
       </div>
     </div>
+  {% elif module_panel_mode == 'edit' or module_panel_mode == 'create' %}
+    {% url 'home' as home_url %}
+    {% if module_panel_mode == 'edit' %}
+      {% if request.GET.return_tab %}
+        {% include 'accounts/home/_welcome_banner.html' with banner_title="Edit Module" banner_description="Configure module details, schedule, and faculty assignment." banner_button_url=home_url|add:"?tab="|add:request.GET.return_tab banner_button_text="Back" %}
+      {% else %}
+        {% include 'accounts/home/_welcome_banner.html' with banner_title="Edit Module" banner_description="Configure module details, schedule, and faculty assignment." banner_button_url=home_url|add:"?tab=modules" banner_button_text="Back to Modules" %}
+      {% endif %}
+    {% else %}
+      {% include 'accounts/home/_welcome_banner.html' with banner_title="Create Module" banner_description="Configure module details, schedule, and faculty assignment." banner_button_url=home_url|add:"?tab=modules" banner_button_text="Back to Modules" %}
+    {% endif %}
   {% endif %}
 
   <div class="panel-card">
@@ -115,8 +126,23 @@
       </table>
     </div>
 
-    <div class="{% if active_tab != 'modules' or module_panel_mode == 'table' %}hidden-panel{% endif %}">
-      {% include 'accounts/home/panels/modules/_module_edit_form.html' %}
+    <div class="{% if active_tab != 'modules' or module_panel_mode == 'table' %}hidden-panel{% endif %}" style="background: white; padding: 20px;">
+      <!-- Debug: active_tab={{ active_tab }}, module_panel_mode={{ module_panel_mode }}, editing_module={{ editing_module.id|default:"None" }} -->
+      {% if editing_module or module_panel_mode == 'create' %}
+        {% include 'accounts/home/panels/modules/_module_edit_form.html' %}
+      {% else %}
+        <div style="padding: 40px; background: #ffebee; border: 2px solid #f44336; border-radius: 8px;">
+          <h3 style="color: #c62828; margin-bottom: 16px;">⚠️ Error: No module selected for editing</h3>
+          <p style="margin-bottom: 16px;">Debug Info:</p>
+          <ul style="margin-bottom: 16px;">
+            <li>active_tab: {{ active_tab }}</li>
+            <li>module_panel_mode: {{ module_panel_mode }}</li>
+            <li>editing_module: {{ editing_module|default:"None" }}</li>
+            <li>module_id from URL: {{ request.GET.module_id|default:"Not provided" }}</li>
+          </ul>
+          <a href="{% url 'home' %}?tab=modules" class="button button-primary">Back to Modules</a>
+        </div>
+      {% endif %}
     </div>
 
 	    <div id="module-students-drawer"></div>

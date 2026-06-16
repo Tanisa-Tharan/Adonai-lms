@@ -422,6 +422,7 @@ def _build_home_context(
     user_panel_mode="table",
     academic_panel_mode="table",
     module_panel_mode="table",
+    assignment_panel_mode="table",
     editing_user=None,
     editing_module=None,
 ):
@@ -436,6 +437,7 @@ def _build_home_context(
     context["academic_panel_mode"] = academic_panel_mode
     context["module_form"] = module_form or CreateModuleForm()
     context["module_panel_mode"] = module_panel_mode
+    context["assignment_panel_mode"] = assignment_panel_mode
     context["editing_module"] = editing_module
     return context
 
@@ -1082,6 +1084,7 @@ def home(request):
     user_panel_mode = request.GET.get("mode", "table") if active_tab in ROLE_TABS else "table"
     academic_panel_mode = request.GET.get("mode", "table") if active_tab == "academic-session" else "table"
     module_panel_mode = request.GET.get("mode", "table") if active_tab == "modules" else "table"
+    assignment_panel_mode = request.GET.get("mode", "table") if active_tab == "assignments" else "table"
     editing_user = None
     editing_module = None
     academic_year_form = CreateAcademicYearForm()
@@ -1101,6 +1104,10 @@ def home(request):
         user_form = _build_user_form(role=selected_role)
 
     if active_tab == "modules" and module_panel_mode == "edit":
+        editing_module = get_object_or_404(Module.objects.prefetch_related("runs__sessions"), id=request.GET.get("module_id"))
+        module_form = _build_module_form(editing_module)
+    
+    if active_tab == "assignments" and assignment_panel_mode == "edit":
         editing_module = get_object_or_404(Module.objects.prefetch_related("runs__sessions"), id=request.GET.get("module_id"))
         module_form = _build_module_form(editing_module)
 
@@ -1177,6 +1184,24 @@ def home(request):
             # Redirect to the return tab if specified, otherwise default to modules
             return_tab = request.GET.get("return_tab", "modules")
             return redirect(f"{reverse('home')}?tab={return_tab}")
+    
+    if request.method == "POST" and active_tab == "assignments":
+        assignment_panel_mode = request.GET.get("mode", "create")
+        module_id = request.GET.get("module_id")
+        editing_module = None
+
+        if assignment_panel_mode == "edit" and module_id:
+            editing_module = get_object_or_404(Module.objects.prefetch_related("runs__sessions"), id=module_id)
+
+        module_form = CreateModuleForm(request.POST)
+
+        if module_form.is_valid():
+            if assignment_panel_mode == "edit" and editing_module:
+                module = _update_module_from_form(module_form, editing_module)
+            else:
+                module = _save_module_from_form(module_form)
+            
+            return redirect(f"{reverse('home')}?tab=assignments")
 
     return render(request, "accounts/home.html", _build_home_context(
         user_form=user_form,
@@ -1187,6 +1212,7 @@ def home(request):
         user_panel_mode=user_panel_mode,
         academic_panel_mode=academic_panel_mode,
         module_panel_mode=module_panel_mode,
+        assignment_panel_mode=assignment_panel_mode,
         editing_user=editing_user,
         editing_module=editing_module,
     ))
