@@ -47,6 +47,13 @@ ROLE_TABS = {
 }
 
 
+def landing_view(request):
+    """
+    Landing page view - displays the public-facing homepage
+    """
+    return render(request, "accounts/landing.html")
+
+
 def _build_user_form(user=None, role=None):
     if not user:
         initial = {"role": role} if role else None

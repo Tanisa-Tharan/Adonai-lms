@@ -4,6 +4,7 @@ from .views import (
     delete_user,
     reset_user_password,
     home,
+    landing_view,
     login_view,
     logout_view,
     faculty_home,
@@ -41,7 +42,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path("", login_view, name="login"),
+    path("", landing_view, name="landing"),
+    path("login/", login_view, name="login"),
     path("home/", home, name="home"),
     path("faculty/", faculty_home, name="faculty_home"),
     path("faculty/students/panel/", faculty_students_panel, name="faculty_students_panel"),
