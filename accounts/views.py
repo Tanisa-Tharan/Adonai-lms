@@ -87,7 +87,8 @@ def _save_user_from_form(form, user=None):
             role=form.cleaned_data["role"],
             is_active=True,
         )
-        generated_password = secrets.token_urlsafe(8)
+        # Generate password in format: Firstname@abs@2026
+        generated_password = f"{user.first_name}@abs@2026"
         user.set_password(generated_password)
 
         # SEND EMAIL
@@ -1218,7 +1219,8 @@ def reset_user_password(request, user_id):
     if user.role == "ADMIN":
         return render(request, "accounts/home/panels/dashboard/_password_cell.html", {"password": ""})
 
-    new_password = secrets.token_urlsafe(8)
+    # Generate password in format: Firstname@abs@2026
+    new_password = f"{user.first_name}@abs@2026"
     user.set_password(new_password)
     user.save(update_fields=["password"])
 
