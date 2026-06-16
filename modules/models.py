@@ -175,6 +175,23 @@ class CourseMaterial(FileCleanupMixin, models.Model):
         ordering = ["-created_at"]
 
 
+class ModuleVideo(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="videos")
+    video_name = models.CharField(max_length=255)
+    vimeo_id = models.CharField(max_length=100)
+    order_number = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "module_videos"
+        ordering = ["order_number", "created_at"]
+
+    def __str__(self):
+        return f"{self.video_name} (Vimeo: {self.vimeo_id})"
+
+
 class Assignment(models.Model):
     STATUS_CHOICES = [
         ('DRAFT', 'Draft'),
