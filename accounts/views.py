@@ -1565,6 +1565,7 @@ def delete_course_material(request, material_id):
 @admin_or_faculty_required
 def module_assignments_panel(request, module_run_id):
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
+    # Only check ownership for faculty users, admins can access any module
     if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
         return redirect("faculty_home")
     
@@ -1730,32 +1731,7 @@ def add_module_assignment(request, module_run_id):
             uploaded_by=request.user,
         )
 
-    # Check if this is from faculty assignments page
-    from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
-    
-    if from_faculty_assignments and request.user.role == "FACULTY":
-        # Return the full assignments panel with updated data
-        faculty_runs = (
-            ModuleRun.objects.filter(faculty=request.user)
-            .select_related("module", "quarter", "quarter__academic_year")
-            .prefetch_related("sessions")
-            .order_by("-created_at")
-        )
-        faculty_assignments = (
-            Assignment.objects.filter(module_run__in=faculty_runs)
-            .select_related("module_run", "module_run__module")
-            .order_by("-due_date")
-        )
-        return render(
-            request,
-            "accounts/faculty/panels/_assignments.html",
-            {
-                "active_tab": "assignments",
-                "faculty_runs": faculty_runs,
-                "faculty_assignments": faculty_assignments,
-            },
-        )
-    
+    # Always return to the module assignments detail view
     return module_assignments_panel(request, module_run_id=module_run_id)
 
 

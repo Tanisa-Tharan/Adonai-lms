@@ -1,0 +1,57 @@
+{% load template_extras %}
+
+<div class="panel-card" style="margin-top: 18px;">
+  <!-- Back Button -->
+  <div style="margin-bottom: 24px;">
+    <button
+      type="button"
+      onclick="const drawer = document.getElementById('assignments-detail-drawer'); if (drawer) { drawer.innerHTML = ''; } const gridView = document.getElementById('assignments-grid-view'); if (gridView) { gridView.style.display = 'block'; }"
+      style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: transparent; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; transition: all 0.2s; color: #374151; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500;"
+      onmouseover="this.style.backgroundColor='#F3F4F6'; this.style.borderColor='#9CA3AF';"
+      onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='#D1D5DB';"
+      title="Go back"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style="width: 20px; height: 20px;">
+        <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Back</span>
+    </button>
+  </div>
+
+  <!-- Module Header -->
+  <div style="margin-bottom: 24px;">
+    <h3 style="font-size: 24px; font-weight: 600; color: #1f2937; margin: 0 0 8px 0;">{{ module_run.module.title }}</h3>
+    <p style="font-size: 14px; color: #64748b; margin: 0;">{{ module_run.quarter.name }} • {{ module_run.quarter.academic_year.name }}</p>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">
+    <button class="module-tab-button active" data-tab="assignments-tab" type="button">
+      Assignments
+    </button>
+    <button class="module-tab-button" data-tab="readings-tab" type="button">
+      Readings
+    </button>
+  </div>
+
+  <!-- Tab Content: Assignments -->
+  <div id="assignments-tab" class="module-tab-content active">
+    <!-- Assignment List Section -->
+    <div id="assignment-list-section">
+      {% include "accounts/home/panels/modules/_assignment_list.html" %}
+    </div>
+
+    <!-- Assignment Form Section (hidden by default, visible for adding/editing assignment) -->
+    <div id="assignment-form-section" style="display: none;"{% if editing_assignment %} data-editing-assignment="1"{% endif %}>
+      {% include "accounts/home/panels/modules/_assignment_form.html" with from_faculty_assignments=True %}
+    </div>
+
+    <!-- Assignment Action Drawer (for submit/grade) -->
+    <!-- <div id="assignment-action-drawer" class="assignment-drawer"></div> -->
+  </div>
+
+  <!-- Tab Content: Readings -->
+  <div id="readings-tab" class="module-tab-content">
+    {% include "accounts/shared/_readings_tab.html" %}
+  </div>
+</div>
