@@ -16,8 +16,13 @@ services:
       - .env
     ports:
       - "127.0.0.1:8000:8000"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
     depends_on:
       - db
 
 volumes:
   postgres_data:
+
+# Made with Bob

@@ -21,3 +21,17 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("role", "ADMIN")
 
         return self.create_user(email, password, **extra_fields)
+
+    def create_student(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault("role", "STUDENT")
+
+        return self.create_user(email, password, **extra_fields)
+
+    def create_faculty(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault("role", "FACULTY")
+
+        return self.create_user(email, password, **extra_fields)
