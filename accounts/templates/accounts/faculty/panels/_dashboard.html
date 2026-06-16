@@ -1,6 +1,6 @@
 {% load static %}
 <section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
-  <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}');">
+  <div class="welcome-banner">
     <div>
       <h3>Welcome Back, {{ request.user.first_name }}</h3>
       <p>Manage the academic community at Adonai Bible School. Manage assignments and student submissions and grading.</p>

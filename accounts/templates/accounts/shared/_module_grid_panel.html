@@ -4,7 +4,7 @@
     {% if banner_include %}
       {% include banner_include %}
     {% else %}
-      <div class="welcome-banner" style="background-image: linear-gradient(to top, rgba(146, 31, 34, 0.4) 0%, transparent 100%), url('{% static 'accounts/user_welcome_bg_img.png' %}');">
+      <div class="welcome-banner">
         <div>
           <h3>{{ banner_title }}</h3>
           <p>{{ banner_description }}</p>
