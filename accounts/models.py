@@ -77,6 +77,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class UserProfile(models.Model):
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+        ('', 'Prefer not to say'),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
@@ -86,6 +92,7 @@ class UserProfile(models.Model):
     address = models.TextField(blank=True)
 
     dob = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, default='')
 
     profile_image = models.CharField(max_length=255, blank=True)
 

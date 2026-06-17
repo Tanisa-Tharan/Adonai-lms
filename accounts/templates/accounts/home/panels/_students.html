@@ -11,56 +11,56 @@
   <div class="panel-card">
 
     <div class="{% if active_tab == 'students' and user_panel_mode != 'table' %}hidden-panel{% endif %}">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Student ID</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Join Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in student_users %}
-          <tr>
-            <td>{{ user.first_name }} {{ user.last_name }}</td>
-            <td>{% if user.serial_number %}{{ user.serial_number }}{% else %}-{% endif %}</td>
-            <td>{{ user.email }}</td>
-            <td>
-              <span class="role-pill {{ user.role|lower }}">
-                {{ user.get_role_display }}
-              </span>
-            </td>
-            <td>
-              <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
-                {% if user.is_active %}Active{% else %}Inactive{% endif %}
-              </span>
-            </td>
-            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-            <td class="actions-cell">
-              <button type="button" class="action-menu-button" aria-label="User actions">...</button>
-              <div class="action-menu">
-                <a href="{% url 'home' %}?tab=students&mode=edit&user_id={{ user.id }}">Edit Student</a>
-                {% if request.user.role == "ADMIN" %}
-                  <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
-                    {% csrf_token %}
-                    <button type="submit" class="danger-item">Delete Student</button>
-                  </form>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="7">No students found</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Join Date</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in student_users %}
+              <tr>
+                <td>{% if user.serial_number %}{{ user.serial_number }}{% else %}-{% endif %}</td>
+                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+                <td>
+                  <span class="role-pill {{ user.role|lower }}">
+                    {{ user.get_role_display }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
+                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button type="button" class="action-menu-button" aria-label="User actions">...</button>
+                  <div class="action-menu">
+                    <a href="{% url 'home' %}?tab=students&mode=edit&user_id={{ user.id }}">Edit Student</a>
+                    {% if request.user.role == "ADMIN" %}
+                      <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirmDelete('user');">
+                        {% csrf_token %}
+                        <button type="submit" class="danger-item">Delete Student</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7">No students found</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
 
     <div class="user-form-shell {% if active_tab != 'students' or user_panel_mode == 'table' %}hidden-panel{% endif %}">
       <form method="post" action="{% if user_panel_mode == 'edit' and editing_user %}{% url 'home' %}?tab=students&mode=edit&user_id={{ editing_user.id }}{% else %}{% url 'home' %}?tab=students&mode=create&role=STUDENT{% endif %}" onsubmit="showStudentLoadingSpinner()">
@@ -101,14 +101,19 @@
               </div>
             </div>
 
-            <!-- Row 3: Date of Birth (half width) -->
+            <!-- Row 3: Date of Birth, Gender -->
             <div class="form-row">
               <div class="field-group">
                 <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
                 {{ user_form.dob }}
                 {{ user_form.dob.errors }}
               </div>
-              <div class="field-group" style="visibility: hidden;"></div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.gender.id_for_label }}">Gender</label>
+                {{ user_form.gender }}
+                {{ user_form.gender.errors }}
+              </div>
             </div>
 
             <!-- Row 4: Address (full width) -->

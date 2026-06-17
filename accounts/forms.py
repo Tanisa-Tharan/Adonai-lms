@@ -25,6 +25,11 @@ class CreateUserForm(forms.Form):
         required=False,
         widget=forms.DateInput(attrs={"type": "date"})
     )
+    gender = forms.ChoiceField(
+        choices=UserProfile.GENDER_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"})
+    )
 
     # ENROLLMENT (only for student)
     track = forms.ChoiceField(

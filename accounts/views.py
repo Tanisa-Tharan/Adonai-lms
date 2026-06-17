@@ -69,6 +69,7 @@ def _build_user_form(user=None, role=None):
         "phone": profile.phone,
         "address": profile.address,
         "dob": profile.dob,
+        "gender": profile.gender,
     }
 
     if enrollment:
@@ -133,6 +134,7 @@ def _save_user_from_form(form, user=None):
     profile.phone = form.cleaned_data.get("phone") or ""
     profile.address = form.cleaned_data.get("address") or ""
     profile.dob = form.cleaned_data.get("dob")
+    profile.gender = form.cleaned_data.get("gender") or ""
     profile.save()
 
     if user.role == "STUDENT":

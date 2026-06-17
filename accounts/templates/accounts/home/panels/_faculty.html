@@ -99,14 +99,19 @@
               </div>
             </div>
 
-            <!-- Row 3: Date of Birth -->
-            <div class="form-row-half">
+            <!-- Row 3: Date of Birth, Gender -->
+            <div class="form-row">
               <div class="field-group">
                 <label for="{{ user_form.dob.id_for_label }}">Date of Birth</label>
                 {{ user_form.dob }}
                 {{ user_form.dob.errors }}
               </div>
-              <div class="field-group"></div>
+              
+              <div class="field-group">
+                <label for="{{ user_form.gender.id_for_label }}">Gender</label>
+                {{ user_form.gender }}
+                {{ user_form.gender.errors }}
+              </div>
             </div>
 
             <!-- Row 4: Address -->
