@@ -396,6 +396,24 @@ def _admin_home_context(
         assignment_count=Count("assignments")
     ).order_by("-created_at")
 
+    # Prepare module items for grid view
+    admin_module_items = [
+        {
+            "id": str(run.id),
+            "module_id": str(run.module.id),
+            "title": run.module.title,
+            "subtitle": run.quarter.name,
+            "meta_icon": "assignments",
+            "meta_text": f"{run.assignment_count} Assignment{'s' if run.assignment_count != 1 else ''}",
+            "action_url": reverse("module_students_panel", args=[run.id]),
+            "faculty_name": f"{run.faculty.first_name} {run.faculty.last_name}",
+            "start_date": run.start_date,
+            "end_date": run.end_date,
+            "students_count": StudentModule.objects.filter(module_run=run).count(),
+        }
+        for run in module_runs
+    ]
+
     return {
         "users": users,
         "faculty_users": users.filter(role="FACULTY"),
@@ -413,6 +431,7 @@ def _admin_home_context(
         "module_panel_mode": "table",
         "editing_module": None,
         "module_runs": module_runs,
+        "admin_module_items": admin_module_items,
         "module_stats": {
             "total_courses": modules.count(),
             "active_courses": active_modules.count(),
@@ -532,6 +551,10 @@ def faculty_home(request):
             "meta_icon": "assignments",
             "meta_text": f"{run.assignments.count()} Assignment{'s' if run.assignments.count() != 1 else ''}",
             "action_url": reverse("faculty_view_class_panel", args=[run.id]),
+            "faculty_name": f"{run.faculty.first_name} {run.faculty.last_name}",
+            "start_date": run.start_date,
+            "end_date": run.end_date,
+            "students_count": StudentModule.objects.filter(module_run=run).count(),
         }
         for run in faculty_runs
     ]
@@ -540,7 +563,7 @@ def faculty_home(request):
     faculty_assignments = (
         Assignment.objects.filter(module_run__in=faculty_runs)
         .select_related("module_run", "module_run__module")
-        .order_by("-due_date")
+        .order_by("serial_number")
     )
 
     return render(
@@ -670,7 +693,7 @@ def faculty_student_submissions(request, student_module_id, module_run_id):
     # Get all assignments for this module
     assignments = Assignment.objects.filter(
         module_run_id=module_run_id
-    ).order_by('due_date')
+    ).order_by('serial_number')
     
     # Get all submissions for this student
     submissions = AssignmentSubmission.objects.filter(
@@ -845,7 +868,7 @@ def student_home(request):
     due_assignments = (
         Assignment.objects.filter(module_run__in=module_runs)
         .prefetch_related("files")
-        .order_by("due_date")
+        .order_by("serial_number")
     )
 
     student_module_items = [
@@ -861,6 +884,10 @@ def student_home(request):
                 else "Attendance not available"
             ),
             "action_url": reverse("student_module_assignments_panel", args=[sm.module_run.id]),
+            "faculty_name": f"{sm.module_run.faculty.first_name} {sm.module_run.faculty.last_name}",
+            "start_date": sm.module_run.start_date,
+            "end_date": sm.module_run.end_date,
+            "students_count": StudentModule.objects.filter(module_run=sm.module_run).count(),
         }
         for sm in student_modules
     ]
@@ -890,7 +917,7 @@ def student_module_assignments_panel(request, module_run_id):
     assignments = (
         Assignment.objects.filter(module_run_id=module_run_id)
         .prefetch_related("files")
-        .order_by("-due_date", "-id")
+        .order_by("serial_number")
     )
     submissions = AssignmentSubmission.objects.filter(student_module=student_module, assignment__in=assignments)
     submission_by_assignment = {str(s.assignment_id): s for s in submissions}
@@ -1580,7 +1607,7 @@ def module_assignments_panel(request, module_run_id):
             Assignment.objects.filter(module_run=module_run, id=view_assignment_id)
             .select_related("created_by", "module", "module_run")
             .prefetch_related("files")
-            .order_by("-due_date", "-id")
+            .order_by("serial_number")
         )
     else:
         # Show all assignments for the module
@@ -1588,7 +1615,7 @@ def module_assignments_panel(request, module_run_id):
             Assignment.objects.filter(module_run=module_run)
             .select_related("created_by", "module", "module_run")
             .prefetch_related("files")
-            .order_by("-due_date", "-id")
+            .order_by("serial_number")
         )
     assignment_files = AssignmentFile.objects.filter(
         assignment__module_run=module_run
@@ -1762,7 +1789,7 @@ def delete_module_assignment(request, module_run_id, assignment_id):
         faculty_assignments = (
             Assignment.objects.filter(module_run__in=faculty_runs)
             .select_related("module_run", "module_run__module")
-            .order_by("-due_date")
+            .order_by("serial_number")
         )
         return render(
             request,
@@ -1866,7 +1893,7 @@ def update_module_assignment(request, module_run_id, assignment_id):
         faculty_assignments = (
             Assignment.objects.filter(module_run__in=faculty_runs)
             .select_related("module_run", "module_run__module")
-            .order_by("-due_date")
+            .order_by("serial_number")
         )
         return render(
             request,

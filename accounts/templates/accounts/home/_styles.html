@@ -28,7 +28,7 @@
   .layout {
     min-height: 100vh;
     width: 100%;
-    max-width: 1920px;
+    max-width: 1440px;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 300px 1fr;
@@ -1272,6 +1272,7 @@
     justify-content: flex-end;
     gap: 12px;
     flex-wrap: nowrap;
+    margin-left: auto;
   }
 
   .assignment-card-status-actions-row {
@@ -1280,6 +1281,7 @@
     justify-content: flex-end;
     gap: 10px;
     flex-wrap: nowrap;
+    margin-left: auto;
   }
 
   .assignment-card-status-actions-row form {
@@ -1367,7 +1369,7 @@
   .assignment-card {
     display: flex;
     width: 100%;
-    max-width: 956px;
+    /* max-width: 956px; */
     min-height: 571px;
     padding: 16px;
     flex-direction: column;
@@ -1383,6 +1385,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
     gap: 24px;
+  }
+
+  .assignment-card-row-top {
+    grid-template-columns: 1fr auto;
+    align-items: center;
   }
 
   .assignment-card-cell {
@@ -1520,8 +1527,8 @@
     flex-shrink: 0;
     align-self: stretch;
     background: #FFF;
-    border-radius: 12px;
-    border: 1px solid #F1F5F9;
+    /* border-radius: 12px;
+    border: 1px solid #F1F5F9; */
   }
 
   .assignment-card-description-content {
@@ -1647,6 +1654,71 @@
   .module-card .button {
     width: 100%;
     margin-top: auto;
+  }
+
+  /* Module card meta items */
+  .module-card-meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .module-card-meta-item svg {
+    flex-shrink: 0;
+    width: 12px;
+    height: 13.333px;
+    fill: #475569;
+    margin-top: 3px;
+  }
+
+  .module-card-meta-item:first-of-type svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .module-card-meta-item:last-of-type svg {
+    width: 14.667px;
+    height: 10.667px;
+  }
+
+  .module-card-meta-text {
+    color: #475569;
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 20px;
+    flex: 1;
+  }
+
+  @media (max-width: 768px) {
+    .module-card-meta-item {
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .module-card-meta-text {
+      font-size: 13px;
+      line-height: 18px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .module-card-meta-item {
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+
+    .module-card-meta-text {
+      font-size: 12px;
+      line-height: 16px;
+    }
+
+    .module-card-meta-item svg {
+      width: 10px;
+      height: 11px;
+    }
   }
 
   /* Module card button - Figma styling */

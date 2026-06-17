@@ -201,6 +201,7 @@ class Assignment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="assignments")
     module_run = models.ForeignKey(ModuleRun, on_delete=models.CASCADE, related_name="assignments")
+    serial_number = models.PositiveIntegerField(default=1)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     due_date = models.DateTimeField()
@@ -214,7 +215,19 @@ class Assignment(models.Model):
 
     class Meta:
         db_table = "assignments"
-        ordering = ["-due_date", "-id"]
+        ordering = ["serial_number", "-due_date"]
+        unique_together = [['module_run', 'serial_number']]
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Only set serial_number for new assignments
+            # Get the max serial_number for this module_run
+            max_serial = Assignment.objects.filter(
+                module_run=self.module_run
+            ).aggregate(models.Max('serial_number'))['serial_number__max']
+            
+            self.serial_number = (max_serial or 0) + 1
+        
+        super().save(*args, **kwargs)
 
 
 class AssignmentFile(FileCleanupMixin, models.Model):
