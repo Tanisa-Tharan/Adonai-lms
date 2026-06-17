@@ -1,7 +1,7 @@
 {% load template_extras %}
 
 <div class="panel-card" style="margin-top: 18px;">
-  {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=True %}
+  {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=user.is_faculty_or_admin %}
 
   <!-- Tabs Navigation -->
   <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">
@@ -18,10 +18,12 @@
 
   <!-- Tab Content: Assignments -->
   <div id="assignments-tab" class="module-tab-content active">
-    <!-- Assignment Form Section (hidden by default) -->
+    <!-- Assignment Form Section (hidden by default, only for faculty/admin) -->
+    {% if user.is_faculty_or_admin %}
     <div id="assignment-form-section"{% if editing_assignment %} data-editing-assignment="1"{% endif %} style="display: none;">
       {% include "accounts/home/panels/modules/_assignment_form.html" %}
     </div>
+    {% endif %}
 
     <!-- Assignment List Section -->
     {% include "accounts/home/panels/modules/_assignment_list.html" %}

@@ -159,6 +159,9 @@ function loadAssignmentDetails(assignmentId) {
     return response.json();
   })
   .then(data => {
+    // Store module_run_id for delete operation
+    currentModuleRunId = data.module_run_id;
+    
     // Update header
     document.getElementById('assignment-detail-title').textContent = data.title;
     document.getElementById('assignment-detail-subtitle').textContent = data.module_name + ' • Due: ' + data.due_date;
@@ -177,6 +180,7 @@ function loadAssignmentDetails(assignmentId) {
 
 // Global variable to store current assignment data
 let currentAssignmentData = null;
+let currentModuleRunId = null;
 let quillEditorInstance = null;
 
 // Edit assignment function
@@ -440,26 +444,45 @@ function deleteAssignment(assignmentId) {
     return;
   }
   
-  // TODO: Implement delete functionality with backend API call
-  console.log('Delete assignment:', assignmentId);
-  alert('Delete functionality will be implemented soon.');
+  if (!currentModuleRunId) {
+    alert('Error: Module run ID not found. Please try again.');
+    return;
+  }
   
-  // Example implementation:
-  // fetch(`/faculty/assignments/${assignmentId}/delete/`, {
-  //   method: 'DELETE',
-  //   headers: {
-  //     'X-CSRFToken': getCookie('csrftoken'),
-  //     'X-Requested-With': 'XMLHttpRequest'
-  //   }
-  // })
-  // .then(response => response.json())
-  // .then(data => {
-  //   if (data.success) {
-  //     hideAssignmentDetail();
-  //     location.reload(); // Reload to update the table
-  //   }
-  // })
-  // .catch(error => console.error('Error:', error));
+  // Show loading overlay
+  const loadingOverlay = document.getElementById('assignment-loading-overlay');
+  if (loadingOverlay) {
+    loadingOverlay.style.display = 'flex';
+  }
+  
+  fetch(`/module-runs/${currentModuleRunId}/assignments/${assignmentId}/delete/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCookie('csrftoken'),
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+    }
+    
+    if (data.success) {
+      alert('Assignment deleted successfully!');
+      hideAssignmentDetail();
+      location.reload(); // Reload to update the table
+    } else {
+      alert('Error: ' + (data.error || 'Failed to delete assignment'));
+    }
+  })
+  .catch(error => {
+    if (loadingOverlay) {
+      loadingOverlay.style.display = 'none';
+    }
+    console.error('Error deleting assignment:', error);
+    alert('Failed to delete assignment. Please try again.');
+  });
 }
 
 // Tab switching for assignment detail view

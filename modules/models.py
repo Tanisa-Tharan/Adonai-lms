@@ -201,7 +201,7 @@ class Assignment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="assignments")
     module_run = models.ForeignKey(ModuleRun, on_delete=models.CASCADE, related_name="assignments")
-    serial_number = models.PositiveIntegerField(default=1)
+    serial_number = models.PositiveIntegerField(null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     due_date = models.DateTimeField()
@@ -219,14 +219,33 @@ class Assignment(models.Model):
         unique_together = [['module_run', 'serial_number']]
     
     def save(self, *args, **kwargs):
-        if not self.pk:  # Only set serial_number for new assignments
-            # Get the max serial_number for this module_run
-            max_serial = Assignment.objects.filter(
-                module_run=self.module_run
-            ).aggregate(models.Max('serial_number'))['serial_number__max']
-            
-            self.serial_number = (max_serial or 0) + 1
+        # Only auto-generate serial_number for new assignments and if serial_number is not set
+        # Check if this is a new record by seeing if it exists in the database
+        is_new = self._state.adding
         
+        if is_new and self.serial_number is None:
+            from django.db import transaction, connection
+            
+            # Use transaction and database-level advisory lock to prevent race conditions
+            with transaction.atomic():
+                # Use PostgreSQL advisory lock based on module_run_id hash
+                # This ensures only one assignment creation happens at a time per module_run
+                with connection.cursor() as cursor:
+                    # Convert UUID to integer for advisory lock
+                    lock_id = abs(hash(str(self.module_run.id))) % (2**31)
+                    cursor.execute('SELECT pg_advisory_xact_lock(%s)', [lock_id])
+                
+                # Now safely get the max serial number
+                max_serial = Assignment.objects.filter(
+                    module_run=self.module_run
+                ).aggregate(
+                    models.Max('serial_number')
+                )['serial_number__max']
+                
+                # Set the serial number
+                self.serial_number = (max_serial or 0) + 1
+        
+        # Always call super().save() - either with the new serial_number or for updates
         super().save(*args, **kwargs)
 
 

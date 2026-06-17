@@ -20,6 +20,7 @@ from .views import (
     student_module_assignments_panel,
     student_submit_assignment,
     student_delete_submission,
+    student_delete_submission_file,
     student_module_materials_panel,
     module_attendance_panel,
     course_materials_panel,
@@ -132,6 +133,11 @@ urlpatterns = [
         "student/module-runs/<uuid:module_run_id>/assignments/<uuid:assignment_id>/delete/",
         student_delete_submission,
         name="student_delete_submission",
+    ),
+    path(
+        "student/module-runs/<uuid:module_run_id>/submissions/<uuid:submission_id>/delete-file/",
+        student_delete_submission_file,
+        name="student_delete_submission_file",
     ),
     path(
         "student/modules/<uuid:module_id>/materials/",

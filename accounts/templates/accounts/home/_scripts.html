@@ -113,7 +113,7 @@
   }
 
   // Show submission form
-  function showSubmissionForm(assignmentId) {
+  function showSubmissionForm(assignmentId, existingContent = null) {
     // Hide all assignment cards except the one being submitted
     document.querySelectorAll('.assignment-card').forEach(function(card) {
       const formInCard = card.querySelector('#submission-form-' + assignmentId);
@@ -140,38 +140,41 @@
         const editorContainer = document.getElementById('quill-submission-editor-' + assignmentId);
         const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
         
-        if (editorContainer && hiddenTextarea && !submissionEditors[assignmentId]) {
-          // Clear any existing content
-          editorContainer.innerHTML = '';
-          
-          // Initialize Quill
-          submissionEditors[assignmentId] = new Quill(editorContainer, {
-            theme: 'snow',
-            placeholder: 'Enter your answer with formatting...',
-            modules: {
-              toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                [{ 'align': [] }],
-                [{ 'color': [] }, { 'background': [] }],
-                ['link'],
-                ['clean']
-              ]
-            }
-          });
+        if (editorContainer && hiddenTextarea) {
+          if (!submissionEditors[assignmentId]) {
+            // Clear any existing content
+            editorContainer.innerHTML = '';
+            
+            // Initialize Quill
+            submissionEditors[assignmentId] = new Quill(editorContainer, {
+              theme: 'snow',
+              placeholder: 'Enter your answer with formatting...',
+              modules: {
+                toolbar: [
+                  [{ 'header': [1, 2, 3, false] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  [{ 'indent': '-1'}, { 'indent': '+1' }],
+                  [{ 'align': [] }],
+                  [{ 'color': [] }, { 'background': [] }],
+                  ['link'],
+                  ['clean']
+                ]
+              }
+            });
 
-          // Set initial content if editing
-          const initialContent = hiddenTextarea.value;
-          if (initialContent) {
-            submissionEditors[assignmentId].root.innerHTML = initialContent;
+            // Sync content to hidden textarea on change
+            submissionEditors[assignmentId].on('text-change', function() {
+              hiddenTextarea.value = submissionEditors[assignmentId].root.innerHTML;
+            });
           }
-
-          // Sync content to hidden textarea on change
-          submissionEditors[assignmentId].on('text-change', function() {
-            hiddenTextarea.value = submissionEditors[assignmentId].root.innerHTML;
-          });
+          
+          // Set content (for both new and existing editors)
+          const contentToSet = existingContent || hiddenTextarea.value || '';
+          if (contentToSet) {
+            submissionEditors[assignmentId].root.innerHTML = contentToSet;
+            hiddenTextarea.value = contentToSet;
+          }
         }
       }, 200);
     }
@@ -215,6 +218,19 @@
     event.preventDefault();
     
     const form = event.target;
+    const submitBtn = document.getElementById('submit-btn-form-' + assignmentId);
+    
+    // Show loading state
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      const icon = submitBtn.querySelector('.btn-icon');
+      const spinner = submitBtn.querySelector('.btn-spinner');
+      const text = submitBtn.querySelector('.btn-text');
+      if (icon) icon.style.display = 'none';
+      if (spinner) spinner.style.display = 'block';
+      if (text) text.textContent = 'Submitting...';
+    }
+    
     const formData = new FormData(form);
     
     // Add status to form data
@@ -278,12 +294,37 @@
       }
     })
     .catch(error => {
+      // Reset button state on error
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        const icon = submitBtn.querySelector('.btn-icon');
+        const spinner = submitBtn.querySelector('.btn-spinner');
+        const text = submitBtn.querySelector('.btn-text');
+        if (icon) icon.style.display = 'block';
+        if (spinner) spinner.style.display = 'none';
+        if (text) text.textContent = 'Submit';
+      }
       alert('Error submitting assignment: ' + error.message);
       console.error('Submission error:', error);
+    });
+  }
 
   // Handle Save Draft button
   function handleSaveDraft(event, assignmentId, moduleRunId) {
     event.preventDefault();
+    
+    const draftBtn = document.getElementById('save-draft-btn-' + assignmentId);
+    
+    // Show loading state
+    if (draftBtn) {
+      draftBtn.disabled = true;
+      const icon = draftBtn.querySelector('.btn-icon');
+      const spinner = draftBtn.querySelector('.btn-spinner');
+      const text = draftBtn.querySelector('.btn-text');
+      if (icon) icon.style.display = 'none';
+      if (spinner) spinner.style.display = 'block';
+      if (text) text.textContent = 'Saving...';
+    }
     
     const form = document.getElementById('assignment-submission-form-' + assignmentId);
     const formData = new FormData(form);
@@ -350,6 +391,16 @@
       alert('Draft saved successfully!');
     })
     .catch(error => {
+      // Reset button state on error
+      if (draftBtn) {
+        draftBtn.disabled = false;
+        const icon = draftBtn.querySelector('.btn-icon');
+        const spinner = draftBtn.querySelector('.btn-spinner');
+        const text = draftBtn.querySelector('.btn-text');
+        if (icon) icon.style.display = 'block';
+        if (spinner) spinner.style.display = 'none';
+        if (text) text.textContent = 'Save Draft';
+      }
       alert('Error saving draft: ' + error.message);
       console.error('Draft save error:', error);
     });
@@ -371,10 +422,6 @@
       
       console.log('Changes discarded for assignment:', assignmentId);
     }
-  }
-    });
-
-    return false;
   }
 
   // Initialize on page load

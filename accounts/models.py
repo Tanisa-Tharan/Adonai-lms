@@ -45,6 +45,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    @property
+    def is_faculty_or_admin(self):
+        """Check if user is faculty, admin, or supervisor"""
+        return self.role in ["FACULTY", "ADMIN", "SUPERVISOR"]
+
     def _generate_student_serial_number(self):
         prefix = str(timezone.now().year)[::-1]
         last_student = (

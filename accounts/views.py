@@ -1095,6 +1095,37 @@ def student_delete_submission(request, assignment_id, module_run_id):
 
 @login_required
 @student_required
+def student_delete_submission_file(request, submission_id, module_run_id):
+    """Delete only the file from a submission, keeping the description"""
+    if request.method != "POST":
+        return redirect("student_home")
+
+    # Get the submission and verify ownership
+    submission = get_object_or_404(
+        AssignmentSubmission,
+        id=submission_id,
+        student_module__module_run_id=module_run_id,
+        student_module__enrollment__student=request.user,
+    )
+    
+    # Check if assignment is still open for editing
+    if timezone.now() > submission.assignment.due_date:
+        return student_module_assignments_panel(request, module_run_id=module_run_id)
+    
+    # Delete the file if it exists
+    if submission.file_url:
+        # Delete the physical file
+        if default_storage.exists(submission.file_url.name):
+            default_storage.delete(submission.file_url.name)
+        # Clear the file field
+        submission.file_url = None
+        submission.save()
+    
+    return student_module_assignments_panel(request, module_run_id=module_run_id)
+
+
+@login_required
+@student_required
 def student_module_materials_panel(request, module_id):
     # Ensure student is enrolled in at least one run for this module.
     if not StudentModule.objects.filter(enrollment__student=request.user, module_run__module_id=module_id).exists():
@@ -1772,8 +1803,15 @@ def delete_module_assignment(request, module_run_id, assignment_id):
 
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
     if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({"success": False, "error": "Permission denied"}, status=403)
         return redirect("faculty_home")
+    
     assignment.delete()
+    
+    # If this is an AJAX request, return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({"success": True, "message": "Assignment deleted successfully"})
     
     # Check if this is from faculty assignments page
     from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
@@ -2283,6 +2321,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     return JsonResponse({
         'success': True,
         'id': str(assignment.id),
+        'module_run_id': str(assignment.module_run.id),
         'title': assignment.title,
         'module_name': assignment.module_run.module.title,
         'due_date': assignment.due_date.strftime("%B %d, %Y"),
