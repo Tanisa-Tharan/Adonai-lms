@@ -476,22 +476,78 @@
 
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const target = button.dataset.tab + "-panel";
-
-      tabButtons.forEach((item) => item.classList.remove("active"));
-      tabPanels.forEach((panel) => panel.classList.remove("active"));
-
-      button.classList.add("active");
-      document.getElementById(target).classList.add("active");
-      if (window.history.replaceState) {
-        const nextUrl = new URL(window.location.href);
-        nextUrl.searchParams.set("tab", button.dataset.tab);
-        if (button.dataset.tab !== "faculty" && button.dataset.tab !== "students") {
-          nextUrl.searchParams.delete("mode");
-          nextUrl.searchParams.delete("role");
-          nextUrl.searchParams.delete("user_id");
+      const clickedTab = button.dataset.tab;
+      const currentUrl = new URL(window.location.href);
+      const currentTab = currentUrl.searchParams.get("tab") || "dashboard";
+      
+      // If clicking the same tab, always reload to reset to main view
+      // If clicking a different tab, navigate with clean URL
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("tab", clickedTab);
+      
+      // Always remove mode, role, and user_id parameters to reset to main view
+      nextUrl.searchParams.delete("mode");
+      nextUrl.searchParams.delete("role");
+      nextUrl.searchParams.delete("user_id");
+      
+      // Check if we're in a sub-view (has URL params or detail views are open)
+      const hasSubViewParams = currentUrl.searchParams.has("mode") ||
+                               currentUrl.searchParams.has("user_id");
+      const hasOpenDrawer = document.querySelector('[id$="detail-drawer"]')?.innerHTML.trim() !== '';
+      const hasDetailView = document.getElementById('assignment-detail-view')?.style.display === 'block';
+      
+      if (clickedTab === currentTab && (hasSubViewParams || hasOpenDrawer || hasDetailView)) {
+        // Clear all detail drawers
+        document.querySelectorAll('[id$="detail-drawer"]').forEach(drawer => {
+          drawer.innerHTML = '';
+        });
+        
+        // Show all grid/table views
+        document.querySelectorAll('[id$="-grid-view"]').forEach(gridView => {
+          gridView.style.display = 'block';
+        });
+        
+        // Reset faculty assignment detail view
+        const assignmentDetailView = document.getElementById('assignment-detail-view');
+        const assignmentsTableView = document.getElementById('assignments-table-view');
+        if (assignmentDetailView && assignmentsTableView) {
+          assignmentDetailView.style.display = 'none';
+          assignmentsTableView.style.display = 'block';
         }
-        window.history.replaceState({}, "", nextUrl);
+        
+        // If there are URL params, reload to clear them
+        if (hasSubViewParams) {
+          window.location.href = nextUrl.toString();
+        }
+      } else {
+        // Normal tab switching
+        const target = clickedTab + "-panel";
+        tabButtons.forEach((item) => item.classList.remove("active"));
+        tabPanels.forEach((panel) => panel.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById(target).classList.add("active");
+        
+        // Clear detail drawers when switching tabs
+        document.querySelectorAll('[id$="detail-drawer"]').forEach(drawer => {
+          drawer.innerHTML = '';
+        });
+        
+        // Show all grid/table views
+        document.querySelectorAll('[id$="-grid-view"]').forEach(gridView => {
+          gridView.style.display = 'block';
+        });
+        
+        // Reset faculty assignment detail view
+        const assignmentDetailView = document.getElementById('assignment-detail-view');
+        const assignmentsTableView = document.getElementById('assignments-table-view');
+        if (assignmentDetailView && assignmentsTableView) {
+          assignmentDetailView.style.display = 'none';
+          assignmentsTableView.style.display = 'block';
+        }
+        
+        if (window.history.replaceState) {
+          window.history.replaceState({}, "", nextUrl);
+        }
       }
     });
   });
