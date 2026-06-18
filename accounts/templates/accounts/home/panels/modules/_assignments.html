@@ -69,6 +69,7 @@
             {% endfor %}
           </div>
         </div>
+        {% if user.is_faculty_or_admin %}
         <div class="resources-card-column resources-card-column-right">
           <input type="file" id="resources-upload-{{ module_run.id }}" accept=".pdf,application/pdf" style="display: none;" data-material-type="PDF" data-resource-type="RESOURCES" data-module-id="{{ module_run.module.id }}">
           <div class="resources-upload-box" data-module-id="{{ module_run.module.id }}" onclick="document.getElementById('resources-upload-{{ module_run.id }}').click()">
@@ -84,6 +85,7 @@
             <button type="button" class="resources-upload-button">Upload Resources</button>
           </div>
         </div>
+        {% endif %}
       </div>
       </div>
     </div>
