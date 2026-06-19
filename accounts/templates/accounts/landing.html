@@ -34,7 +34,22 @@
     </ul>
 
     <a href="{% url 'login' %}" class="l-btn-signin">Sign In</a>
+    <button class="l-hamburger" id="l-hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+
+  <!-- MOBILE DRAWER -->
+  <div class="l-drawer-backdrop" id="l-drawer-backdrop"></div>
+  <div class="l-drawer" id="l-drawer">
+    <button class="l-drawer-close" id="l-drawer-close">&times;</button>
+    <ul class="l-drawer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#programs">Programs</a></li>
+      <li><a href="#mission">Mission</a></li>
+    </ul>
+    <a href="{% url 'login' %}" class="l-drawer-cta">Sign In to LMS</a>
+  </div>
 
   <!-- HERO -->
   <section class="l-hero">
@@ -44,13 +59,13 @@
         Adonai Church — Bible School
       </div>
       <h1 class="l-hero-title">
-        Equipping Minds,<br>
-        <span>Transforming Lives</span><br>
-        Through Scripture
+        Equipping the<br>
+        <span>Next Generation</span><br>
+        of Leaders
       </h1>
       <p class="l-hero-subtitle">
-        A structured academic environment for believers to grow in biblical knowledge,
-        theological understanding, and spiritual maturity — rooted in the Word of God.
+        Adonai Bible School is a church-based theological training program dedicated to equipping
+        the people of God for works of service, for the building up of the church.
       </p>
       <div class="l-hero-actions">
         <a href="{% url 'login' %}" class="l-btn-primary">
@@ -66,22 +81,22 @@
 
     <div class="l-hero-visual">
       <div class="l-hero-card-main">
-        <div class="l-hero-card-label">Featured Verse</div>
+        <div class="l-hero-card-label">Our Foundation</div>
         <div class="l-hero-card-verse">
-          <blockquote>"Your word is a lamp to my feet and a light to my path."</blockquote>
-          <cite>— Psalm 119:105</cite>
+          <blockquote>"Their responsibility is to equip God's people to do his work and build up the church, the body of Christ."</blockquote>
+          <cite>— Ephesians 4:12 (NLT)</cite>
         </div>
         <div class="l-hero-card-stats">
           <div class="l-hero-stat">
-            <div class="l-hero-stat-num">100+</div>
+            <div class="l-hero-stat-num">45+</div>
             <div class="l-hero-stat-lbl">Students</div>
           </div>
           <div class="l-hero-stat">
-            <div class="l-hero-stat-num">20+</div>
+            <div class="l-hero-stat-num">10+</div>
             <div class="l-hero-stat-lbl">Faculty</div>
           </div>
           <div class="l-hero-stat">
-            <div class="l-hero-stat-num">30+</div>
+            <div class="l-hero-stat-num">15+</div>
             <div class="l-hero-stat-lbl">Modules</div>
           </div>
         </div>
@@ -103,52 +118,77 @@
             <div class="l-float-item-sub">1-year track</div>
           </div>
         </div>
-        <div class="l-float-item">
-          <span class="l-float-dot l-float-dot-yellow"></span>
-          <div>
-            <div class="l-float-item-text">Individual Modules</div>
-            <div class="l-float-item-sub">Self-paced</div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
 
   <!-- STATS BAR -->
-  <div class="l-stats-bar" id="about">
+  <div class="l-stats-bar">
     <div class="l-stat-item">
-      <div class="l-stat-num">100+</div>
+      <div class="l-stat-num">45+</div>
       <div class="l-stat-lbl">Students Enrolled</div>
     </div>
     <div class="l-stat-item">
-      <div class="l-stat-num">20+</div>
+      <div class="l-stat-num">10+</div>
       <div class="l-stat-lbl">Faculty Members</div>
     </div>
     <div class="l-stat-item">
-      <div class="l-stat-num">30+</div>
+      <div class="l-stat-num">15+</div>
       <div class="l-stat-lbl">Course Modules</div>
     </div>
     <div class="l-stat-item">
-      <div class="l-stat-num">3</div>
-      <div class="l-stat-lbl">Academic Programs</div>
+      <div class="l-stat-num">1</div>
+      <div class="l-stat-lbl">Academic Year</div>
     </div>
   </div>
 
-  <!-- FEATURES -->
-  <section class="l-features" id="programs">
+  <!-- ABOUT / FEATURES -->
+  <section class="l-features" id="about">
     <div class="l-section-header">
-      <div class="l-section-eyebrow">Why Adonai Bible School</div>
-      <h2 class="l-section-title">Everything You Need to<br>Grow in the Word</h2>
-      <p class="l-section-sub">Our LMS brings together structured learning, experienced faculty, and a community of believers committed to biblical education.</p>
+      <div class="l-section-eyebrow">About Adonai Bible School</div>
+      <h2 class="l-section-title">Equipping God's People<br>for Works of Service</h2>
+      <p class="l-section-sub">We are committed to providing foundational theological education that equips the next generation for church leadership, church growth, and church planting.</p>
     </div>
 
     <div class="l-features-grid">
       <div class="l-feature-card">
         <div class="l-feature-icon">
-          <svg width="22" height="22" viewBox="0 0 18 20" fill="none"><path d="M3 20C2.16667 20 1.45833 19.7083 0.875 19.125C0.291667 18.5417 0 17.8333 0 17V3C0 2.16667 0.291667 1.45833 0.875 0.875C1.45833 0.291667 2.16667 0 3 0H14V16H3C2.71667 16 2.47917 16.0958 2.2875 16.2875C2.09583 16.4792 2 16.7167 2 17C2 17.2833 2.09583 17.5208 2.2875 17.7125C2.47917 17.9042 2.71667 18 3 18H16V2H18V20H3Z" fill="#921F22"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#921F22"/></svg>
         </div>
-        <div class="l-feature-title">Structured Curriculum</div>
-        <p class="l-feature-text">Carefully sequenced modules covering systematic theology, biblical studies, and practical ministry — designed to build a solid foundation in Scripture.</p>
+        <div class="l-feature-title">Head — Intellectual Formation</div>
+        <p class="l-feature-text">Each module is biblically grounded in systematic theology, biblical studies, and church history — building a solid intellectual foundation in the Word of God.</p>
+      </div>
+
+      <div class="l-feature-card">
+        <div class="l-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 10h16M4 14h10" stroke="#921F22" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="l-feature-title">Hands — Ministry Formation</div>
+        <p class="l-feature-text">Real-world ministry insights are integrated into every module, preparing students for active service in evangelism, pastoral care, discipleship, and church planting.</p>
+      </div>
+
+      <div class="l-feature-card">
+        <div class="l-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#921F22"/></svg>
+        </div>
+        <div class="l-feature-title">Heart — Spiritual Formation</div>
+        <p class="l-feature-text">Our learning program places importance on a growing relationship of loving obedience to Jesus Christ — nurturing the inner life of every student.</p>
+      </div>
+
+      <div class="l-feature-card">
+        <div class="l-feature-icon">
+          <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M11 18L4 14.2V8.2L0 6L11 0L22 6V14H20V7.1L18 8.2V14.2L11 18ZM11 9.7L17.85 6L11 2.3L4.15 6L11 9.7ZM11 15.725L16 13.025V9.25L11 12L6 9.25V13.025L11 15.725Z" fill="#921F22"/></svg>
+        </div>
+        <div class="l-feature-title">Church-Based Learning</div>
+        <p class="l-feature-text">Rooted in Adonai Church, Bangalore — a vibrant community of believers. Our training is shaped by and for the local church, not detached from it.</p>
+      </div>
+
+      <div class="l-feature-card">
+        <div class="l-feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#921F22" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#921F22" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="l-feature-title">3 Quarters · 18 Modules</div>
+        <p class="l-feature-text">The academic year runs June through March across three quarters (Q1, Q2, Q3), with 6 modules per quarter — structured to fit alongside ministry commitments.</p>
       </div>
 
       <div class="l-feature-card">
@@ -156,41 +196,156 @@
           <svg width="22" height="16" viewBox="0 0 22 16" fill="none"><path d="M0 16V13.2C0 12.6333 0.145833 12.1125 0.4375 11.6375C0.729167 11.1625 1.11667 10.8 1.6 10.55C2.63333 10.0333 3.68333 9.64583 4.75 9.3875C5.81667 9.12917 6.9 9 8 9C9.1 9 10.1833 9.12917 11.25 9.3875C12.3167 9.64583 13.3667 10.0333 14.4 10.55C14.8833 10.8 15.2708 11.1625 15.5625 11.6375C15.8542 12.1125 16 12.6333 16 13.2V16H0ZM8 8C6.9 8 5.95833 7.60833 5.175 6.825C4.39167 6.04167 4 5.1 4 4C4 2.9 4.39167 1.95833 5.175 1.175C5.95833 0.391667 6.9 0 8 0C9.1 0 10.0417 0.391667 10.825 1.175C11.6083 1.95833 12 2.9 12 4C12 5.1 11.6083 6.04167 10.825 6.825C10.0417 7.60833 9.1 8 8 8Z" fill="#921F22"/></svg>
         </div>
         <div class="l-feature-title">Experienced Faculty</div>
-        <p class="l-feature-text">Learn from pastors, theologians, and ministry leaders from Adonai Church who bring both academic depth and real-world ministry experience to every session.</p>
-      </div>
-
-      <div class="l-feature-card">
-        <div class="l-feature-icon">
-          <svg width="22" height="18" viewBox="0 0 22 18" fill="none"><path d="M11 18L4 14.2V8.2L0 6L11 0L22 6V14H20V7.1L18 8.2V14.2L11 18ZM11 9.7L17.85 6L11 2.3L4.15 6L11 9.7ZM11 15.725L16 13.025V9.25L11 12L6 9.25V13.025L11 15.725Z" fill="#921F22"/></svg>
-        </div>
-        <div class="l-feature-title">Academic Certification</div>
-        <p class="l-feature-text">Earn a recognized Diploma or Certificate upon completion, validating your commitment to biblical education and equipping you for ministry leadership.</p>
-      </div>
-
-      <div class="l-feature-card">
-        <div class="l-feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#921F22" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#921F22" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <div class="l-feature-title">Academic Sessions</div>
-        <p class="l-feature-text">Multiple quarters per academic year with clear schedules, deadlines, and milestones — keeping students and faculty aligned throughout the program.</p>
-      </div>
-
-      <div class="l-feature-card">
-        <div class="l-feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="l-feature-title">Assignments & Resources</div>
-        <p class="l-feature-text">Submit assignments, access course materials, and track your academic progress — all in one place, accessible from any device.</p>
-      </div>
-
-      <div class="l-feature-card">
-        <div class="l-feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="l-feature-title">Progress Tracking</div>
-        <p class="l-feature-text">Students and faculty can monitor attendance, grades, and completion status in real time — ensuring everyone stays on track toward their academic goals.</p>
+        <p class="l-feature-text">Learn from pastors, theologians, and ministry leaders at Adonai Church who bring both academic depth and real-world ministry experience to every session.</p>
       </div>
     </div>
+  </section>
+
+  <!-- PROGRAMS -->
+  <section class="l-programs" id="programs">
+    <div class="l-section-header">
+      <div class="l-section-eyebrow">Enrollment Options</div>
+      <h2 class="l-section-title">Our Programs</h2>
+      <p class="l-section-sub">Two tracks designed for believers at every stage — whether you're deepening your faith or preparing for full-time ministry leadership.</p>
+    </div>
+
+    <div class="l-programs-grid">
+
+      <!-- GRADUATE DIPLOMA -->
+      <div class="l-program-card">
+        <div class="l-program-top">
+          <div class="l-program-badge">Advanced</div>
+          <div class="l-program-icon">
+            <svg width="22" height="22" viewBox="0 0 22 18" fill="none"><path d="M11 18L4 14.2V8.2L0 6L11 0L22 6V14H20V7.1L18 8.2V14.2L11 18ZM11 9.7L17.85 6L11 2.3L4.15 6L11 9.7ZM11 15.725L16 13.025V9.25L11 12L6 9.25V13.025L11 15.725Z" fill="#921F22"/></svg>
+          </div>
+        </div>
+        <h3 class="l-program-title">Graduate Diploma in Ministry</h3>
+        <p class="l-program-desc">Recognized as equivalent to the first year of a Master's-level degree. Awarded upon full attendance across all 18 modules, successful completion of all assignments and module tests, and fulfilment of practical ministry requirements in Spiritual Formation, Discipleship, and Pastoral Care &amp; Counselling.</p>
+        <div class="l-program-modules">
+          <div class="l-program-modules-label">Requirements</div>
+          <ul class="l-program-module-list">
+            <li>Full attendance — all 18 modules</li>
+            <li>All assignments &amp; module tests</li>
+            <li>Spiritual Formation (KVL)</li>
+            <li>Discipleship (BGF)</li>
+            <li>Pastoral Care &amp; Counselling (WFC I &amp; II)</li>
+          </ul>
+        </div>
+        <div class="l-program-footer">
+          <div class="l-program-meta"><span>Duration:</span> 1 Academic Year</div>
+          <div class="l-program-meta"><span>Award:</span> Graduate Diploma</div>
+        </div>
+      </div>
+
+      <!-- CERTIFICATE -->
+      <div class="l-program-card l-program-card-green">
+        <div class="l-program-top">
+          <div class="l-program-badge l-program-badge-green">Foundation</div>
+          <div class="l-program-icon l-program-icon-green">
+            <svg width="22" height="22" viewBox="0 0 18 20" fill="none"><path d="M3 20C2.16667 20 1.45833 19.7083 0.875 19.125C0.291667 18.5417 0 17.8333 0 17V3C0 2.16667 0.291667 1.45833 0.875 0.875C1.45833 0.291667 2.16667 0 3 0H14V16H3C2.71667 16 2.47917 16.0958 2.2875 16.2875C2.09583 16.4792 2 16.7167 2 17C2 17.2833 2.09583 17.5208 2.2875 17.7125C2.47917 17.9042 2.71667 18 3 18H16V2H18V20H3Z" fill="#16A34A"/></svg>
+          </div>
+        </div>
+        <h3 class="l-program-title">Certificate of Achievement in Ministry</h3>
+        <p class="l-program-desc">Awarded based on full attendance at all 18 modules across the core disciplines of Theology, Old Testament, New Testament, Mission, and Leadership. An excellent foundation for any believer desiring to grow in Scripture and service.</p>
+        <div class="l-program-modules">
+          <div class="l-program-modules-label">Core Disciplines</div>
+          <ul class="l-program-module-list l-program-module-list-green">
+            <li>Theology</li>
+            <li>Old Testament</li>
+            <li>New Testament</li>
+            <li>Mission</li>
+            <li>Leadership</li>
+          </ul>
+        </div>
+        <div class="l-program-footer">
+          <div class="l-program-meta"><span>Duration:</span> 1 Academic Year</div>
+          <div class="l-program-meta"><span>Award:</span> Certificate</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- QUARTERS -->
+    <div class="l-quarters">
+      <div class="l-quarters-title">Modules by Quarter</div>
+      <div class="l-quarters-grid">
+
+        <div class="l-quarter-card">
+          <div class="l-quarter-label">Q1</div>
+          <div class="l-quarter-period">June — August</div>
+          <ul class="l-quarter-modules">
+            <li>Doctrine of The Holy Spirit</li>
+            <li>Biblical Interpretation</li>
+            <li>Doctrine of Creation</li>
+            <li>Doctrine of the Trinity</li>
+            <li>The Kingdom of God in Our Workplaces</li>
+            <li>Pentateuch</li>
+          </ul>
+        </div>
+
+        <div class="l-quarter-card">
+          <div class="l-quarter-label">Q2</div>
+          <div class="l-quarter-period">September — November</div>
+          <ul class="l-quarter-modules">
+            <li>Books of History</li>
+            <li>Major Prophets</li>
+            <li>Wisdom Literature</li>
+            <li>Gospel of John</li>
+            <li>Pauline Epistles I</li>
+            <li>Pauline Epistles II</li>
+          </ul>
+        </div>
+
+        <div class="l-quarter-card">
+          <div class="l-quarter-label">Q3</div>
+          <div class="l-quarter-period">January — March</div>
+          <ul class="l-quarter-modules">
+            <li>Christ in The Tabernacle</li>
+            <li>Doctrine of The Church</li>
+            <li>Urban Church Planting</li>
+            <li>God's Mission in Luke–Acts I</li>
+            <li>God's Mission in Luke–Acts II</li>
+            <li>Biblical Leadership</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PRACTICAL INFO -->
+    <div class="l-practical">
+      <div class="l-practical-item">
+        <div class="l-practical-label">Schedule</div>
+        <div class="l-practical-value">
+          <strong>Thu &amp; Fri</strong> 7:00 am – 9:30 am
+          <strong style="margin-top:6px;">Saturday</strong> 9:00 am – 4:00 pm
+          <span style="margin-top:4px;display:block;">2 modules/month · Alternate weeks</span>
+        </div>
+      </div>
+      <div class="l-practical-item">
+        <div class="l-practical-label">Cost</div>
+        <div class="l-practical-value">
+          <strong>Rs. 1,000/-</strong> per module
+        </div>
+      </div>
+      <div class="l-practical-item">
+        <div class="l-practical-label">Venue</div>
+        <div class="l-practical-value">
+          <strong>Adonai Church</strong>
+          No 1-8, 3rd Main Rd,<br>
+          Hoysala Nagar,<br>
+          Bangalore 560016
+        </div>
+      </div>
+      <div class="l-practical-item">
+        <div class="l-practical-label">Contact</div>
+        <div class="l-practical-value">
+          <strong>Coordinator</strong>
+          Golda
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <!-- MISSION -->
@@ -300,7 +455,6 @@
         <ul class="l-footer-links">
           <li><a href="#">Diploma Program</a></li>
           <li><a href="#">Certificate Program</a></li>
-          <li><a href="#">Individual Modules</a></li>
         </ul>
       </div>
 
@@ -320,5 +474,29 @@
     </div>
   </footer>
 
+  <script>
+    var hamburger = document.getElementById('l-hamburger');
+    var drawer = document.getElementById('l-drawer');
+    var backdrop = document.getElementById('l-drawer-backdrop');
+    var drawerClose = document.getElementById('l-drawer-close');
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', openDrawer);
+    drawerClose.addEventListener('click', closeDrawer);
+    backdrop.addEventListener('click', closeDrawer);
+    drawer.querySelectorAll('a').forEach(function(a) {
+      a.addEventListener('click', closeDrawer);
+    });
+  </script>
 </body>
 </html>
