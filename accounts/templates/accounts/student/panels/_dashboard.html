@@ -1,10 +1,14 @@
 {% load template_extras %}
 
 <section class="tab-panel {% if active_tab == 'dashboard' %}active{% endif %}" id="dashboard-panel">
-  <div class="hero-card">
-    <h3 style="margin:0 0 8px;">Student Dashboard</h3>
-    <p style="margin:0; color:var(--muted);">Upcoming assignments for your registered modules.</p>
+  <div class="welcome-banner">
+    <div>
+      <h3>Welcome Back, {{ request.user.first_name }}</h3>
+      <p>Track your modules and upcoming assignments at Adonai Bible School.</p>
+    </div>
+  </div>
 
+  <div class="hero-card">
     <div class="stats">
       <div class="stat">
         <span>My Modules</span>
