@@ -37,7 +37,6 @@
         <thead>
           <tr>
             <th>Title</th>
-            <th>Quarter</th>
             <th>Faculty</th>
             <th>Sessions</th>
             <th>Status</th>
@@ -47,79 +46,62 @@
           </tr>
         </thead>
         <tbody>
-          {% for module in modules %}
-          {% with latest_run=module.runs.all|first %}
-          <tr>
-            <td>
-              <strong>{{ module.title }}</strong><br>
-              <span class="mini-meta">{{ module.moduleId }} · Order {{ module.order_number }}</span>
-            </td>
-            <td>
-              {% if latest_run %}
-                {{ latest_run.quarter.name }}<br>
-                <span class="mini-meta">{{ latest_run.quarter.academic_year.name }}</span>
-              {% else %}
-                <span class="mini-meta">Not scheduled</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if latest_run %}
-                {{ latest_run.faculty.first_name }} {{ latest_run.faculty.last_name }}
-              {% else %}
-                <span class="mini-meta">Not assigned</span>
-              {% endif %}
-            </td>
-            <td>{{ module.session_count }}</td>
-            <td>
-              {% if latest_run %}
-                <span class="status-pill active">{{ latest_run.get_status_display }}</span>
-              {% else %}
-                <span class="status-pill inactive">Pending</span>
-              {% endif %}
-            </td>
-            <td>
-              <span class="status-pill {% if module.is_active %}active{% else %}inactive{% endif %}">
-                {% if module.is_active %}Active{% else %}Inactive{% endif %}
-              </span>
-            </td>
-            <td>{{ module.created_at|date:"Y-m-d" }}</td>
-            <td class="actions-cell">
-              <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
-	              <div class="action-menu">
-	                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
-	                {% if latest_run %}
-	                  <button
-	                    type="button"
-	                    hx-get="{% url 'module_students_panel' latest_run.id %}"
-	                    hx-target="#module-students-drawer"
-	                    hx-swap="innerHTML"
+          {% for quarter in quarters_with_runs %}
+            {% with runs=quarter.module_runs.all %}
+            {% if runs %}
+            <tr>
+              <td colspan="7" style="background:#f9f7f5; padding:10px 16px; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#921F22; border-bottom:2px solid #E7E5E4;">
+                {{ quarter.name }} &mdash; {{ quarter.academic_year.name }}
+              </td>
+            </tr>
+            {% for run in runs %}
+            <tr>
+              <td>
+                <strong>{{ run.module.title }}</strong><br>
+                <span class="mini-meta">{{ run.module.moduleId }} · Order {{ run.module.order_number }}</span>
+              </td>
+              <td>{{ run.faculty.first_name }} {{ run.faculty.last_name }}</td>
+              <td>{{ run.module.session_count }}</td>
+              <td><span class="status-pill active">{{ run.get_status_display }}</span></td>
+              <td>
+                <span class="status-pill {% if run.module.is_active %}active{% else %}inactive{% endif %}">
+                  {% if run.module.is_active %}Active{% else %}Inactive{% endif %}
+                </span>
+              </td>
+              <td>{{ run.module.created_at|date:"Y-m-d" }}</td>
+              <td class="actions-cell">
+                <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
+                <div class="action-menu">
+                  <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ run.module.id }}">Edit Module</a>
+                  <button
+                    type="button"
+                    hx-get="{% url 'module_students_panel' run.id %}"
+                    hx-target="#module-students-drawer"
+                    hx-swap="innerHTML"
                   >
                     Manage Students
                   </button>
                   <button
                     type="button"
-                    hx-get="{% url 'module_attendance_panel' latest_run.id %}"
+                    hx-get="{% url 'module_attendance_panel' run.id %}"
                     hx-target="#module-attendance-drawer"
                     hx-swap="innerHTML"
                   >
                     Take Attendance
                   </button>
-                {% else %}
-	                  <button type="button" disabled title="Schedule a module run first.">Manage Students</button>
-	                  <button type="button" disabled title="Schedule a module run first.">Take Attendance</button>
-	                  <button type="button" disabled title="Schedule a module run first.">Assignments</button>
-	                {% endif %}
-	                <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
-	                  {% csrf_token %}
-	                  <button type="submit" class="danger-item">Delete Module</button>
-	                </form>
-              </div>
-            </td>
-          </tr>
-          {% endwith %}
+                  <form method="post" action="{% url 'delete_module' run.module.id %}" onsubmit="return confirmDelete('module');">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-item">Delete Module</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
           {% empty %}
           <tr>
-            <td colspan="8">No modules found</td>
+            <td colspan="7">No modules found</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -127,25 +109,17 @@
     </div>
 
     <div class="{% if active_tab != 'modules' or module_panel_mode == 'table' %}hidden-panel{% endif %}" style="background: white; padding: 20px;">
-      <!-- Debug: active_tab={{ active_tab }}, module_panel_mode={{ module_panel_mode }}, editing_module={{ editing_module.id|default:"None" }} -->
       {% if editing_module or module_panel_mode == 'create' %}
         {% include 'accounts/home/panels/modules/_module_edit_form.html' %}
       {% else %}
         <div style="padding: 40px; background: #ffebee; border: 2px solid #f44336; border-radius: 8px;">
-          <h3 style="color: #c62828; margin-bottom: 16px;">⚠️ Error: No module selected for editing</h3>
-          <p style="margin-bottom: 16px;">Debug Info:</p>
-          <ul style="margin-bottom: 16px;">
-            <li>active_tab: {{ active_tab }}</li>
-            <li>module_panel_mode: {{ module_panel_mode }}</li>
-            <li>editing_module: {{ editing_module|default:"None" }}</li>
-            <li>module_id from URL: {{ request.GET.module_id|default:"Not provided" }}</li>
-          </ul>
+          <h3 style="color: #c62828; margin-bottom: 16px;">Error: No module selected for editing</h3>
           <a href="{% url 'home' %}?tab=modules" class="button button-primary">Back to Modules</a>
         </div>
       {% endif %}
     </div>
 
-	    <div id="module-students-drawer"></div>
-	    <div id="module-attendance-drawer"></div>
-	  </div>
-	</section>
+    <div id="module-students-drawer"></div>
+    <div id="module-attendance-drawer"></div>
+  </div>
+</section>

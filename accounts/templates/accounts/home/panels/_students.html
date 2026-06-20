@@ -17,8 +17,7 @@
                 <th>Student ID</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Join Date</th>
-                <th>Role</th>
+                <th>DOB</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -29,12 +28,7 @@
                 <td>{% if user.serial_number %}{{ user.serial_number }}{% else %}-{% endif %}</td>
                 <td>{{ user.first_name }} {{ user.last_name }}</td>
                 <td>{{ user.email }}</td>
-                <td>{{ user.date_joined|date:"Y-m-d" }}</td>
-                <td>
-                  <span class="role-pill {{ user.role|lower }}">
-                    {{ user.get_role_display }}
-                  </span>
-                </td>
+                <td>{{ user.userprofile.dob|date:"d M Y"|default:"-" }}</td>
                 <td>
                   <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
                     {% if user.is_active %}Active{% else %}Inactive{% endif %}
@@ -55,7 +49,7 @@
               </tr>
               {% empty %}
               <tr>
-                <td colspan="7">No students found</td>
+                <td colspan="6">No students found</td>
               </tr>
               {% endfor %}
             </tbody>

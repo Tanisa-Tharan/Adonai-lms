@@ -373,7 +373,7 @@ def _admin_home_context(
     user_panel_mode="table",
     editing_user=None,
 ):
-    users = User.objects.all().order_by("-created_at")
+    users = User.objects.all().order_by("-created_at").select_related("userprofile")
     academic_years = AcademicYear.objects.all().prefetch_related(
         Prefetch("quarter_set", queryset=Quarter.objects.all().order_by("quarter_number"))
     ).order_by("-start_date")
@@ -386,21 +386,32 @@ def _admin_home_context(
 
     student_users = users.filter(role="STUDENT")
     active_modules = modules.filter(is_active=True)
-    
-    # Get module runs with assignment counts for assignments panel
+
+    # Get module runs with assignment counts, ordered by quarter for grouping
     module_runs = ModuleRun.objects.select_related(
         "module", "quarter", "quarter__academic_year", "faculty"
     ).prefetch_related(
         "assignments"
     ).annotate(
         assignment_count=Count("assignments")
-    ).order_by("-created_at")
+    ).order_by("quarter__academic_year__start_date", "quarter__quarter_number", "module__order_number")
+
+    # Quarters with their module runs for the grouped modules view
+    quarters_with_runs = Quarter.objects.select_related("academic_year").prefetch_related(
+        Prefetch(
+            "module_runs",
+            queryset=ModuleRun.objects.select_related("module", "faculty").annotate(
+                assignment_count=Count("assignments")
+            ).order_by("module__order_number"),
+        )
+    ).order_by("academic_year__start_date", "quarter_number")
 
     # Prepare module items for grid view
     admin_module_items = [
         {
             "id": str(run.id),
             "module_id": str(run.module.id),
+            "module_code": run.module.moduleId,
             "title": run.module.title,
             "subtitle": run.quarter.name,
             "meta_icon": "assignments",
@@ -419,6 +430,8 @@ def _admin_home_context(
         "faculty_users": users.filter(role="FACULTY"),
         "student_users": student_users,
         "academic_years": academic_years,
+        "quarters_count": Quarter.objects.count(),
+        "quarters_with_runs": quarters_with_runs,
         "user_form": user_form or CreateUserForm(),
         "active_tab": active_tab,
         "user_panel_mode": user_panel_mode,

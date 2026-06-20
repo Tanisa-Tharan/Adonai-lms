@@ -363,6 +363,8 @@
 
   .sidebar-footer {
     width: 100%;
+    padding-top: 8px;
+    border-top: 1px solid #E7E5E4;
   }
 
   .sidebar-footer .logout-form button {
@@ -373,8 +375,8 @@
     align-items: center;
     gap: 12px;
     border-radius: 8px;
-    background: #921F22;
-    color: #FFF;
+    background: transparent;
+    color: #921F22;
     border: 0;
     font-family: Roboto, sans-serif;
     font-size: 16px;
@@ -386,16 +388,12 @@
   }
 
   .sidebar-footer .logout-form button:hover {
-    background: #7a1a1c;
+    background: rgba(113, 2, 14, 0.06);
   }
 
   .sidebar-footer .logout-form button svg path {
-    fill: #FFF;
+    fill: #921F22;
   }
-
-  /* .sidebar-footer .logout-form button:hover {
-    background: rgba(255, 255, 255, 0.14);
-  } */
 
   .button,
   .logout-form button,
