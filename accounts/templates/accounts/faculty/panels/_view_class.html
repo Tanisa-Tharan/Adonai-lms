@@ -9,6 +9,7 @@
       <table>
         <thead>
           <tr>
+            <th>Student ID</th>
             <th>Student Name</th>
             <th>Date Joined</th>
             <th>Course Enrolled</th>
@@ -18,23 +19,28 @@
         <tbody>
           {% for student_module in enrolled_students %}
           <tr>
+            <td><span class="mini-meta">{{ student_module.enrollment.student.serial_number }}</span></td>
             <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
             <td>{{ student_module.created_at|date:"M d, Y" }}</td>
             <td>{{ module_run.module.title }}</td>
             <td>
-              <a
-                href="#"
-                onclick="showStudentSubmissions('{{ student_module.id }}', '{{ module_run.id }}'); return false;"
-                class="assignment-view-link"
-                title="View Submission"
-                aria-label="View submissions for {{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}">
-                View Submission
-              </a>
+              {% if student_module.id in students_with_submissions %}
+                <a
+                  href="#"
+                  onclick="showStudentSubmissions('{{ student_module.id }}', '{{ module_run.id }}'); return false;"
+                  class="assignment-view-link"
+                  title="View Submission"
+                  aria-label="View submissions for {{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}">
+                  View Submission
+                </a>
+              {% else %}
+                <span class="status-pill inactive" style="white-space: nowrap;">Not Submitted</span>
+              {% endif %}
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" style="text-align: center; padding: 40px; color: #64748b;">
+            <td colspan="5" style="text-align: center; padding: 40px; color: #64748b;">
               No students enrolled in this module yet.
             </td>
           </tr>

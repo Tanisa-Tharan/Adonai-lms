@@ -559,6 +559,7 @@ def faculty_home(request):
         {
             "id": str(run.id),
             "module_id": str(run.module.id),
+            "module_code": run.module.moduleId,
             "title": run.module.title,
             "subtitle": run.quarter.name,
             "meta_icon": "assignments",
@@ -672,13 +673,20 @@ def faculty_view_class_panel(request, module_run_id):
         "enrollment__student",
         "enrollment__academic_year"
     ).order_by("enrollment__student__first_name", "enrollment__student__last_name")
-    
+
+    students_with_submissions = set(
+        AssignmentSubmission.objects.filter(
+            student_module__module_run=module_run
+        ).values_list("student_module_id", flat=True)
+    )
+
     return render(
         request,
         "accounts/faculty/panels/_view_class.html",
         {
             "module_run": module_run,
             "enrolled_students": enrolled_students,
+            "students_with_submissions": students_with_submissions,
         },
     )
 
@@ -1553,7 +1561,7 @@ def add_course_material(request):
         not module_id
         or not title
         or material_type not in {"PDF", "VIDEO", "LINK", "PPT"}
-        or resource_type not in {"REQUIRED", "RECOMMENDED", "RESOURCES"}
+        or resource_type not in {"REQUIRED", "RECOMMENDED", "RESOURCES", "SYLLABUS"}
     ):
         if is_ajax:
             return JsonResponse({"success": False, "error": "Invalid material data."}, status=400)
@@ -2220,7 +2228,17 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         module=assignment.module_run.module,
         resource_type='RECOMMENDED'
     ).order_by('-created_at')
-    
+
+    resource_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        resource_type='RESOURCES'
+    ).order_by('-created_at')
+
+    syllabus_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        resource_type='SYLLABUS'
+    ).order_by('-created_at')
+
     # Render assignment info HTML
     assignment_html = f'''
     <div style="display: flex; width: 956px; max-width: 100%; padding: 16px; flex-direction: column; align-items: flex-start; gap: 32px; border-radius: 16px; background: #FFF;">
@@ -2321,6 +2339,13 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'recommended_materials': recommended_materials,
     }
     readings_html = render(request, 'accounts/shared/_readings_tab.html', readings_context).content.decode('utf-8')
+
+    resources_context = {
+        'module_run': assignment.module_run,
+        'resource_materials': resource_materials,
+        'syllabus_materials': syllabus_materials,
+    }
+    resources_html = render(request, 'accounts/shared/_resources_tab.html', resources_context).content.decode('utf-8')
     
     # Prepare files data
     files_data = []
@@ -2344,6 +2369,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'files': files_data,
         'assignment_html': assignment_html,
         'readings_html': readings_html,
+        'resources_html': resources_html,
     })
 
 @login_required

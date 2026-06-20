@@ -155,6 +155,7 @@ class CourseMaterial(FileCleanupMixin, models.Model):
         ("REQUIRED", "Required"),
         ("RECOMMENDED", "Recommended"),
         ("RESOURCES", "Resources"),
+        ("SYLLABUS", "Syllabus"),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

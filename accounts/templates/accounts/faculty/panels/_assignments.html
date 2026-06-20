@@ -101,6 +101,9 @@
           <button class="module-tab-button" data-tab="assignment-readings-tab" type="button">
             Readings
           </button>
+          <button class="module-tab-button" data-tab="assignment-resources-tab" type="button">
+            Resources
+          </button>
         </div>
 
         <!-- Tab Content: Assignment Info (Read-only) -->
@@ -114,6 +117,13 @@
         <div id="assignment-readings-tab" class="module-tab-content">
           <div id="assignment-readings-content">
             <p style="padding: 20px; text-align: center; color: #64748b;">Loading readings...</p>
+          </div>
+        </div>
+
+        <!-- Tab Content: Resources -->
+        <div id="assignment-resources-tab" class="module-tab-content">
+          <div id="assignment-resources-content">
+            <p style="padding: 20px; text-align: center; color: #64748b;">Loading resources...</p>
           </div>
         </div>
       </div>
@@ -141,9 +151,11 @@ function hideAssignmentDetail() {
 function loadAssignmentDetails(assignmentId) {
   const infoContent = document.getElementById('assignment-info-content');
   const readingsContent = document.getElementById('assignment-readings-content');
-  
+  const resourcesContent = document.getElementById('assignment-resources-content');
+
   infoContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading assignment details...</p>';
   readingsContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading readings...</p>';
+  if (resourcesContent) resourcesContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading resources...</p>';
   
   // Fetch assignment details
   fetch(`/faculty/assignments/${assignmentId}/detail/`, {
@@ -171,6 +183,11 @@ function loadAssignmentDetails(assignmentId) {
     
     // Update readings tab
     readingsContent.innerHTML = data.readings_html;
+
+    // Update resources tab
+    if (resourcesContent && data.resources_html) {
+      resourcesContent.innerHTML = data.resources_html;
+    }
   })
   .catch(error => {
     console.error('Error loading assignment details:', error);
