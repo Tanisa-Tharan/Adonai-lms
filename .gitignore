@@ -42,3 +42,7 @@ node_modules/
 
 # Temporary files
 *.swp
+
+# SSH / private keys
+*.pem
+*.key
