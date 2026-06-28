@@ -151,14 +151,17 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.12);
   }
   .l-float-title { font-size: 12px; font-weight: 600; color: var(--ink-light); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
-  .l-float-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .l-float-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
   .l-float-item:last-child { border-bottom: none; }
-  .l-float-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .l-float-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
   .l-float-dot-red { background: var(--red); }
   .l-float-dot-green { background: #16A34A; }
   .l-float-dot-yellow { background: #D97706; }
   .l-float-item-text { font-size: 13px; font-weight: 500; color: var(--ink-mid); }
   .l-float-item-sub { font-size: 11px; color: var(--ink-light); }
+  .l-float-modules { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .l-float-tag { font-size: 10px; font-weight: 500; background: #f3f4f6; color: #6b7280; padding: 2px 6px; border-radius: 4px; line-height: 1.5; }
+  .l-float-tag-green { background: #dcfce7; color: #15803d; }
 
   /* STATS BAR */
   .l-stats-bar {
