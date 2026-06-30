@@ -79,6 +79,7 @@ def _build_user_form(user=None, role=None):
             "expected_completion_date": enrollment.expected_completion_date,
             "academic_year": enrollment.academic_year,
             "quarters": enrollment.quarters.all(),
+            "module_runs": ModuleRun.objects.filter(student_modules__enrollment=enrollment),
         })
 
     return CreateUserForm(initial=initial)
@@ -154,6 +155,16 @@ def _save_user_from_form(form, user=None):
             enrollment.quarters.set(quarters)
             # Auto-enroll student in all modules from selected quarters
             _auto_enroll_student_in_quarter_modules(enrollment, quarters)
+
+        # Handle direct module_run selection
+        module_runs = form.cleaned_data.get("module_runs")
+        if module_runs:
+            for module_run in module_runs:
+                StudentModule.objects.get_or_create(
+                    enrollment=enrollment,
+                    module_run=module_run,
+                    defaults={"status": "NOT_STARTED"},
+                )
     else:
         Enrollment.objects.filter(student=user).delete()
 

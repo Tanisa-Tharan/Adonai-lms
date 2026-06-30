@@ -176,6 +176,24 @@
                 {{ user_form.quarters.errors }}
               </div>
             </div>
+
+            <!-- Row 4: Modules (direct enrollment) -->
+            <div class="form-row-single">
+              <div class="field-group">
+                <label for="{{ user_form.module_runs.id_for_label }}">
+                  Modules
+                  <span class="enrollment-optional-hint">— optional, auto-enrolled via quarters if left empty</span>
+                </label>
+                <div class="enrollment-modules-wrap">
+                  {% if user_form.module_runs.field.queryset.exists %}
+                    {{ user_form.module_runs }}
+                  {% else %}
+                    <p class="enrollment-modules-empty">No modules available. Create modules first.</p>
+                  {% endif %}
+                </div>
+                {{ user_form.module_runs.errors }}
+              </div>
+            </div>
           </section>
         </div>
 
