@@ -101,9 +101,10 @@ def _save_user_from_form(form, user=None):
         user.set_password(generated_password)
 
         # SEND EMAIL
-        send_mail(
-            subject="Your LMS Account Created",
-            message=f"""
+        try:
+            send_mail(
+                subject="Your LMS Account Created",
+                message=f"""
         Hello {user.first_name},
 
         Your LMS account has been created.
@@ -117,10 +118,12 @@ def _save_user_from_form(form, user=None):
         Regards,
         LMS Team
         """,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            pass
 
     else:
         generated_password = None
