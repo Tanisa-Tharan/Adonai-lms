@@ -973,7 +973,8 @@ def student_module_assignments_panel(request, module_run_id):
     required_materials = all_materials.filter(resource_type="REQUIRED")
     recommended_materials = all_materials.filter(resource_type="RECOMMENDED")
     resource_materials = all_materials.filter(resource_type="RESOURCES")
-    
+    video_materials = all_materials.filter(material_type="VIDEO")
+
     now = timezone.now()
     # Use the same template as faculty/admin but with student-specific context
     return render(
@@ -987,6 +988,7 @@ def student_module_assignments_panel(request, module_run_id):
             "required_materials": required_materials,
             "recommended_materials": recommended_materials,
             "resource_materials": resource_materials,
+            "video_materials": video_materials,
             "now": now,
         },
     )
@@ -1734,15 +1736,20 @@ def module_assignments_panel(request, module_run_id):
         module=module_run.module,
         resource_type="RESOURCES"
     ).select_related("uploaded_by").order_by("-created_at")
-    
+
+    video_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        material_type="VIDEO"
+    ).select_related("uploaded_by").order_by("-created_at")
+
     # Combine all course materials for the readings tab
     course_materials = CourseMaterial.objects.filter(
         module=module_run.module
     ).select_related("uploaded_by").order_by("-created_at")
-    
+
     # Check if this is being called from faculty assignments page
     from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
-    
+
     context = {
         "module_run": module_run,
         "assignments": assignments,
@@ -1754,6 +1761,7 @@ def module_assignments_panel(request, module_run_id):
         "required_materials": required_materials,
         "recommended_materials": recommended_materials,
         "resource_materials": resource_materials,
+        "video_materials": video_materials,
         "course_materials": course_materials,
         "from_faculty_assignments": from_faculty_assignments,
     }

@@ -14,6 +14,9 @@
     <button class="module-tab-button" data-tab="resources-tab" type="button">
       Resources
     </button>
+    <button class="module-tab-button" data-tab="recordings-tab" type="button">
+      Lecture Recordings
+    </button>
   </div>
 
   <!-- Tab Content: Assignments -->
@@ -40,6 +43,45 @@
   <!-- Tab Content: Readings -->
   <div id="readings-tab" class="module-tab-content">
     {% include "accounts/shared/_readings_tab.html" %}
+  </div>
+
+  <!-- Tab Content: Lecture Recordings -->
+  <div id="recordings-tab" class="module-tab-content">
+    <div style="padding: 20px 0;">
+      {% if video_materials %}
+        <div style="display: flex; flex-direction: column; gap: 28px;">
+          {% for video in video_materials %}
+          <div style="background: #fafafa; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #E2E8F0;">
+              <span style="font-weight: 600; font-size: 14px; color: #1C1917;">{{ video.title }}</span>
+              <span style="margin-left: 10px; font-size: 12px; color: #78716C;">{{ video.created_at|date:"Y-m-d" }}</span>
+              {% if video.uploaded_by %}
+                <span style="margin-left: 6px; font-size: 12px; color: #78716C;">· {{ video.uploaded_by.first_name }} {{ video.uploaded_by.last_name }}</span>
+              {% endif %}
+            </div>
+            <div style="background: #000; display: flex; justify-content: center;">
+              <video
+                controls
+                style="width: 100%; max-height: 420px; display: block;"
+                preload="metadata"
+              >
+                <source src="{{ video.file_url.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 48px 0; color: #78716C;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display: block;">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          <p style="font-size: 14px; margin: 0;">No lecture recordings uploaded yet.</p>
+        </div>
+      {% endif %}
+    </div>
   </div>
 
   <!-- Tab Content: Resources -->
