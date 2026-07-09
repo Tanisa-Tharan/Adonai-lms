@@ -387,6 +387,11 @@ def _admin_home_context(
     user_panel_mode="table",
     editing_user=None,
 ):
+    # Auto-complete any module runs whose end_date has passed
+    ModuleRun.objects.filter(
+        end_date__lt=date_type.today(),
+    ).exclude(status="COMPLETED").update(status="COMPLETED")
+
     users = User.objects.all().order_by("-created_at").select_related("userprofile")
     academic_years = AcademicYear.objects.all().prefetch_related(
         Prefetch("quarter_set", queryset=Quarter.objects.all().order_by("quarter_number"))
@@ -526,6 +531,12 @@ def login_view(request):
 def faculty_home(request):
     active_tab = request.GET.get("tab", "dashboard")
     assignment_mode = request.GET.get("mode", "table")  # 'table' or 'create'
+
+    # Auto-complete any module runs whose end_date has passed
+    ModuleRun.objects.filter(
+        faculty=request.user,
+        end_date__lt=date_type.today(),
+    ).exclude(status="COMPLETED").update(status="COMPLETED")
 
     faculty_runs = (
         ModuleRun.objects.filter(faculty=request.user)
