@@ -131,7 +131,179 @@
   {% endif %}
 </section>
 
+<!-- Link Dialog Modal -->
+<div id="linkDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Resource Link</h3>
+      <button class="link-dialog-close" onclick="closeLinkDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="linkTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="linkTitle" class="link-dialog-input" placeholder="Enter resource title">
+      </div>
+      <div class="link-dialog-field">
+        <label for="linkUrl" class="link-dialog-label">URL</label>
+        <input type="url" id="linkUrl" class="link-dialog-input" placeholder="https://example.com">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeLinkDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitLink()">Add Link</button>
+    </div>
+  </div>
+</div>
+
 <script>
+let _readingsCurrentModuleId = null;
+let _readingsCurrentResourceType = null;
+let currentAssignmentDetailId = null;
+
+function uploadReadingsMaterial(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const materialType = input.getAttribute('data-material-type');
+  const resourceType = input.getAttribute('data-resource-type');
+  const moduleId = input.getAttribute('data-module-id');
+  const formData = new FormData();
+  formData.append('title', file.name);
+  formData.append('file', file);
+  formData.append('material_type', materialType);
+  formData.append('resource_type', resourceType || 'REQUIRED');
+  formData.append('module_id', moduleId);
+  const loadingMsg = document.createElement('div');
+  loadingMsg.textContent = 'Uploading ' + file.name + '...';
+  loadingMsg.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #921F22; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-family: Lexend, sans-serif;';
+  document.body.appendChild(loadingMsg);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.body.removeChild(loadingMsg);
+    if (data.success) {
+      alert('File uploaded successfully!');
+      if (currentAssignmentDetailId) loadAssignmentDetails(currentAssignmentDetailId);
+      else location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to upload file'));
+    }
+  })
+  .catch(() => {
+    document.body.removeChild(loadingMsg);
+    alert('An error occurred while uploading the file');
+  })
+  .finally(() => { input.value = ''; });
+}
+
+function bindReadingsFileInputs(container) {
+  container.querySelectorAll('input[type="file"][data-material-type]').forEach(function(input) {
+    input._uploadBound = true;
+    input.addEventListener('change', function() { uploadReadingsMaterial(this); });
+  });
+}
+
+function openLinkDialog(element) {
+  _readingsCurrentModuleId = element.getAttribute('data-module-id');
+  _readingsCurrentResourceType = element.getAttribute('data-resource-type');
+  document.getElementById('linkDialog').style.display = 'flex';
+  document.getElementById('linkTitle').value = '';
+  document.getElementById('linkUrl').value = '';
+}
+
+function closeLinkDialog() {
+  document.getElementById('linkDialog').style.display = 'none';
+  _readingsCurrentModuleId = null;
+  _readingsCurrentResourceType = null;
+}
+
+function submitLink() {
+  const title = document.getElementById('linkTitle').value.trim();
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!title || !url) { alert('Please fill in both title and URL'); return; }
+  if (!_readingsCurrentModuleId) { alert('Module ID not found'); return; }
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', url);
+  formData.append('material_type', 'LINK');
+  formData.append('resource_type', _readingsCurrentResourceType || 'REQUIRED');
+  formData.append('module_id', _readingsCurrentModuleId);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      closeLinkDialog();
+      if (currentAssignmentDetailId) loadAssignmentDetails(currentAssignmentDetailId);
+      else location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add link'));
+    }
+  })
+  .catch(() => alert('An error occurred while adding the link'));
+}
+
+function deleteMaterial(materialId) {
+  if (!confirm('Are you sure you want to delete this material?')) return;
+  fetch('{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', materialId), {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(async r => {
+    const data = r.headers.get('content-type')?.includes('application/json') ? await r.json() : {};
+    if (data.success) {
+      if (currentAssignmentDetailId) loadAssignmentDetails(currentAssignmentDetailId);
+      else location.reload();
+    } else {
+      alert('Error: ' + (data.error || 'Failed to delete material'));
+    }
+  })
+  .catch(() => alert('An error occurred while deleting the material'));
+}
+
+// Delegated submit listener — catches form submits injected via innerHTML (e.g. syllabus upload)
+document.addEventListener('submit', function(e) {
+  if (e.target.id !== 'syllabus-upload-form') return;
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById('syllabus-upload-msg');
+  const formData = new FormData(form);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      if (msg) { msg.style.display = 'block'; msg.style.color = '#16a34a'; msg.textContent = 'Uploaded successfully.'; }
+      form.reset();
+      if (currentAssignmentDetailId) {
+        setTimeout(() => loadAssignmentDetails(currentAssignmentDetailId), 800);
+      }
+    } else {
+      if (msg) { msg.style.display = 'block'; msg.style.color = '#dc2626'; msg.textContent = data.error || 'Upload failed.'; }
+    }
+  })
+  .catch(() => {
+    if (msg) { msg.style.display = 'block'; msg.style.color = '#dc2626'; msg.textContent = 'Upload failed. Please try again.'; }
+  });
+});
+
+// Delegated fallback — catches any change events from file inputs that bubbled to document
+document.addEventListener('change', function(e) {
+  const input = e.target;
+  if (input.type !== 'file' || !input.getAttribute('data-material-type')) return;
+  if (input._uploadBound) return; // already handled by direct binding
+  uploadReadingsMaterial(input);
+});
+
 // Show assignment detail view
 function showAssignmentDetail(assignmentId) {
   document.getElementById('assignments-table-view').style.display = 'none';
@@ -149,6 +321,7 @@ function hideAssignmentDetail() {
 
 // Load assignment details
 function loadAssignmentDetails(assignmentId) {
+  currentAssignmentDetailId = assignmentId;
   const infoContent = document.getElementById('assignment-info-content');
   const readingsContent = document.getElementById('assignment-readings-content');
   const resourcesContent = document.getElementById('assignment-resources-content');
@@ -183,6 +356,7 @@ function loadAssignmentDetails(assignmentId) {
     
     // Update readings tab
     readingsContent.innerHTML = data.readings_html;
+    bindReadingsFileInputs(readingsContent);
 
     // Update resources tab
     if (resourcesContent && data.resources_html) {
