@@ -186,8 +186,24 @@ function uploadReadingsMaterial(input) {
     document.body.removeChild(loadingMsg);
     if (data.success) {
       alert('File uploaded successfully!');
-      if (currentAssignmentDetailId) loadAssignmentDetails(currentAssignmentDetailId);
-      else location.reload();
+      if (currentAssignmentDetailId) {
+        loadAssignmentDetails(currentAssignmentDetailId);
+      } else if (window._createModeModuleRunId && typeof window.loadReadingsForModule === 'function') {
+        window.loadReadingsForModule(window._createModeModuleRunId);
+      } else if (window._moduleDetailModuleRunId) {
+        const drawer = document.getElementById('assignments-detail-drawer') || document.getElementById('faculty-modules-detail-drawer');
+        sessionStorage.setItem('activeModuleTab', 'readings-tab');
+        if (drawer && typeof htmx !== 'undefined') {
+          htmx.ajax('GET', `/module-runs/${window._moduleDetailModuleRunId}/assignments/detail/?from_faculty_assignments=true`, {
+            target: '#' + drawer.id,
+            swap: 'innerHTML'
+          });
+        } else {
+          location.reload();
+        }
+      } else {
+        location.reload();
+      }
     } else {
       alert('Error: ' + (data.error || 'Failed to upload file'));
     }
@@ -199,12 +215,34 @@ function uploadReadingsMaterial(input) {
   .finally(() => { input.value = ''; });
 }
 
-function bindReadingsFileInputs(container) {
-  container.querySelectorAll('input[type="file"][data-material-type]').forEach(function(input) {
-    input._uploadBound = true;
-    input.addEventListener('change', function() { uploadReadingsMaterial(this); });
+// Live delegated click listener — works for both HTMX-loaded and innerHTML-injected icons.
+// Icon divs carry data-upload-type, data-resource-type, data-module-id directly on them.
+document.addEventListener('click', function(e) {
+  const icon = e.target.closest('.reading-action-icon');
+  if (!icon) return;
+  const uploadType = icon.getAttribute('data-upload-type');
+  const resourceType = icon.getAttribute('data-resource-type');
+  const moduleId = icon.getAttribute('data-module-id');
+  if (!uploadType || !moduleId) return;
+  let accept = '*/*';
+  if (uploadType === 'PDF') accept = '.pdf';
+  else if (uploadType === 'PPT') accept = '.ppt,.pptx';
+  else if (uploadType === 'VIDEO') accept = 'video/*';
+  const tempInput = document.createElement('input');
+  tempInput.type = 'file';
+  tempInput.accept = accept;
+  tempInput.setAttribute('data-material-type', uploadType);
+  tempInput.setAttribute('data-resource-type', resourceType || 'REQUIRED');
+  tempInput.setAttribute('data-module-id', moduleId);
+  tempInput.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+  document.body.appendChild(tempInput);
+  tempInput.addEventListener('change', function() {
+    if (document.body.contains(tempInput)) document.body.removeChild(tempInput);
+    if (!tempInput.files[0]) return;
+    uploadReadingsMaterial(tempInput);
   });
-}
+  tempInput.click();
+});
 
 function openLinkDialog(element) {
   _readingsCurrentModuleId = element.getAttribute('data-module-id');
@@ -258,8 +296,24 @@ function deleteMaterial(materialId) {
   .then(async r => {
     const data = r.headers.get('content-type')?.includes('application/json') ? await r.json() : {};
     if (data.success) {
-      if (currentAssignmentDetailId) loadAssignmentDetails(currentAssignmentDetailId);
-      else location.reload();
+      if (currentAssignmentDetailId) {
+        loadAssignmentDetails(currentAssignmentDetailId);
+      } else if (window._createModeModuleRunId && typeof window.loadReadingsForModule === 'function') {
+        window.loadReadingsForModule(window._createModeModuleRunId);
+      } else if (window._moduleDetailModuleRunId) {
+        const drawer = document.getElementById('assignments-detail-drawer') || document.getElementById('faculty-modules-detail-drawer');
+        sessionStorage.setItem('activeModuleTab', 'readings-tab');
+        if (drawer && typeof htmx !== 'undefined') {
+          htmx.ajax('GET', `/module-runs/${window._moduleDetailModuleRunId}/assignments/detail/?from_faculty_assignments=true`, {
+            target: '#' + drawer.id,
+            swap: 'innerHTML'
+          });
+        } else {
+          location.reload();
+        }
+      } else {
+        location.reload();
+      }
     } else {
       alert('Error: ' + (data.error || 'Failed to delete material'));
     }
@@ -294,14 +348,6 @@ document.addEventListener('submit', function(e) {
   .catch(() => {
     if (msg) { msg.style.display = 'block'; msg.style.color = '#dc2626'; msg.textContent = 'Upload failed. Please try again.'; }
   });
-});
-
-// Delegated fallback — catches any change events from file inputs that bubbled to document
-document.addEventListener('change', function(e) {
-  const input = e.target;
-  if (input.type !== 'file' || !input.getAttribute('data-material-type')) return;
-  if (input._uploadBound) return; // already handled by direct binding
-  uploadReadingsMaterial(input);
 });
 
 // Show assignment detail view
@@ -356,7 +402,6 @@ function loadAssignmentDetails(assignmentId) {
     
     // Update readings tab
     readingsContent.innerHTML = data.readings_html;
-    bindReadingsFileInputs(readingsContent);
 
     // Update resources tab
     if (resourcesContent && data.resources_html) {

@@ -128,26 +128,9 @@ function submitLink() {
   .catch(() => alert('An error occurred while adding the link'));
 }
 
-function deleteMaterial(materialId) {
-  if (!confirm('Are you sure you want to delete this material?')) return;
-  fetch(`{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}`.replace('00000000-0000-0000-0000-000000000000', materialId), {
-    method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(async response => {
-    const data = response.headers.get('content-type')?.includes('application/json') ? await response.json() : {};
-    if (data.success) {
-      alert('Material deleted successfully!');
-      sessionStorage.setItem('activeModuleTab', 'readings-tab');
-      location.reload();
-    } else {
-      alert('Error: ' + (data.error || 'Failed to delete material'));
-    }
-  })
-  .catch(() => alert('An error occurred while deleting the material'));
-}
-
 (function() {
+  window._moduleDetailModuleRunId = '{{ module_run.id }}';
+
   const fileInputs = document.querySelectorAll('input[type="file"][data-material-type]');
   fileInputs.forEach(input => {
     input.addEventListener('change', function(e) {

@@ -1646,13 +1646,16 @@ def delete_course_material(request, material_id):
     try:
         material = get_object_or_404(CourseMaterial, id=material_id)
 
-        if request.user.role == "FACULTY" and not ModuleRun.objects.filter(
-            module_id=material.module_id,
-            faculty_id=request.user.id,
-        ).exists():
-            if is_ajax:
-                return JsonResponse({"success": False, "error": f"Faculty {request.user.id} is not assigned to module {material.module_id} for this material."}, status=403)
-            return course_materials_panel(request)
+        if request.user.role == "FACULTY":
+            is_module_faculty = ModuleRun.objects.filter(
+                module=material.module,
+                faculty=request.user,
+            ).exists()
+            is_uploader = material.uploaded_by_id == request.user.id
+            if not is_module_faculty and not is_uploader:
+                if is_ajax:
+                    return JsonResponse({"success": False, "error": "You do not have permission to delete this material."}, status=403)
+                return course_materials_panel(request)
 
         module_id = str(material.module_id)
         material.delete()
