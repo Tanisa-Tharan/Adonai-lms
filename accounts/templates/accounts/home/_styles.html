@@ -1202,7 +1202,8 @@
   /* Quarters checkbox styling */
   #id_quarters {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 12px;
     margin-top: 8px;
     padding-left: 0;
@@ -1212,14 +1213,13 @@
   #id_quarters > div {
     list-style: none;
     padding: 8px 12px;
-    border: 1px solid #E2E8F0;
+    border: none;
     border-radius: 6px;
     transition: all 0.2s;
   }
 
   #id_quarters > div:hover {
     background: #F8FAFC;
-    border-color: #921F22;
   }
 
   #id_quarters label {
@@ -1282,7 +1282,7 @@
   #id_module_runs > div {
     list-style: none;
     padding: 8px 12px;
-    border: 1px solid #E2E8F0;
+    border: none;
     border-radius: 6px;
     transition: all 0.2s;
     min-width: 0;
@@ -1290,7 +1290,6 @@
 
   #id_module_runs > div:hover {
     background: #F8FAFC;
-    border-color: #921F22;
   }
 
   #id_module_runs label {
@@ -1322,7 +1321,6 @@
 
   #id_module_runs > div:has(input[type="checkbox"]:checked) {
     background: #FFF5F5;
-    border-color: #921F22;
   }
 
   @media (max-width: 768px) {
