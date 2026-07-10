@@ -1614,14 +1614,14 @@ def add_course_material(request):
             uploaded_by=request.user,
         )
     else:
-        if not upload:
+        if not upload and not link_url:
             if is_ajax:
-                return JsonResponse({"success": False, "error": "A file is required."}, status=400)
+                return JsonResponse({"success": False, "error": "A file or URL is required."}, status=400)
             return course_materials_panel(request)
         CourseMaterial.objects.create(
             module=module,
             title=title,
-            file_url=upload,
+            file_url=upload if upload else link_url,
             material_type=material_type,
             resource_type=resource_type,
             uploaded_by=request.user,
@@ -2207,6 +2207,24 @@ def faculty_assignment_detail_view(request, assignment_id):
     return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
 
 
+@login_required
+@faculty_required
+def module_run_recordings(request, module_run_id):
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related('module'),
+        id=module_run_id,
+        faculty=request.user
+    )
+    video_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        material_type='VIDEO'
+    ).select_related('uploaded_by').order_by('-created_at')
+    return render(request, 'accounts/faculty/panels/_recordings_tab_partial.html', {
+        'module_run': module_run,
+        'video_materials': video_materials,
+    })
+
+
 @faculty_required
 def module_run_readings(request, module_run_id):
     """
@@ -2382,7 +2400,16 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'syllabus_materials': syllabus_materials,
     }
     resources_html = render(request, 'accounts/shared/_resources_tab.html', resources_context).content.decode('utf-8')
-    
+
+    video_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        material_type='VIDEO'
+    ).select_related('uploaded_by').order_by('-created_at')
+    recordings_html = render(request, 'accounts/faculty/panels/_recordings_tab_partial.html', {
+        'module_run': assignment.module_run,
+        'video_materials': video_materials,
+    }).content.decode('utf-8')
+
     # Prepare files data
     files_data = []
     for file in assignment_files:
@@ -2406,6 +2433,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'assignment_html': assignment_html,
         'readings_html': readings_html,
         'resources_html': resources_html,
+        'recordings_html': recordings_html,
     })
 
 @login_required

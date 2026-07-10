@@ -32,6 +32,9 @@
     <button class="module-tab-button" data-tab="readings-tab" type="button">
       Readings
     </button>
+    <button class="module-tab-button" data-tab="recordings-tab" type="button">
+      Lecture Recordings
+    </button>
   </div>
 
   <!-- Tab Content: Assignments -->
@@ -45,14 +48,84 @@
     <div id="assignment-form-section" style="display: none;"{% if editing_assignment %} data-editing-assignment="1"{% endif %}>
       {% include "accounts/home/panels/modules/_assignment_form.html" with from_faculty_assignments=True %}
     </div>
-
-    <!-- Assignment Action Drawer (for submit/grade) -->
-    <!-- <div id="assignment-action-drawer" class="assignment-drawer"></div> -->
   </div>
 
   <!-- Tab Content: Readings -->
   <div id="readings-tab" class="module-tab-content">
     {% include "accounts/shared/_readings_tab.html" %}
+  </div>
+
+  <!-- Tab Content: Lecture Recordings -->
+  <div id="recordings-tab" class="module-tab-content">
+    <div style="padding: 20px 0;">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+        <button type="button" onclick="showVimeoRecordingDialog('{{ module_run.module.id }}')" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #921F22; color: white; border: none; border-radius: 8px; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Lecture Recording
+        </button>
+      </div>
+      {% if video_materials %}
+        <div style="display: flex; flex-direction: column; gap: 28px;">
+          {% for video in video_materials %}
+          <div style="background: #fafafa; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden;">
+            <div style="padding: 12px 16px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-weight: 600; font-size: 14px; color: #1C1917;">{{ video.title }}</span>
+                <span style="margin-left: 10px; font-size: 12px; color: #78716C;">{{ video.created_at|date:"Y-m-d" }}</span>
+                {% if video.uploaded_by %}
+                  <span style="margin-left: 6px; font-size: 12px; color: #78716C;">· {{ video.uploaded_by.first_name }} {{ video.uploaded_by.last_name }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div style="background: #000;">
+              {% if "vimeo" in video.file_url.name %}
+              <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+                <iframe src="{{ video.file_url }}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+              </div>
+              {% else %}
+              <video controls style="width: 100%; max-height: 420px; display: block;" preload="metadata">
+                <source src="{{ video.file_url.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 48px 0; color: #78716C;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display: block;">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          <p style="font-size: 14px; margin: 0;">No lecture recordings yet. Click "Add Lecture Recording" above to add one.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Vimeo Recording Dialog -->
+<div id="vimeoRecordingDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Lecture Recording</h3>
+      <button class="link-dialog-close" onclick="closeVimeoRecordingDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="recVimeoTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="recVimeoTitle" class="link-dialog-input" placeholder="e.g. Week 1 Lecture">
+      </div>
+      <div class="link-dialog-field">
+        <label for="recVimeoUrl" class="link-dialog-label">Vimeo Link</label>
+        <input type="url" id="recVimeoUrl" class="link-dialog-input" placeholder="https://vimeo.com/123456789">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeVimeoRecordingDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitVimeoRecording()">Add Recording</button>
+    </div>
   </div>
 </div>
 
@@ -195,4 +268,66 @@ function submitLink() {
     }, 100);
   }
 })();
+
+function showVimeoRecordingDialog(moduleId) {
+  window._recModuleId = moduleId;
+  document.getElementById('recVimeoTitle').value = '';
+  document.getElementById('recVimeoUrl').value = '';
+  document.getElementById('vimeoRecordingDialog').style.display = 'flex';
+}
+
+function closeVimeoRecordingDialog() {
+  document.getElementById('vimeoRecordingDialog').style.display = 'none';
+  window._recModuleId = null;
+}
+
+function submitVimeoRecording() {
+  const rawUrl = document.getElementById('recVimeoUrl').value.trim();
+  const title = document.getElementById('recVimeoTitle').value.trim() || 'Lecture Recording';
+  let _vid, _hash;
+  let _m = rawUrl.match(/vimeo\.com\/(\d+)\/([a-f0-9]+)/i);
+  if (_m) { _vid = _m[1]; _hash = _m[2]; }
+  else {
+    _m = rawUrl.match(/player\.vimeo\.com\/video\/(\d+)(?:[?&]h=([a-f0-9]+))?/i);
+    if (_m) { _vid = _m[1]; _hash = _m[2]; }
+    else {
+      _m = rawUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      if (_m) { _vid = _m[1]; }
+    }
+  }
+  if (!_vid) {
+    alert('Please enter a valid Vimeo URL (e.g. https://vimeo.com/123456789)');
+    return;
+  }
+  const embedUrl = 'https://player.vimeo.com/video/' + _vid + (_hash ? '?h=' + _hash : '');
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', embedUrl);
+  formData.append('material_type', 'VIDEO');
+  formData.append('resource_type', 'REQUIRED');
+  formData.append('module_id', window._recModuleId);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      closeVimeoRecordingDialog();
+      sessionStorage.setItem('activeModuleTab', 'recordings-tab');
+      const drawer = document.getElementById('assignments-detail-drawer') || document.getElementById('faculty-modules-detail-drawer');
+      if (drawer && typeof htmx !== 'undefined' && window._moduleDetailModuleRunId) {
+        htmx.ajax('GET', '/module-runs/' + window._moduleDetailModuleRunId + '/assignments/detail/?from_faculty_assignments=true', {
+          target: '#' + drawer.id, swap: 'innerHTML'
+        });
+      } else {
+        location.reload();
+      }
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add recording'));
+    }
+  })
+  .catch(() => alert('An error occurred while adding the recording'));
+}
 </script>

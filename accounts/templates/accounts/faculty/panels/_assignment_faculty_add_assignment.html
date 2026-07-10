@@ -83,6 +83,9 @@
     <button class="module-tab-button" data-tab="readings-tab" type="button">
       Readings
     </button>
+    <button class="module-tab-button" data-tab="recordings-tab" type="button">
+      Lecture Recordings
+    </button>
   </div>
 
   <!-- Tab Content: Assignments -->
@@ -178,6 +181,15 @@
     <div id="readings-content-container">
       <p style="padding: 20px; text-align: center; color: #64748b;">
         Select a module to view and manage readings.
+      </p>
+    </div>
+  </div>
+
+  <!-- Tab Content: Lecture Recordings -->
+  <div id="recordings-tab" class="module-tab-content">
+    <div id="recordings-content-container">
+      <p style="padding: 20px; text-align: center; color: #64748b;">
+        Select a module to view and manage lecture recordings.
       </p>
     </div>
   </div>
@@ -380,8 +392,9 @@ function showModuleDetail(moduleId, title, subtitle) {
     quillAssignmentEditor.setText('');
   }
 
-  // Load readings for this module
+  // Load readings and recordings for this module
   window.loadReadingsForModule(moduleId);
+  window.loadRecordingsForModule(moduleId);
 }
 
 // Load readings content for a specific module (global so uploadReadingsMaterial can call it)
@@ -463,14 +476,30 @@ window.loadReadingsForModule = function loadReadingsForModule(moduleRunId) {
   });
 }
 
+// Load lecture recordings for a specific module run
+window.loadRecordingsForModule = function loadRecordingsForModule(moduleRunId) {
+  const container = document.getElementById('recordings-content-container');
+  if (!container) return;
+  container.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading recordings...</p>';
+  fetch('/module-runs/' + moduleRunId + '/recordings/', {
+    method: 'GET',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => { if (!r.ok) throw new Error('Failed'); return r.text(); })
+  .then(html => { container.innerHTML = html; })
+  .catch(() => {
+    container.innerHTML = '<p style="padding: 20px; text-align: center; color: #dc2626;">Failed to load recordings. Please try again.</p>';
+  });
+};
+
 // Hide module detail view and show grid
 function hideModuleDetail() {
   document.getElementById('module-detail-view').style.display = 'none';
   document.getElementById('module-grid-view').style.display = 'block';
   window._createModeModuleRunId = null;
-
-  // Reset form
   document.getElementById('assignment-form').reset();
+  const rc = document.getElementById('recordings-content-container');
+  if (rc) rc.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Select a module to view and manage lecture recordings.</p>';
 }
 
 // Handle Save Draft button click

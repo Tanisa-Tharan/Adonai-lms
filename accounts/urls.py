@@ -40,6 +40,7 @@ from .views import (
     remove_student_from_module_run,
     save_module_attendance,
     module_run_readings,
+    module_run_recordings,
 )
 
 urlpatterns = [
@@ -148,5 +149,10 @@ urlpatterns = [
         "module-runs/<uuid:module_run_id>/readings/",
         module_run_readings,
         name="module_run_readings",
+    ),
+    path(
+        "module-runs/<uuid:module_run_id>/recordings/",
+        module_run_recordings,
+        name="module_run_recordings",
     ),
 ]

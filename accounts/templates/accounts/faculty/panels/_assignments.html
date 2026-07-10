@@ -104,6 +104,9 @@
           <button class="module-tab-button" data-tab="assignment-resources-tab" type="button">
             Resources
           </button>
+          <button class="module-tab-button" data-tab="assignment-recordings-tab" type="button">
+            Lecture Recordings
+          </button>
         </div>
 
         <!-- Tab Content: Assignment Info (Read-only) -->
@@ -124,6 +127,13 @@
         <div id="assignment-resources-tab" class="module-tab-content">
           <div id="assignment-resources-content">
             <p style="padding: 20px; text-align: center; color: #64748b;">Loading resources...</p>
+          </div>
+        </div>
+
+        <!-- Tab Content: Lecture Recordings -->
+        <div id="assignment-recordings-tab" class="module-tab-content">
+          <div id="assignment-recordings-content">
+            <p style="padding: 20px; text-align: center; color: #64748b;">Loading recordings...</p>
           </div>
         </div>
       </div>
@@ -151,6 +161,53 @@
     <div class="link-dialog-footer">
       <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeLinkDialog()">Cancel</button>
       <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitLink()">Add Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lecture Recording Dialog -->
+<div id="vimeoRecordingDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Lecture Recording</h3>
+      <button class="link-dialog-close" onclick="closeVimeoRecordingDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="recVimeoTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="recVimeoTitle" class="link-dialog-input" placeholder="e.g. Week 1 Lecture">
+      </div>
+      <div class="link-dialog-field">
+        <label for="recVimeoUrl" class="link-dialog-label">Vimeo Link</label>
+        <input type="url" id="recVimeoUrl" class="link-dialog-input" placeholder="https://vimeo.com/123456789">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeVimeoRecordingDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitVimeoRecording()">Add Recording</button>
+    </div>
+  </div>
+</div>
+
+<div id="vimeoDialog" class="link-dialog-overlay" style="display: none;">
+  <div class="link-dialog">
+    <div class="link-dialog-header">
+      <h3 class="link-dialog-title">Add Vimeo Video</h3>
+      <button class="link-dialog-close" onclick="closeVimeoDialog()">&times;</button>
+    </div>
+    <div class="link-dialog-body">
+      <div class="link-dialog-field">
+        <label for="vimeoTitle" class="link-dialog-label">Title</label>
+        <input type="text" id="vimeoTitle" class="link-dialog-input" placeholder="e.g. Week 1 Lecture">
+      </div>
+      <div class="link-dialog-field">
+        <label for="vimeoUrl" class="link-dialog-label">Vimeo Link</label>
+        <input type="url" id="vimeoUrl" class="link-dialog-input" placeholder="https://vimeo.com/123456789">
+      </div>
+    </div>
+    <div class="link-dialog-footer">
+      <button class="link-dialog-btn link-dialog-btn-cancel" onclick="closeVimeoDialog()">Cancel</button>
+      <button class="link-dialog-btn link-dialog-btn-submit" onclick="submitVimeoLink()">Add Video</button>
     </div>
   </div>
 </div>
@@ -216,7 +273,6 @@ function uploadReadingsMaterial(input) {
 }
 
 // Live delegated click listener — works for both HTMX-loaded and innerHTML-injected icons.
-// Icon divs carry data-upload-type, data-resource-type, data-module-id directly on them.
 document.addEventListener('click', function(e) {
   const icon = e.target.closest('.reading-action-icon');
   if (!icon) return;
@@ -224,10 +280,11 @@ document.addEventListener('click', function(e) {
   const resourceType = icon.getAttribute('data-resource-type');
   const moduleId = icon.getAttribute('data-module-id');
   if (!uploadType || !moduleId) return;
-  let accept = '*/*';
-  if (uploadType === 'PDF') accept = '.pdf';
-  else if (uploadType === 'PPT') accept = '.ppt,.pptx';
-  else if (uploadType === 'VIDEO') accept = 'video/*';
+  if (uploadType === 'VIDEO') {
+    showVimeoDialog(resourceType || 'REQUIRED', moduleId);
+    return;
+  }
+  let accept = uploadType === 'PDF' ? '.pdf' : '.ppt,.pptx';
   const tempInput = document.createElement('input');
   tempInput.type = 'file';
   tempInput.accept = accept;
@@ -243,6 +300,141 @@ document.addEventListener('click', function(e) {
   });
   tempInput.click();
 });
+
+function showVimeoDialog(resourceType, moduleId) {
+  window._vimeoResourceType = resourceType;
+  window._vimeoModuleId = moduleId;
+  document.getElementById('vimeoTitle').value = '';
+  document.getElementById('vimeoUrl').value = '';
+  document.getElementById('vimeoDialog').style.display = 'flex';
+}
+
+function closeVimeoDialog() {
+  document.getElementById('vimeoDialog').style.display = 'none';
+  window._vimeoResourceType = null;
+  window._vimeoModuleId = null;
+}
+
+function submitVimeoLink() {
+  const rawUrl = document.getElementById('vimeoUrl').value.trim();
+  const title = document.getElementById('vimeoTitle').value.trim() || 'Lecture Recording';
+  let _vid, _hash;
+  let _m = rawUrl.match(/vimeo\.com\/(\d+)\/([a-f0-9]+)/i);
+  if (_m) { _vid = _m[1]; _hash = _m[2]; }
+  else {
+    _m = rawUrl.match(/player\.vimeo\.com\/video\/(\d+)(?:[?&]h=([a-f0-9]+))?/i);
+    if (_m) { _vid = _m[1]; _hash = _m[2]; }
+    else {
+      _m = rawUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      if (_m) { _vid = _m[1]; }
+    }
+  }
+  if (!_vid) {
+    alert('Please enter a valid Vimeo URL (e.g. https://vimeo.com/123456789)');
+    return;
+  }
+  const embedUrl = 'https://player.vimeo.com/video/' + _vid + (_hash ? '?h=' + _hash : '');
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', embedUrl);
+  formData.append('material_type', 'VIDEO');
+  formData.append('resource_type', window._vimeoResourceType || 'REQUIRED');
+  formData.append('module_id', window._vimeoModuleId);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      alert('Vimeo video added!');
+      closeVimeoDialog();
+      if (currentAssignmentDetailId) {
+        loadAssignmentDetails(currentAssignmentDetailId);
+      } else if (window._createModeModuleRunId && typeof window.loadReadingsForModule === 'function') {
+        window.loadReadingsForModule(window._createModeModuleRunId);
+      } else if (window._moduleDetailModuleRunId) {
+        const drawer = document.getElementById('assignments-detail-drawer') || document.getElementById('faculty-modules-detail-drawer');
+        sessionStorage.setItem('activeModuleTab', 'readings-tab');
+        if (drawer && typeof htmx !== 'undefined') {
+          htmx.ajax('GET', `/module-runs/${window._moduleDetailModuleRunId}/assignments/detail/?from_faculty_assignments=true`, {
+            target: '#' + drawer.id, swap: 'innerHTML'
+          });
+        } else { location.reload(); }
+      } else { location.reload(); }
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add video'));
+    }
+  })
+  .catch(() => alert('An error occurred while adding the video'));
+}
+
+function showVimeoRecordingDialog(moduleId) {
+  window._recModuleId = moduleId;
+  document.getElementById('recVimeoTitle').value = '';
+  document.getElementById('recVimeoUrl').value = '';
+  document.getElementById('vimeoRecordingDialog').style.display = 'flex';
+}
+
+function closeVimeoRecordingDialog() {
+  document.getElementById('vimeoRecordingDialog').style.display = 'none';
+  window._recModuleId = null;
+}
+
+function submitVimeoRecording() {
+  const rawUrl = document.getElementById('recVimeoUrl').value.trim();
+  const title = document.getElementById('recVimeoTitle').value.trim() || 'Lecture Recording';
+  let _vid, _hash;
+  let _m = rawUrl.match(/vimeo\.com\/(\d+)\/([a-f0-9]+)/i);
+  if (_m) { _vid = _m[1]; _hash = _m[2]; }
+  else {
+    _m = rawUrl.match(/player\.vimeo\.com\/video\/(\d+)(?:[?&]h=([a-f0-9]+))?/i);
+    if (_m) { _vid = _m[1]; _hash = _m[2]; }
+    else {
+      _m = rawUrl.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+      if (_m) { _vid = _m[1]; }
+    }
+  }
+  if (!_vid) {
+    alert('Please enter a valid Vimeo URL (e.g. https://vimeo.com/123456789)');
+    return;
+  }
+  const embedUrl = 'https://player.vimeo.com/video/' + _vid + (_hash ? '?h=' + _hash : '');
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('file_url', embedUrl);
+  formData.append('material_type', 'VIDEO');
+  formData.append('resource_type', 'REQUIRED');
+  formData.append('module_id', window._recModuleId);
+  fetch('{% url "add_course_material" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      closeVimeoRecordingDialog();
+      if (currentAssignmentDetailId) {
+        loadAssignmentDetails(currentAssignmentDetailId);
+      } else if (window._createModeModuleRunId && typeof window.loadRecordingsForModule === 'function') {
+        window.loadRecordingsForModule(window._createModeModuleRunId);
+      } else if (window._moduleDetailModuleRunId) {
+        const drawer = document.getElementById('assignments-detail-drawer') || document.getElementById('faculty-modules-detail-drawer');
+        sessionStorage.setItem('activeModuleTab', 'recordings-tab');
+        if (drawer && typeof htmx !== 'undefined') {
+          htmx.ajax('GET', '/module-runs/' + window._moduleDetailModuleRunId + '/assignments/detail/?from_faculty_assignments=true', {
+            target: '#' + drawer.id, swap: 'innerHTML'
+          });
+        } else { location.reload(); }
+      } else { location.reload(); }
+    } else {
+      alert('Error: ' + (data.error || 'Failed to add recording'));
+    }
+  })
+  .catch(() => alert('An error occurred while adding the recording'));
+}
 
 function openLinkDialog(element) {
   _readingsCurrentModuleId = element.getAttribute('data-module-id');
@@ -371,10 +563,12 @@ function loadAssignmentDetails(assignmentId) {
   const infoContent = document.getElementById('assignment-info-content');
   const readingsContent = document.getElementById('assignment-readings-content');
   const resourcesContent = document.getElementById('assignment-resources-content');
+  const recordingsContent = document.getElementById('assignment-recordings-content');
 
   infoContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading assignment details...</p>';
   readingsContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading readings...</p>';
   if (resourcesContent) resourcesContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading resources...</p>';
+  if (recordingsContent) recordingsContent.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">Loading recordings...</p>';
   
   // Fetch assignment details
   fetch(`/faculty/assignments/${assignmentId}/detail/`, {
@@ -406,6 +600,10 @@ function loadAssignmentDetails(assignmentId) {
     // Update resources tab
     if (resourcesContent && data.resources_html) {
       resourcesContent.innerHTML = data.resources_html;
+    }
+    // Update recordings tab
+    if (recordingsContent && data.recordings_html) {
+      recordingsContent.innerHTML = data.recordings_html;
     }
   })
   .catch(error => {
