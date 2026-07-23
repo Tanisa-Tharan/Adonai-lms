@@ -12,6 +12,7 @@ from django.urls import reverse
 from .decorators import (
     admin_or_faculty_required,
     admin_or_supervisor_required,
+    admin_faculty_or_supervisor_required,
     admin_required,
     faculty_required,
     student_required,
@@ -1673,7 +1674,7 @@ def delete_course_material(request, material_id):
 
 
 @login_required
-@admin_or_faculty_required
+@admin_faculty_or_supervisor_required
 def module_assignments_panel(request, module_run_id):
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
     # Only check ownership for faculty users, admins can access any module
