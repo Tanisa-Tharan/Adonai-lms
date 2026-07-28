@@ -69,3 +69,8 @@ def admin_or_faculty_required(view_func):
 def admin_or_supervisor_required(view_func):
     """Require ADMIN or SUPERVISOR role"""
     return role_required(UserRoles.ADMIN, UserRoles.SUPERVISOR)(view_func)
+
+
+def admin_faculty_or_supervisor_required(view_func):
+    """Require ADMIN, FACULTY, or SUPERVISOR role"""
+    return role_required(UserRoles.ADMIN, UserRoles.FACULTY, UserRoles.SUPERVISOR)(view_func)

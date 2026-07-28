@@ -12,6 +12,7 @@ from django.urls import reverse
 from .decorators import (
     admin_or_faculty_required,
     admin_or_supervisor_required,
+    admin_faculty_or_supervisor_required,
     admin_required,
     faculty_required,
     student_required,
@@ -79,6 +80,7 @@ def _build_user_form(user=None, role=None):
             "expected_completion_date": enrollment.expected_completion_date,
             "academic_year": enrollment.academic_year,
             "quarters": enrollment.quarters.all(),
+            "module_runs": ModuleRun.objects.filter(student_modules__enrollment=enrollment),
         })
 
     return CreateUserForm(initial=initial)
@@ -100,9 +102,10 @@ def _save_user_from_form(form, user=None):
         user.set_password(generated_password)
 
         # SEND EMAIL
-        send_mail(
-            subject="Your LMS Account Created",
-            message=f"""
+        try:
+            send_mail(
+                subject="Your LMS Account Created",
+                message=f"""
         Hello {user.first_name},
 
         Your LMS account has been created.
@@ -116,10 +119,12 @@ def _save_user_from_form(form, user=None):
         Regards,
         LMS Team
         """,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception:
+            pass
 
     else:
         generated_password = None
@@ -154,6 +159,16 @@ def _save_user_from_form(form, user=None):
             enrollment.quarters.set(quarters)
             # Auto-enroll student in all modules from selected quarters
             _auto_enroll_student_in_quarter_modules(enrollment, quarters)
+
+        # Handle direct module_run selection
+        module_runs = form.cleaned_data.get("module_runs")
+        if module_runs:
+            for module_run in module_runs:
+                StudentModule.objects.get_or_create(
+                    enrollment=enrollment,
+                    module_run=module_run,
+                    defaults={"status": "NOT_STARTED"},
+                )
     else:
         Enrollment.objects.filter(student=user).delete()
 
@@ -373,6 +388,11 @@ def _admin_home_context(
     user_panel_mode="table",
     editing_user=None,
 ):
+    # Auto-complete any module runs whose end_date has passed
+    ModuleRun.objects.filter(
+        end_date__lt=date_type.today(),
+    ).exclude(status="COMPLETED").update(status="COMPLETED")
+
     users = User.objects.all().order_by("-created_at").select_related("userprofile")
     academic_years = AcademicYear.objects.all().prefetch_related(
         Prefetch("quarter_set", queryset=Quarter.objects.all().order_by("quarter_number"))
@@ -512,6 +532,12 @@ def login_view(request):
 def faculty_home(request):
     active_tab = request.GET.get("tab", "dashboard")
     assignment_mode = request.GET.get("mode", "table")  # 'table' or 'create'
+
+    # Auto-complete any module runs whose end_date has passed
+    ModuleRun.objects.filter(
+        faculty=request.user,
+        end_date__lt=date_type.today(),
+    ).exclude(status="COMPLETED").update(status="COMPLETED")
 
     faculty_runs = (
         ModuleRun.objects.filter(faculty=request.user)
@@ -948,7 +974,8 @@ def student_module_assignments_panel(request, module_run_id):
     required_materials = all_materials.filter(resource_type="REQUIRED")
     recommended_materials = all_materials.filter(resource_type="RECOMMENDED")
     resource_materials = all_materials.filter(resource_type="RESOURCES")
-    
+    video_materials = all_materials.filter(material_type="VIDEO")
+
     now = timezone.now()
     # Use the same template as faculty/admin but with student-specific context
     return render(
@@ -962,6 +989,7 @@ def student_module_assignments_panel(request, module_run_id):
             "required_materials": required_materials,
             "recommended_materials": recommended_materials,
             "resource_materials": resource_materials,
+            "video_materials": video_materials,
             "now": now,
         },
     )
@@ -1587,14 +1615,14 @@ def add_course_material(request):
             uploaded_by=request.user,
         )
     else:
-        if not upload:
+        if not upload and not link_url:
             if is_ajax:
-                return JsonResponse({"success": False, "error": "A file is required."}, status=400)
+                return JsonResponse({"success": False, "error": "A file or URL is required."}, status=400)
             return course_materials_panel(request)
         CourseMaterial.objects.create(
             module=module,
             title=title,
-            file_url=upload,
+            file_url=upload if upload else link_url,
             material_type=material_type,
             resource_type=resource_type,
             uploaded_by=request.user,
@@ -1619,13 +1647,16 @@ def delete_course_material(request, material_id):
     try:
         material = get_object_or_404(CourseMaterial, id=material_id)
 
-        if request.user.role == "FACULTY" and not ModuleRun.objects.filter(
-            module_id=material.module_id,
-            faculty_id=request.user.id,
-        ).exists():
-            if is_ajax:
-                return JsonResponse({"success": False, "error": f"Faculty {request.user.id} is not assigned to module {material.module_id} for this material."}, status=403)
-            return course_materials_panel(request)
+        if request.user.role == "FACULTY":
+            is_module_faculty = ModuleRun.objects.filter(
+                module=material.module,
+                faculty=request.user,
+            ).exists()
+            is_uploader = material.uploaded_by_id == request.user.id
+            if not is_module_faculty and not is_uploader:
+                if is_ajax:
+                    return JsonResponse({"success": False, "error": "You do not have permission to delete this material."}, status=403)
+                return course_materials_panel(request)
 
         module_id = str(material.module_id)
         material.delete()
@@ -1643,7 +1674,7 @@ def delete_course_material(request, material_id):
 
 
 @login_required
-@admin_or_faculty_required
+@admin_faculty_or_supervisor_required
 def module_assignments_panel(request, module_run_id):
     module_run = get_object_or_404(ModuleRun.objects.select_related("module"), id=module_run_id)
     # Only check ownership for faculty users, admins can access any module
@@ -1709,15 +1740,20 @@ def module_assignments_panel(request, module_run_id):
         module=module_run.module,
         resource_type="RESOURCES"
     ).select_related("uploaded_by").order_by("-created_at")
-    
+
+    video_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        material_type="VIDEO"
+    ).select_related("uploaded_by").order_by("-created_at")
+
     # Combine all course materials for the readings tab
     course_materials = CourseMaterial.objects.filter(
         module=module_run.module
     ).select_related("uploaded_by").order_by("-created_at")
-    
+
     # Check if this is being called from faculty assignments page
     from_faculty_assignments = request.GET.get("from_faculty_assignments") == "true"
-    
+
     context = {
         "module_run": module_run,
         "assignments": assignments,
@@ -1729,6 +1765,7 @@ def module_assignments_panel(request, module_run_id):
         "required_materials": required_materials,
         "recommended_materials": recommended_materials,
         "resource_materials": resource_materials,
+        "video_materials": video_materials,
         "course_materials": course_materials,
         "from_faculty_assignments": from_faculty_assignments,
     }
@@ -2171,6 +2208,24 @@ def faculty_assignment_detail_view(request, assignment_id):
     return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
 
 
+@login_required
+@faculty_required
+def module_run_recordings(request, module_run_id):
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related('module'),
+        id=module_run_id,
+        faculty=request.user
+    )
+    video_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        material_type='VIDEO'
+    ).select_related('uploaded_by').order_by('-created_at')
+    return render(request, 'accounts/faculty/panels/_recordings_tab_partial.html', {
+        'module_run': module_run,
+        'video_materials': video_materials,
+    })
+
+
 @faculty_required
 def module_run_readings(request, module_run_id):
     """
@@ -2346,7 +2401,16 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'syllabus_materials': syllabus_materials,
     }
     resources_html = render(request, 'accounts/shared/_resources_tab.html', resources_context).content.decode('utf-8')
-    
+
+    video_materials = CourseMaterial.objects.filter(
+        module=assignment.module_run.module,
+        material_type='VIDEO'
+    ).select_related('uploaded_by').order_by('-created_at')
+    recordings_html = render(request, 'accounts/faculty/panels/_recordings_tab_partial.html', {
+        'module_run': assignment.module_run,
+        'video_materials': video_materials,
+    }).content.decode('utf-8')
+
     # Prepare files data
     files_data = []
     for file in assignment_files:
@@ -2370,6 +2434,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         'assignment_html': assignment_html,
         'readings_html': readings_html,
         'resources_html': resources_html,
+        'recordings_html': recordings_html,
     })
 
 @login_required

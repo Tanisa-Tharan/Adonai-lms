@@ -1,6 +1,12 @@
 from django import forms
 from accounts.models import User, UserProfile
 from academics.models import Enrollment, AcademicYear, Quarter
+from modules.models import ModuleRun
+
+
+class ModuleRunChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj.module.title} — {obj.quarter.name}"
 
 
 class CreateUserForm(forms.Form):
@@ -58,6 +64,15 @@ class CreateUserForm(forms.Form):
         required=False,
         widget=forms.CheckboxSelectMultiple,
         help_text="Select all quarters the student will be enrolled in"
+    )
+
+    module_runs = ModuleRunChoiceField(
+        queryset=ModuleRun.objects.select_related("module", "quarter").order_by(
+            "quarter__quarter_number", "module__order_number"
+        ),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="Select specific modules to directly enroll the student in",
     )
 
     def clean(self):
