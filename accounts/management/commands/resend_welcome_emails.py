@@ -34,8 +34,6 @@ Login Details:
 Email: {user.email}
 Password: {generated_password}
 
-Please login and change your password.
-
 Regards,
 LMS Team
 """,
