@@ -61,7 +61,18 @@
               <span style="display: block; font-size: 12px; color: #6b7280;">{{ material.get_material_type_display }} &bull; {{ material.created_at|date:"M d, Y" }}</span>
             </div>
           </div>
-          <a href="{{ material.file_url.url }}" target="_blank" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <a href="{{ material.file_url.url }}" target="_blank" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+            {% if user.is_faculty_or_admin %}
+            <button type="button" onclick="deleteMaterial('{{ material.id }}')" title="Delete"
+              style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.45; transition: opacity 0.2s;"
+              onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16" fill="none">
+                <path d="M3 16C2.45 16 1.97917 15.8042 1.5875 15.4125C1.19583 15.0208 1 14.55 1 14V3H0V1H5V0H11V1H16V3H15V14C15 14.55 14.8042 15.0208 14.4125 15.4125C14.0208 15.8042 13.55 16 13 16H3ZM13 3H3V14H13V3ZM5 12H7V5H5V12ZM9 12H11V5H9V12Z" fill="#BA1A1A"/>
+              </svg>
+            </button>
+            {% endif %}
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -72,6 +83,20 @@
 </div>
 
 <script>
+function deleteMaterial(materialId) {
+  if (!confirm('Are you sure you want to delete this material?')) return;
+  fetch('{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', materialId), {
+    method: 'POST',
+    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.success) { location.reload(); }
+    else { alert(data.error || 'Delete failed.'); }
+  })
+  .catch(function() { alert('Delete failed. Please try again.'); });
+}
+
 (function() {
   var form = document.getElementById('syllabus-upload-form');
   if (!form) return;

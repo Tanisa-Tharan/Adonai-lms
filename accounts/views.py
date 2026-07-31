@@ -706,6 +706,11 @@ def faculty_view_class_panel(request, module_run_id):
         ).values_list("student_module_id", flat=True)
     )
 
+    syllabus_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type="SYLLABUS"
+    ).select_related("uploaded_by").order_by("-created_at")
+
     return render(
         request,
         "accounts/faculty/panels/_view_class.html",
@@ -713,6 +718,7 @@ def faculty_view_class_panel(request, module_run_id):
             "module_run": module_run,
             "enrolled_students": enrolled_students,
             "students_with_submissions": students_with_submissions,
+            "syllabus_materials": syllabus_materials,
         },
     )
 
@@ -975,6 +981,7 @@ def student_module_assignments_panel(request, module_run_id):
     recommended_materials = all_materials.filter(resource_type="RECOMMENDED")
     resource_materials = all_materials.filter(resource_type="RESOURCES")
     video_materials = all_materials.filter(material_type="VIDEO")
+    syllabus_materials = all_materials.filter(resource_type="SYLLABUS")
 
     now = timezone.now()
     # Use the same template as faculty/admin but with student-specific context
@@ -990,6 +997,7 @@ def student_module_assignments_panel(request, module_run_id):
             "recommended_materials": recommended_materials,
             "resource_materials": resource_materials,
             "video_materials": video_materials,
+            "syllabus_materials": syllabus_materials,
             "now": now,
         },
     )
@@ -1746,6 +1754,11 @@ def module_assignments_panel(request, module_run_id):
         material_type="VIDEO"
     ).select_related("uploaded_by").order_by("-created_at")
 
+    syllabus_materials = CourseMaterial.objects.filter(
+        module=module_run.module,
+        resource_type="SYLLABUS"
+    ).select_related("uploaded_by").order_by("-created_at")
+
     # Combine all course materials for the readings tab
     course_materials = CourseMaterial.objects.filter(
         module=module_run.module
@@ -1766,6 +1779,7 @@ def module_assignments_panel(request, module_run_id):
         "recommended_materials": recommended_materials,
         "resource_materials": resource_materials,
         "video_materials": video_materials,
+        "syllabus_materials": syllabus_materials,
         "course_materials": course_materials,
         "from_faculty_assignments": from_faculty_assignments,
     }
