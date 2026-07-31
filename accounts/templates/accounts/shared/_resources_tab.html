@@ -33,7 +33,7 @@
       <input type="hidden" name="resource_type" value="SYLLABUS">
       <p style="font-size: 13px; font-weight: 600; color: #374151; margin: 0 0 12px 0;">Upload Syllabus PDF</p>
       <div style="display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" name="title" placeholder="Syllabus title (e.g. Module Syllabus)" required
+        <input type="text" name="title" placeholder="Title (optional)"
           style="padding: 9px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif; outline: none; width: 100%; box-sizing: border-box;">
         <input type="hidden" name="material_type" value="PDF">
         <input type="file" name="file_url" accept=".pdf" required
@@ -104,6 +104,10 @@ function deleteMaterial(materialId) {
     e.preventDefault();
     var msg = document.getElementById('syllabus-upload-msg');
     var formData = new FormData(form);
+    var fileInput = form.querySelector('input[name="file_url"]');
+    if (!formData.get('title') && fileInput && fileInput.files[0]) {
+      formData.set('title', fileInput.files[0].name.replace(/\.pdf$/i, ''));
+    }
     fetch('{% url "add_course_material" %}', {
       method: 'POST',
       headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },

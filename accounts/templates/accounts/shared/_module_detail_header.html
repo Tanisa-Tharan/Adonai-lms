@@ -111,7 +111,7 @@
   <div id="syllabus-upload-form-header" style="display: none; background: #F8FAFC; border: 1px dashed #CBD5E1; border-radius: 10px; padding: 20px;">
     <p style="font-family: Inter, sans-serif; font-size: 14px; font-weight: 600; color: #0F172A; margin: 0 0 14px 0;">Upload Syllabus PDF</p>
     <div style="display: flex; flex-direction: column; gap: 10px;">
-      <input type="text" id="syllabus-title-header" placeholder="e.g. Module Syllabus"
+      <input type="text" id="syllabus-title-header" placeholder="Title (optional)"
         style="padding: 10px 14px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; font-family: Lexend, sans-serif; outline: none; width: 100%; box-sizing: border-box; background: #fff; color: #1E293B;"
         onfocus="this.style.borderColor='#921F22'" onblur="this.style.borderColor='#E2E8F0'">
       <input type="file" id="syllabus-file-header" accept=".pdf"
@@ -143,15 +143,16 @@
   }
 
   function submitSyllabusHeader(moduleId) {
-    var title = document.getElementById('syllabus-title-header').value.trim();
     var fileInput = document.getElementById('syllabus-file-header');
     var msg = document.getElementById('syllabus-header-msg');
-    if (!title || !fileInput.files[0]) {
+    if (!fileInput.files[0]) {
       msg.style.display = 'block';
       msg.style.color = '#dc2626';
-      msg.textContent = 'Please enter a title and select a PDF file.';
+      msg.textContent = 'Please select a PDF file.';
       return;
     }
+    var title = document.getElementById('syllabus-title-header').value.trim() ||
+                fileInput.files[0].name.replace(/\.pdf$/i, '');
     var formData = new FormData();
     formData.append('title', title);
     formData.append('file', fileInput.files[0]);
