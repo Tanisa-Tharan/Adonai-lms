@@ -2,323 +2,286 @@
 
 <div class="assignment-list-section">
   {% if assignments %}
-    <div class="assignment-cards">
-      {% for assignment in assignments %}
-      <div class="assignment-card">
-        <div class="assignment-card-row assignment-card-row-top">
-          <div class="assignment-card-cell assignment-card-heading">
-            <div class="assignment-card-heading-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
-                <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
-              </svg>
-            </div>
-            <span class="assignment-card-heading-text">Assignment {{ assignment.serial_number }}</span>
-          </div>
-          <div class="assignment-card-cell assignment-card-top-meta">
-            <div class="assignment-card-status-wrap assignment-card-status-actions-row">
-              <span class="assignment-card-status-label">STATUS</span>
-              <span class="assignment-card-status-badge">PUBLISHED</span>
-              {% if user.role == 'ADMIN' or user.role == 'FACULTY' %}
-              <button
-                type="button"
-                class="assignment-card-icon-button"
-                title="Edit assignment"
-                hx-get="{% url 'module_assignments_detail' module_run.id %}?assignment_id={{ assignment.id }}"
-                hx-target="#assignment-form-section"
-                hx-swap="innerHTML"
-                hx-on::before-request="sessionStorage.setItem('activeModuleTab', 'assignments-tab');"
-                hx-on::after-request="
-                  const formSection = document.getElementById('assignment-form-section');
-                  if (formSection) {
-                    formSection.style.display = 'block';
-                  }
-                  const addButton = document.getElementById('add-assignment-btn');
-                  if (addButton) {
-                    addButton.style.display = 'none';
-                  }
-                "
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.625 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#921F22"/>
-                </svg>
-              </button>
-              <form
-                method="post"
-                action="{% url 'delete_module_assignment' module_run.id assignment.id %}"
-                hx-post="{% url 'delete_module_assignment' module_run.id assignment.id %}"
-                hx-target="closest [id$='detail-drawer']"
-                hx-swap="innerHTML"
-                onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment?');"
-              >
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  class="assignment-card-icon-button assignment-card-icon-button-delete"
-                  title="Delete assignment"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" viewBox="0 0 16 18" fill="none">
-                    <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
-                  </svg>
-                </button>
-              </form>
-              {% endif %}
-            </div>
-          </div>
-        </div>
+  <div class="assignment-cards">
+    {% for assignment in assignments %}
+    <div class="assignment-card">
 
-        <div class="assignment-card-row assignment-card-row-labels">
-          <div class="assignment-card-cell">
-            <span class="assignment-card-label">Title</span>
-          </div>
-          <div class="assignment-card-cell">
-            <span class="assignment-card-label">Due Date</span>
-          </div>
-        </div>
-
-        <div class="assignment-card-row assignment-card-row-values">
-          <div class="assignment-card-cell">
-            <span class="assignment-card-value">{{ assignment.title }}</span>
-          </div>
-          <div class="assignment-card-cell">
-            <span class="assignment-card-value">{{ assignment.due_date|date:"Y-m-d" }}</span>
-          </div>
-        </div>
-
-        <div class="assignment-card-description-box">
-          <div class="assignment-card-description-content assignment-description">{{ assignment.description|safe|default:"" }}</div>
-        </div>
-
-        {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
-        {% with student_submission=assignment.submissions.all.0 %}
-        <div class="assignment-submission-section" id="submission-section-{{ assignment.id }}" style="margin-top: 24px;">
-          <div class="assignment-submission-header" id="submission-header-{{ assignment.id }}" style="display: {% if student_submission and student_submission.student_module.enrollment.student == user %}flex{% else %}none{% endif %}; align-items: center; gap: 8px; margin-bottom: 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none" style="width: 16px; height: 20px; fill: #921F22;">
+      <!-- Card Header: Serial # · Status · Edit/Delete -->
+      <div class="assignment-card-header">
+        <div class="assignment-card-num-group">
+          <div class="assignment-card-num-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="17" viewBox="0 0 16 20" fill="none">
               <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
             </svg>
-            <h3 style="color: #1D1B1A; font-family: Lexend, sans-serif; font-size: 24px; font-style: normal; font-weight: 600; line-height: 32px; margin: 0;">Submission</h3>
           </div>
+          <span class="assignment-serial-label">Assignment {{ assignment.serial_number }}</span>
+        </div>
+        <div class="assignment-card-actions">
+          <span class="assignment-status-chip">Published</span>
+          {% if user.role == 'ADMIN' or user.role == 'FACULTY' %}
           <button
             type="button"
-            class="assignment-submit-btn"
-            id="submit-btn-{{ assignment.id }}"
-            data-assignment-id="{{ assignment.id }}"
-            style="display: {% if student_submission and student_submission.student_module.enrollment.student == user %}none{% else %}flex{% endif %}; width: 100%; max-width: 261.333px; padding: 10px 16px; justify-content: center; align-items: center; gap: 8px; border-radius: 8px; background: #921F22; color: white; border: none; cursor: pointer; font-family: Lexend, sans-serif; font-size: 16px; font-weight: 500; transition: background-color 0.2s; box-sizing: border-box;"
-            onmouseover="this.style.backgroundColor='#7a1a1c'"
-            onmouseout="this.style.backgroundColor='#921F22'"
-            onclick="showSubmissionForm('{{ assignment.id }}')"
+            class="assignment-card-icon-button"
+            title="Edit assignment"
+            hx-get="{% url 'module_assignments_detail' module_run.id %}?assignment_id={{ assignment.id }}"
+            hx-target="#assignment-form-section"
+            hx-swap="innerHTML"
+            hx-on::before-request="sessionStorage.setItem('activeModuleTab', 'assignments-tab');"
+            hx-on::after-request="
+              const formSection = document.getElementById('assignment-form-section');
+              if (formSection) { formSection.style.display = 'block'; }
+              const addButton = document.getElementById('add-assignment-btn');
+              if (addButton) { addButton.style.display = 'none'; }
+            "
           >
-            <span>Click to Submit Assignment</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="11" viewBox="0 0 13 11" fill="none" style="width: 12.401px; height: 10.667px; fill: #FFF;">
-              <path d="M8.11667 6H0V4.66667H8.11667L4.38333 0.933333L5.33333 0L12.4014 5.58325L5.33333 10.6667L4.38333 9.73333L8.11667 6Z" fill="white"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 18 18" fill="none">
+              <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.825 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#921F22"/>
             </svg>
           </button>
-        </div>
-        
-        {% include 'accounts/home/panels/modules/_assignment_submission_form.html' with assignment=assignment module_run=module_run %}
-        {% endwith %}
-        {% endif %}
-
-        <div class="assignment-card-files-box">
-          <div class="assignment-card-files-header">Uploaded Assignments</div>
-          <div class="assignment-card-files-list">
-            {% for assignment_file in assignment.files.all %}
-            <div class="resource-item">
-              <div class="resource-item-icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-                  <path d="M8.75 13.125H10V10.625H11.25C11.6042 10.625 11.901 10.5052 12.1406 10.2656C12.3802 10.026 12.5 9.72917 12.5 9.375V8.125C12.5 7.77083 12.3802 7.47396 12.1406 7.23438C11.901 6.99479 11.6042 6.875 11.25 6.875H8.75V13.125ZM10 9.375V8.125H11.25V9.375H10ZM13.75 13.125H16.25C16.6042 13.125 16.901 13.0052 17.1406 12.7656C17.3802 12.526 17.5 12.2292 17.5 11.875V8.125C17.5 7.77083 17.3802 7.47396 17.1406 7.23438C16.901 6.99479 16.6042 6.875 16.25 6.875H13.75V13.125ZM15 11.875V8.125H16.25V11.875H15ZM18.75 13.125H20V10.625H21.25V9.375H20V8.125H21.25V6.875H18.75V13.125ZM7.5 20C6.8125 20 6.22396 19.7552 5.73438 19.2656C5.24479 18.776 5 18.1875 5 17.5V2.5C5 1.8125 5.24479 1.22396 5.73438 0.734375C6.22396 0.244792 6.8125 0 7.5 0H22.5C23.1875 0 23.776 0.244792 24.2656 0.734375C24.7552 1.22396 25 1.8125 25 2.5V17.5C25 18.1875 24.7552 18.776 24.2656 19.2656C23.776 19.7552 23.1875 20 22.5 20H7.5ZM7.5 17.5H22.5V2.5H7.5V17.5ZM2.5 25C1.8125 25 1.22396 24.7552 0.734375 24.2656C0.244792 23.776 0 23.1875 0 22.5V5H2.5V22.5H20V25H2.5ZM7.5 2.5V17.5V2.5Z" fill="#921F22"/>
-                </svg>
-              </div>
-              <span class="resource-item-title">{{ assignment_file.file_name|default:assignment_file.file_url.name }}</span>
-              {% if user.role == 'ADMIN' or user.role == 'FACULTY' %}
-              <form
-                method="post"
-                action="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
-                class="resource-item-action-form"
-                hx-post="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
-                hx-target="closest [id$='detail-drawer']"
-                hx-swap="innerHTML"
-                onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment file?');"
-              >
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  class="resource-item-delete-icon"
-                  title="Delete {{ assignment_file.file_name|default:assignment_file.file_url.name }}"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="15" viewBox="0 0 14 15" fill="none">
-                    <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z" fill="#B42318"/>
-                  </svg>
-                </button>
-              </form>
-              {% endif %}
-              <a href="{{ assignment_file.file_url.url }}" download class="resource-item-download-icon" title="Download {{ assignment_file.file_name|default:assignment_file.file_url.name }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#94A3B8"/>
-                </svg>
-              </a>
-            </div>
-            {% empty %}
-            <div class="resources-empty-state">No assignment files uploaded yet.</div>
-            {% endfor %}
-          </div>
-        </div>
-
-        {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
-        {% for submission in assignment.submissions.all %}
-        {% if user.role == 'ADMIN' or submission.student_module.enrollment.student == user %}
-        <div class="assignment-card-submission-box" style="margin-top: 24px; padding: 16px; background: #F0FDF4; border: 1px solid #86EFAC; border-radius: 8px; width: 100%; box-sizing: border-box;">
-          <div class="assignment-card-row assignment-card-row-top">
-            <div class="assignment-card-cell assignment-card-heading">
-              <div class="assignment-card-heading-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
-                  <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#16A34A"/>
-                </svg>
-              </div>
-              {% if user.role == 'ADMIN' %}
-              <span class="assignment-card-heading-text" style="color: #16A34A;">{{ submission.student_module.enrollment.student.first_name }} {{ submission.student_module.enrollment.student.last_name }}</span>
-              {% else %}
-              <span class="assignment-card-heading-text" style="color: #16A34A;">Your Submission</span>
-              {% endif %}
-            </div>
-            <div class="assignment-card-cell assignment-card-top-meta">
-              <div class="assignment-card-status-wrap assignment-card-status-actions-row">
-                <span class="assignment-card-status-label">STATUS</span>
-                {% if submission.status == 'draft' %}
-                <span class="assignment-card-status-badge status-draft" style="background: #6B7280 !important; color: #FFFFFF !important;">DRAFT</span>
-                {% elif submission.status == 'submitted' %}
-                <span class="assignment-card-status-badge status-submitted" style="background: #16A34A !important; color: #FFFFFF !important;">SUBMITTED</span>
-                {% elif submission.status == 'graded' %}
-                <span class="assignment-card-status-badge status-graded" style="background: #2563EB !important; color: #FFFFFF !important;">GRADED</span>
-                {% else %}
-                <span class="assignment-card-status-badge status-submitted" style="background: #16A34A !important; color: #FFFFFF !important;">SUBMITTED</span>
-                {% endif %}
-                <button
-                  type="button"
-                  class="assignment-card-icon-button"
-                  title="Edit submission"
-                  onclick="showSubmissionForm('{{ assignment.id }}', `{{ submission.description|escapejs }}`);"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.625 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#16A34A"/>
-                  </svg>
-                </button>
-                <form
-                  method="post"
-                  action="{% url 'student_delete_submission' module_run.id assignment.id %}"
-                  hx-post="{% url 'student_delete_submission' module_run.id assignment.id %}"
-                  hx-target="closest [id$='detail-drawer']"
-                  hx-swap="innerHTML"
-                  onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this submission?');"
-                >
-                  {% csrf_token %}
-                  <button
-                    type="submit"
-                    class="assignment-card-icon-button assignment-card-icon-button-delete"
-                    title="Delete submission"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="18" viewBox="0 0 16 18" fill="none">
-                      <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
-                    </svg>
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-
-          <div class="assignment-card-row assignment-card-row-labels" style="margin-top: 16px; flex-wrap: wrap;">
-            <div class="assignment-card-cell">
-              <span class="assignment-card-label">Submitted At</span>
-            </div>
-            <div class="assignment-card-cell">
-              <span class="assignment-card-label">Score</span>
-            </div>
-          </div>
-
-          <div class="assignment-card-row assignment-card-row-values" style="flex-wrap: wrap;">
-            <div class="assignment-card-cell">
-              <span class="assignment-card-value">{{ submission.submitted_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            <div class="assignment-card-cell">
-              <span class="assignment-card-value">{{ submission.score|default:"Not graded yet" }}</span>
-            </div>
-          </div>
-
-          {% if submission.description %}
-          <div class="assignment-card-description-box" style="margin-top: 16px; width: 100%; box-sizing: border-box;">
-            <div class="assignment-card-description-content assignment-description" style="word-wrap: break-word; overflow-wrap: break-word;">{{ submission.description|safe }}</div>
-          </div>
-          {% endif %}
-
-          {% if submission.file_url %}
-          <div style="margin-top: 16px; padding: 12px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 6px; width: 100%; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
-                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM8 15.01L9.41 16.42L11 14.84V19H13V14.84L14.59 16.43L16 15.01L12.01 11L8 15.01Z" fill="#16A34A"/>
+          <form
+            method="post"
+            action="{% url 'delete_module_assignment' module_run.id assignment.id %}"
+            hx-post="{% url 'delete_module_assignment' module_run.id assignment.id %}"
+            hx-target="closest [id$='detail-drawer']"
+            hx-swap="innerHTML"
+            onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment?');"
+            style="margin:0;">
+            {% csrf_token %}
+            <button
+              type="submit"
+              class="assignment-card-icon-button assignment-card-icon-button-delete"
+              title="Delete assignment"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 16 18" fill="none">
+                <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
               </svg>
-              <div style="flex: 1; min-width: 0;">
-                <div style="color: #1F2937; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; margin-bottom: 4px;">
-                  Attached File
-                </div>
-                <div style="color: #6B7280; font-family: Lexend, sans-serif; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                  {{ submission.file_url.name|default:"Uploaded file" }}
-                </div>
-              </div>
-              <form
-                method="post"
-                action="{% url 'student_delete_submission_file' module_run.id submission.id %}"
-                hx-post="{% url 'student_delete_submission_file' module_run.id submission.id %}"
-                hx-target="closest [id$='detail-drawer']"
-                hx-swap="innerHTML"
-                style="margin: 0;"
-                onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this file? Your description will be kept.');"
-              >
-                {% csrf_token %}
-                <button
-                  type="submit"
-                  style="display: inline-flex; align-items: center; justify-content: center; padding: 8px; background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 6px; color: #B42318; cursor: pointer; transition: all 0.2s; flex-shrink: 0;"
-                  onmouseover="this.style.backgroundColor='#FEF2F2'; this.style.borderColor='#F87171';"
-                  onmouseout="this.style.backgroundColor='#FEE2E2'; this.style.borderColor='#FCA5A5';"
-                  title="Delete file"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 18" fill="none">
-                    <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
-                  </svg>
-                </button>
-              </form>
-              <a
-                href="{{ submission.file_url.url }}"
-                download
-                style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #16A34A; border-radius: 6px; color: #FFFFFF; text-decoration: none; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; transition: background-color 0.2s; flex-shrink: 0;"
-                onmouseover="this.style.backgroundColor='#15803D';"
-                onmouseout="this.style.backgroundColor='#16A34A';"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="white"/>
-                </svg>
-                Download
-              </a>
-            </div>
-          </div>
-          {% endif %}
-
-          {% if submission.feedback %}
-          <div style="margin-top: 16px; padding: 12px; background: #FEF3C7; border-radius: 6px; width: 100%; box-sizing: border-box;">
-            <strong style="color: #92400E; font-family: Lexend, sans-serif; font-size: 14px;">Feedback:</strong>
-            <p style="color: #92400E; font-family: Lexend, sans-serif; font-size: 14px; margin: 8px 0 0 0; word-wrap: break-word; overflow-wrap: break-word;">{{ submission.feedback }}</p>
-          </div>
+            </button>
+          </form>
           {% endif %}
         </div>
+      </div>
+
+      <!-- Card Body: Title · Due Date · Description -->
+      <div class="assignment-card-body">
+        <div class="assignment-card-title-line">{{ assignment.title }}</div>
+        <div class="assignment-card-meta-row">
+          <span class="assignment-meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="#A8A29E" stroke-width="2"/>
+              <path d="M16 2v4M8 2v4M3 10h18" stroke="#A8A29E" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Due {{ assignment.due_date|date:"M j, Y" }}
+          </span>
+          {% if assignment.max_score %}
+          <span class="assignment-meta-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="#A8A29E" stroke-width="2"/>
+              <path d="M12 7v5l3 3" stroke="#A8A29E" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Max score: {{ assignment.max_score }}
+          </span>
+          {% endif %}
+        </div>
+        {% if assignment.description %}
+        <div class="assignment-card-desc assignment-description">{{ assignment.description|safe }}</div>
         {% endif %}
+      </div>
+
+      <!-- Assignment Files -->
+      {% if assignment.files.all %}
+      <div class="assignment-files-section">
+        <div class="assignment-files-label">Assignment Files</div>
+        {% for assignment_file in assignment.files.all %}
+        <div class="assignment-file-item">
+          <div class="assignment-file-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="15" viewBox="0 0 16 20" fill="none">
+              <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+            </svg>
+          </div>
+          <span class="assignment-file-name">{{ assignment_file.file_name|default:assignment_file.file_url.name }}</span>
+          {% if user.role == 'ADMIN' or user.role == 'FACULTY' %}
+          <form
+            method="post"
+            action="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
+            class="resource-item-action-form"
+            hx-post="{% url 'delete_assignment_file' module_run.id assignment_file.id %}"
+            hx-target="closest [id$='detail-drawer']"
+            hx-swap="innerHTML"
+            onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this assignment file?');">
+            {% csrf_token %}
+            <button type="submit" class="resource-item-delete-icon" title="Delete file">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 15" fill="none">
+                <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z" fill="#B42318"/>
+              </svg>
+            </button>
+          </form>
+          {% endif %}
+          <a href="{{ assignment_file.file_url.url }}" download class="resource-item-download-icon" title="Download">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16" fill="none">
+              <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#921F22"/>
+            </svg>
+          </a>
+        </div>
         {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Student Submit Button & Form -->
+      {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
+      {% with student_submission=assignment.submissions.all.0 %}
+      <div class="assignment-submission-section" id="submission-section-{{ assignment.id }}">
+        <div id="submission-header-{{ assignment.id }}"
+          style="display: {% if student_submission and student_submission.student_module.enrollment.student == user %}flex{% else %}none{% endif %}; align-items: center; gap: 8px; margin-bottom: 14px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="18" viewBox="0 0 16 20" fill="none">
+            <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
+          </svg>
+          <span style="font-family: Lexend, sans-serif; font-size: 15px; font-weight: 700; color: #1C1917;">Submission</span>
+        </div>
+        <button
+          type="button"
+          class="assignment-submit-btn"
+          id="submit-btn-{{ assignment.id }}"
+          data-assignment-id="{{ assignment.id }}"
+          style="display: {% if student_submission and student_submission.student_module.enrollment.student == user %}none{% else %}flex{% endif %};"
+          onclick="showSubmissionForm('{{ assignment.id }}')"
+        >
+          <span>Submit Assignment</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="10" viewBox="0 0 13 11" fill="none">
+            <path d="M8.11667 6H0V4.66667H8.11667L4.38333 0.933333L5.33333 0L12.4014 5.58325L5.33333 10.6667L4.38333 9.73333L8.11667 6Z" fill="white"/>
+          </svg>
+        </button>
+      </div>
+      {% include 'accounts/home/panels/modules/_assignment_submission_form.html' with assignment=assignment module_run=module_run %}
+      {% endwith %}
+      {% endif %}
+
+      <!-- Submissions list (admin sees all, student sees own) -->
+      {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
+      {% for submission in assignment.submissions.all %}
+      {% if user.role == 'ADMIN' or submission.student_module.enrollment.student == user %}
+      <div class="assignment-card-submission-box">
+
+        <!-- Submission header row -->
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 16 20" fill="none">
+            <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#16A34A"/>
+          </svg>
+          {% if user.role == 'ADMIN' %}
+          <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #16A34A;">{{ submission.student_module.enrollment.student.first_name }} {{ submission.student_module.enrollment.student.last_name }}</span>
+          {% else %}
+          <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #16A34A;">Your Submission</span>
+          {% endif %}
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
+            {% if submission.status == 'draft' %}
+            <span class="assignment-status-chip" style="background: #F3F4F6; color: #6B7280;">Draft</span>
+            {% elif submission.status == 'submitted' %}
+            <span class="assignment-status-chip" style="background: #F0FDF4; color: #15803D;">Submitted</span>
+            {% elif submission.status == 'graded' %}
+            <span class="assignment-status-chip" style="background: #EFF6FF; color: #1D4ED8;">Graded</span>
+            {% else %}
+            <span class="assignment-status-chip" style="background: #F0FDF4; color: #15803D;">Submitted</span>
+            {% endif %}
+            <button type="button" class="assignment-card-icon-button" title="Edit submission"
+              onclick="showSubmissionForm('{{ assignment.id }}', `{{ submission.description|escapejs }}`);">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 18 18" fill="none">
+                <path d="M2 16H3.425L11.2 8.225L9.775 6.8L2 14.575V16ZM0 18V13.75L11.2 2.575C11.4 2.39167 11.6208 2.25 11.8625 2.15C12.1042 2.05 12.3583 2 12.625 2C12.8917 2 13.15 2.05 13.4 2.15C13.65 2.25 13.8667 2.4 14.05 2.6L15.425 4C15.625 4.18333 15.7708 4.4 15.8625 4.65C15.9542 4.9 16 5.15 16 5.4C16 5.66667 15.9542 5.92083 15.8625 6.1625C15.7708 6.40417 15.625 6.825 15.425 6.825L4.25 18H0ZM10.475 7.525L9.775 6.8L11.2 8.225L10.475 7.525Z" fill="#16A34A"/>
+              </svg>
+            </button>
+            <form method="post"
+              action="{% url 'student_delete_submission' module_run.id assignment.id %}"
+              hx-post="{% url 'student_delete_submission' module_run.id assignment.id %}"
+              hx-target="closest [id$='detail-drawer']"
+              hx-swap="innerHTML"
+              onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this submission?');"
+              style="margin:0;">
+              {% csrf_token %}
+              <button type="submit" class="assignment-card-icon-button assignment-card-icon-button-delete" title="Delete submission">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 16 18" fill="none">
+                  <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Submission meta: date + score -->
+        <div style="display: flex; align-items: center; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
+          <span style="display: inline-flex; align-items: center; gap: 5px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #6B7280;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#A8A29E" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#A8A29E" stroke-width="2" stroke-linecap="round"/></svg>
+            {{ submission.submitted_at|date:"M j, Y · g:i A" }}
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #6B7280;">
+            Score: <strong style="color: #166534;">{{ submission.score|default:"Not graded yet" }}</strong>
+          </span>
+        </div>
+
+        {% if submission.description %}
+        <div style="margin-top: 12px; padding: 12px 14px; background: rgba(255,255,255,0.55); border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #374151; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word;">
+          {{ submission.description|safe }}
+        </div>
         {% endif %}
+
+        {% if submission.file_url %}
+        <div style="margin-top: 12px; padding: 10px 14px; background: #FFFFFF; border: 1px solid #BBF7D0; border-radius: 8px; display: flex; align-items: center; gap: 10px; box-sizing: border-box;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
+            <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2ZM18 20H6V4H13V9H18V20ZM8 15.01L9.41 16.42L11 14.84V19H13V14.84L14.59 16.43L16 15.01L12.01 11L8 15.01Z" fill="#16A34A"/>
+          </svg>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-family: Lexend, sans-serif; font-size: 13px; font-weight: 600; color: #166534; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ submission.file_url.name|default:"Uploaded file" }}</div>
+          </div>
+          <form method="post"
+            action="{% url 'student_delete_submission_file' module_run.id submission.id %}"
+            hx-post="{% url 'student_delete_submission_file' module_run.id submission.id %}"
+            hx-target="closest [id$='detail-drawer']"
+            hx-swap="innerHTML"
+            style="margin:0;"
+            onsubmit="sessionStorage.setItem('activeModuleTab', 'assignments-tab'); return confirm('Are you sure you want to delete this file? Your description will be kept.');">
+            {% csrf_token %}
+            <button type="submit"
+              style="display: inline-flex; align-items: center; justify-content: center; padding: 6px; background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 6px; color: #B42318; cursor: pointer; flex-shrink: 0;"
+              title="Delete file">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 16 18" fill="none">
+                <path d="M3 18C2.45 18 1.97917 17.8042 1.5875 17.4125C1.19583 17.0208 1 16.55 1 16V3H0V1H5V0H11V1H16V3H15V16C15 16.55 14.8042 17.0208 14.4125 17.4125C14.0208 17.8042 13.55 18 13 18H3ZM13 3H3V16H13V3ZM5 14H7V5H5V14ZM9 14H11V5H9V14Z" fill="#B42318"/>
+              </svg>
+            </button>
+          </form>
+          <a href="{{ submission.file_url.url }}" download
+            style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #16A34A; border-radius: 6px; color: #FFFFFF; text-decoration: none; font-family: Lexend, sans-serif; font-size: 12px; font-weight: 600; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="none">
+              <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="white"/>
+            </svg>
+            Download
+          </a>
+        </div>
+        {% endif %}
+
+        {% if submission.feedback %}
+        <div style="margin-top: 12px; padding: 12px 14px; background: #FEF3C7; border-radius: 8px; box-sizing: border-box;">
+          <strong style="color: #92400E; font-family: Lexend, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;">Feedback</strong>
+          <p style="color: #92400E; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; margin: 6px 0 0 0; word-wrap: break-word; line-height: 1.6;">{{ submission.feedback }}</p>
+        </div>
+        {% endif %}
+
       </div>
+      {% endif %}
       {% endfor %}
+      {% endif %}
+
     </div>
+    {% endfor %}
+  </div>
   {% else %}
-    <div class="assignment-card assignment-card-empty">
-      <div class="assignment-card-description-box">
-        <div class="assignment-card-description-content">No assignments yet.</div>
-      </div>
-    </div>
+  <div class="assignment-card-empty">
+    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#D6D3D1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display: block;">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+      <polyline points="14 2 14 8 20 8"></polyline>
+      <line x1="16" y1="13" x2="8" y2="13"></line>
+      <line x1="16" y1="17" x2="8" y2="17"></line>
+      <polyline points="10 9 9 9 8 9"></polyline>
+    </svg>
+    <p style="margin: 0; color: #A8A29E; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px;">
+      No assignments yet{% if user.is_faculty_or_admin %} — click Add Assignment to create one{% endif %}.
+    </p>
+  </div>
   {% endif %}
 </div>

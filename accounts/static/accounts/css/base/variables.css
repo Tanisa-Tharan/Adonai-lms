@@ -11,10 +11,10 @@
   --line: #d7e0ea;
   --text: #1f2937;
   --muted: #64748b;
-  --primary: #0f766e;
-  --primary-dark: #115e59;
+  --primary: #921F22;
+  --primary-dark: #7a1a1c;
   --danger: #b91c1c;
-  --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  --shadow: 0 4px 16px rgba(146, 31, 34, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
   
   /* Brand Colors */
   --brand-primary: #000;
@@ -50,7 +50,7 @@
   --font-primary: "Plus Jakarta Sans", sans-serif;
   --font-brand: "Lexend", sans-serif;
   --font-brand-script: "BackBone Melavita", cursive;
-  --font-ui: "Roboto", sans-serif;
+  --font-ui: "Lexend", sans-serif;
   
   --font-size-xs: 10px;
   --font-size-sm: 13px;
@@ -75,10 +75,11 @@
   --transition-slow: 0.3s ease;
   
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(146, 31, 34, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(146, 31, 34, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(146, 31, 34, 0.08), 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 16px 40px rgba(146, 31, 34, 0.10), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 8px 28px rgba(146, 31, 34, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
   
   /* Z-index Scale */
   --z-base: 1;

@@ -14,9 +14,8 @@
           <table>
             <thead>
               <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Email</th>
+                <th>Student</th>
+                <th>ID</th>
                 <th>DOB</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -25,10 +24,17 @@
             <tbody>
               {% for user in student_users %}
               <tr>
-                <td>{% if user.serial_number %}{{ user.serial_number }}{% else %}-{% endif %}</td>
-                <td>{{ user.first_name }} {{ user.last_name }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.userprofile.dob|date:"d M Y"|default:"-" }}</td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar student">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                    <div class="user-cell-info">
+                      <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                      <div class="user-meta">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="font-family:Lexend,sans-serif; font-size:13px; color:#78716C;">{% if user.serial_number %}{{ user.serial_number }}{% else %}—{% endif %}</td>
+                <td>{{ user.userprofile.dob|date:"d M Y"|default:"—" }}</td>
                 <td>
                   <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
                     {% if user.is_active %}Active{% else %}Inactive{% endif %}
@@ -48,8 +54,8 @@
                 </td>
               </tr>
               {% empty %}
-              <tr>
-                <td colspan="6">No students found</td>
+              <tr class="table-empty-row">
+                <td colspan="5">No students found.</td>
               </tr>
               {% endfor %}
             </tbody>

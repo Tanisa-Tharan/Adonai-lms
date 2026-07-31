@@ -6,10 +6,11 @@
     --line: #d7e0ea;
     --text: #1f2937;
     --muted: #64748b;
-    --primary: #0f766e;
-    --primary-dark: #115e59;
+    --primary: #921F22;
+    --primary-dark: #7a1a1c;
     --danger: #b91c1c;
-    --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+    --shadow: 0 4px 16px rgba(146,31,34,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 28px rgba(146,31,34,0.12), 0 2px 8px rgba(0,0,0,0.05);
   }
 
   * {
@@ -19,9 +20,7 @@
   body {
     margin: 0;
     font-family: "Plus Jakarta Sans", sans-serif;
-    background:
-      radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 30%),
-      linear-gradient(180deg, #f9fbfd 0%, var(--bg) 100%);
+    background: linear-gradient(180deg, #faf8f7 0%, #f5f0ef 100%);
     color: var(--text);
   }
 
@@ -147,28 +146,26 @@
     align-items: center;
     gap: 12px;
     width: 100%;
-    padding: 12px 16px;
+    padding: 11px 16px;
     border: 0;
+    border-left: 3px solid transparent;
     border-radius: 8px;
     background: transparent !important;
     color: #57534e !important;
     text-align: left;
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
     line-height: 20px;
     cursor: pointer;
-    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
-  }
-
-  .nav button:hover,
-  .nav button.active {
-    transform: translateX(0);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   }
 
   .nav button.active {
-    background: rgba(113, 2, 14, 0.06) !important;
+    background: #FEF2F2 !important;
     color: #921f22 !important;
+    border-left-color: #921F22 !important;
+    font-weight: 600;
   }
 
   .nav button.active svg path {
@@ -176,11 +173,16 @@
   }
 
   .nav button:not(.active) svg path {
-    fill: #57534e !important;
+    fill: #78716c !important;
   }
 
   .nav button:not(.active):hover {
-    background: rgba(113, 2, 14, 0.04) !important;
+    background: #FEF8F5 !important;
+    color: #44403C !important;
+  }
+
+  .nav button:not(.active):hover svg path {
+    fill: #44403C !important;
   }
 
   .tab-icon {
@@ -327,8 +329,8 @@
     width: 18px;
     height: 18px;
     border-radius: 999px;
-    border: 2px solid rgba(15, 118, 110, 0.24);
-    border-top-color: rgba(15, 118, 110, 0.95);
+    border: 2px solid rgba(146, 31, 34, 0.20);
+    border-top-color: rgba(146, 31, 34, 0.90);
     animation: spin 700ms linear infinite;
   }
 
@@ -371,20 +373,21 @@
     width: 100%;
     align-self: stretch;
     display: flex;
-    padding: 12px 16px;
+    padding: 11px 16px;
     align-items: center;
     gap: 12px;
     border-radius: 8px;
+    border-left: 3px solid transparent;
     background: transparent;
     color: #921F22;
     border: 0;
-    font-family: Roboto, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
     line-height: 20px;
     text-align: left;
     cursor: pointer;
-    transition: background 0.18s ease;
+    transition: background 0.15s ease;
   }
 
   .sidebar-footer .logout-form button:hover {
@@ -399,21 +402,27 @@
   .logout-form button,
   .table-actions button {
     border: none;
-    border-radius: 12px;
-    padding: 10px 16px;
+    border-radius: 8px;
+    padding: 10px 18px;
     cursor: pointer;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 13px;
+    font-family: Lexend, sans-serif;
+    font-weight: 600;
+    transition: background 0.15s ease, box-shadow 0.15s ease;
   }
 
   .button-primary,
-  .logout-form button,
   .table-actions .button-accent {
-    background: var(--primary);
+    background: #921F22;
     color: #fff;
+  }
+
+  .button-primary:hover {
+    background: #7a1a1c;
   }
 
   .button-secondary {
@@ -422,22 +431,23 @@
     border: 1px solid var(--line);
   }
 
-  /* Form action buttons - Figma styling */
+  /* Form action buttons */
   .form-actions .button-primary {
-    display: flex;
-    padding: 12px 40px;
+    display: inline-flex;
+    padding: 10px 28px;
     align-items: center;
     gap: 8px;
-    border-radius: 4px;
+    border-radius: 8px;
     background: #921F22;
     color: #FFF;
     font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     border: none;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    transition: background 0.15s ease;
   }
 
   .form-actions .button-primary:hover {
@@ -445,70 +455,70 @@
   }
 
   .form-actions .button-secondary {
-    display: flex;
-    padding: 12px 24px;
+    display: inline-flex;
+    padding: 10px 20px;
     justify-content: center;
     align-items: center;
-    border-radius: 4px;
-    border: 1px solid #71020E;
+    border-radius: 8px;
+    border: 1.5px solid #921F22;
     background: transparent;
-    color: #71020E;
+    color: #921F22;
     font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    transition: background 0.15s ease;
   }
 
   .form-actions .button-secondary:hover {
-    background: rgba(113, 2, 14, 0.05);
+    background: rgba(146, 31, 34, 0.05);
   }
 
-  /* Panel action buttons - Figma styling */
+  /* Panel action buttons */
   .panel-actions .button.button-primary {
-    display: flex !important;
-    padding: 8px 24px !important;
-    flex-direction: column;
+    display: inline-flex;
+    padding: 9px 20px;
     justify-content: center;
     align-items: center;
-    border-radius: 2px !important;
-    background: #921F22 !important;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    color: #FFF !important;
+    border-radius: 8px;
+    background: #921F22;
+    color: #FFF;
     font-family: Lexend, sans-serif;
-    font-size: 14px !important;
-    font-weight: 500;
-    border: none !important;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    transition: background 0.15s ease;
   }
 
   .panel-actions .button.button-primary:hover {
-    background: #7a1a1c !important;
+    background: #7a1a1c;
   }
 
   .panel-actions .button.button-secondary {
-    display: flex !important;
-    padding: 12px 24px !important;
-    flex-direction: column;
+    display: inline-flex;
+    padding: 9px 20px;
     justify-content: center;
     align-items: center;
-    border-radius: 4px !important;
-    border: 1px solid #71020E !important;
-    background: transparent !important;
-    color: #71020E !important;
+    border-radius: 8px;
+    border: 1.5px solid #921F22;
+    background: transparent;
+    color: #921F22;
     font-family: Lexend, sans-serif;
-    font-size: 14px !important;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    transition: background 0.15s ease;
   }
 
   .panel-actions .button.button-secondary:hover {
-    background: rgba(113, 2, 14, 0.05) !important;
+    background: rgba(146, 31, 34, 0.05);
   }
 
   /* Responsive adjustments for panel action buttons */
@@ -549,18 +559,18 @@
     background: transparent;
   }
 
-  .hero-card,
-  .panel-card {
-    /* background: var(--panel);
-    border: 1px solid var(--line); */
-    border-radius: 22px;
-    /* padding: 22px; */
-    margin-bottom: 22px;
+  .hero-card {
+    margin-bottom: 20px;
   }
 
-  /* .hero-card {
-    background: linear-gradient(135deg, #f2fbfa 0%, #ffffff 100%);
-  } */
+  .panel-card {
+    background: #fff;
+    border: 1px solid #EDE9E3;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(146,31,34,0.04), 0 2px 8px rgba(0,0,0,0.03);
+  }
 
   .welcome-banner {
     display: flex;
@@ -588,48 +598,50 @@
   }
 
   .welcome-banner h3 {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     color: #FFF;
-    font-family: Roboto;
-    font-size: 48px;
+    font-family: Lexend, sans-serif;
+    font-size: 28px;
     font-style: normal;
-    font-weight: 400;
-    line-height: 56px;
-    letter-spacing: -0.96px;
+    font-weight: 700;
+    line-height: 36px;
+    letter-spacing: -0.02em;
   }
 
   .welcome-banner p {
     margin: 0;
-    color: #FFF;
-    font-family: Roboto;
-    font-size: 16px;
+    color: rgba(255,255,255,0.88);
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 15px;
     font-style: normal;
     font-weight: 400;
     line-height: 24px;
   }
 
   .banner-action-button {
-    display: flex;
-    padding: 12px 16px;
+    display: inline-flex;
+    padding: 10px 20px;
     justify-content: center;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     border-radius: 8px;
-    background: #FFF;
-    color: #921F22;
+    background: transparent;
+    color: #FFF;
+    border: 1.5px solid rgba(255,255,255,0.70);
     text-align: center;
-    font-family: Roboto;
-    font-size: 14px;
+    font-family: Lexend, sans-serif;
+    font-size: 13px;
     font-style: normal;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
-    border: none;
     cursor: pointer;
     white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
   }
 
   .banner-action-button:hover {
-    background: #F5F5F5;
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.90);
   }
 
   .stats {
@@ -654,44 +666,46 @@
   .stat {
     width: 100%;
     position: relative;
-    border: 1px solid #E0DDD5;
-    border-top: 3px solid #921F22;
-    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #EDE9E3;
+    border-top: 4px solid #921F22;
+    background: #FFFFFF;
     border-radius: 12px;
-    box-shadow: 0 4px 20px -4px rgba(113, 2, 14, 0.08), 0 1px 4px rgba(0,0,0,0.04);
-    padding: 18px 20px;
+    box-shadow: 0 2px 8px rgba(146, 31, 34, 0.06), 0 1px 3px rgba(0,0,0,0.04);
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     box-sizing: border-box;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .stat:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px -4px rgba(113, 2, 14, 0.12), 0 2px 8px rgba(0,0,0,0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(146, 31, 34, 0.10), 0 2px 6px rgba(0,0,0,0.05);
   }
 
   .stat span {
     display: block;
     align-self: stretch;
     color: #78716C;
-    font-family: Roboto;
-    font-size: 14px;
+    font-family: Lexend, sans-serif;
+    font-size: 11px;
     font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-    letter-spacing: 0.28px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
   .stat strong {
     display: block;
     align-self: stretch;
-    color: #1C1917;
-    font-family: Lexend;
-    font-size: 24px;
+    color: #0F172A;
+    font-family: Lexend, sans-serif;
+    font-size: 32px;
     font-style: normal;
-    font-weight: 400;
-    line-height: 32px;
+    font-weight: 800;
+    line-height: 40px;
+    letter-spacing: -0.02em;
   }
 
   .panel-header {
@@ -699,27 +713,39 @@
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    margin-top: 18px;
-    margin-bottom: 18px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #F5F4F2;
   }
 
   .panel-header h3 {
     display: flex;
-    /* width: 118.17px; */
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    gap: 10px;
     margin: 0;
     color: #1C1917;
-    font-family: Lexend;
-    font-size: 16px;
-    font-style: normal;
+    font-family: Lexend, sans-serif;
+    font-size: 15px;
     font-weight: 700;
     line-height: 24px;
   }
 
   .panel-header p {
-    margin: 4px 0 0;
+    margin: 2px 0 0;
     color: var(--muted);
+    font-size: 13px;
+  }
+
+  .count-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    background: #F5F4F2;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #78716C;
+    font-family: Lexend, sans-serif;
+    letter-spacing: 0.02em;
   }
 
   .panel-actions {
@@ -732,50 +758,46 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    border-radius: 12px;
-    border: 1px solid #E0DDD5;
-    background: #FFF;
-    box-shadow: 0 4px 20px -4px rgba(113, 2, 14, 0.07), 0 1px 4px rgba(0,0,0,0.04);
-    overflow: visible;
+    background: transparent;
   }
 
   thead {
-    background: linear-gradient(to bottom, #fdfcfb, #f9f7f5);
-  }
-
-  th,
-  td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #E0DDD5;
-    vertical-align: middle;
-    text-align: left;
+    background: #FAFAF9;
+    border-bottom: 1px solid #F0EEEB;
   }
 
   th {
-    color: #78716C;
-    font-family: Lexend;
-    font-size: 11px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 16px;
-    letter-spacing: 1.3px;
+    padding: 11px 20px;
+    text-align: left;
+    vertical-align: middle;
+    color: #A8A29E;
+    font-family: Lexend, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    white-space: nowrap;
   }
 
   td {
-    color: #57534E;
-    font-family: Lexend;
+    padding: 15px 20px;
+    border-bottom: 1px solid #F5F4F2;
+    vertical-align: middle;
+    text-align: left;
+    color: #44403C;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 14px;
-    font-style: normal;
     font-weight: 400;
+    line-height: 1.4;
   }
 
   tbody tr {
-    transition: background 0.15s;
+    transition: background 0.12s ease;
+    position: relative;
   }
 
   tbody tr:hover {
-    background: rgba(146,31,34,0.025);
+    background: #FEF8F5;
   }
 
   tbody tr:last-child td {
@@ -788,56 +810,137 @@
     flex-wrap: wrap;
   }
 
-  .role-pill {
-    display: inline-flex;
+  /* Avatar + name cell */
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 110px;
-    padding: 10px 18px;
-    border-radius: 999px;
+    font-size: 13px;
     font-weight: 700;
+    font-family: Lexend, sans-serif;
+    flex-shrink: 0;
+    letter-spacing: 0.02em;
+  }
+
+  .user-avatar.student   { background: #FFF4E8; color: #C05C00; }
+  .user-avatar.faculty   { background: #EFF6FF; color: #1D4ED8; }
+  .user-avatar.supervisor{ background: #F0FDF4; color: #15803D; }
+  .user-avatar.admin     { background: #F5F3FF; color: #6D28D9; }
+  .user-avatar.default   { background: #F5F4F2; color: #78716C; }
+
+  .user-cell-info .user-name {
+    font-family: Lexend, sans-serif;
     font-size: 14px;
-    border: 1px solid transparent;
+    font-weight: 600;
+    color: #1C1917;
+    line-height: 1.3;
   }
 
-  .role-pill.student {
-    color: #ff8a34;
-    background: #fff4e8;
+  .user-cell-info .user-meta {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 12px;
+    color: #A8A29E;
+    margin-top: 1px;
   }
 
-  .role-pill.faculty {
-    color: #4a97e8;
-    background: #e9f4ff;
-  }
-
-  .role-pill.supervisor {
-    color: #42b86f;
-    background: #e8f9ec;
-  }
-
-  .role-pill.admin {
-    color: #7c3aed;
-    background: #f3e8ff;
-  }
-
+  /* Role + status pills — compact */
+  .role-pill,
   .status-pill {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-width: 92px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: Lexend, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .role-pill.student,
+  .status-pill.student   { color: #C05C00; background: #FFF4E8; }
+
+  .role-pill.faculty     { color: #1D4ED8; background: #EFF6FF; }
+  .role-pill.supervisor  { color: #15803D; background: #F0FDF4; }
+  .role-pill.admin       { color: #6D28D9; background: #F5F3FF; }
+
+  .status-pill.active    { color: #15803D; background: #F0FDF4; }
+  .status-pill.inactive  { color: #B91C1C; background: #FEF2F2; }
+
+  /* Small table action buttons */
+  .btn-table-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FECACA;
+    border-radius: 6px;
+    font-family: Lexend, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-table-danger:hover { background: #FEE2E2; border-color: #FCA5A5; }
+
+  .btn-table-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: transparent;
+    color: #57534E;
+    border: 1px solid #E7E5E4;
+    border-radius: 6px;
+    font-family: Lexend, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-table-ghost:hover { background: #F5F5F4; border-color: #D6D3D1; }
+
+  .table-action-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Empty table state */
+  .table-empty-row td {
+    padding: 40px 20px;
+    text-align: center;
+    color: #A8A29E;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 14px;
   }
 
-  .status-pill.active {
-    color: #42b86f;
-    background: #e8f9ec;
+  /* Password reveal cell */
+  .password-reveal {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 13px;
+    color: #A8A29E;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   .status-pill.inactive {
-    color: #ef4444;
+    color: #B91C1C;
     background: #fee2e2;
   }
 
@@ -1452,194 +1555,313 @@
     text-decoration: underline;
   }
 
+  /* ── Module Info Block (description + syllabus + back) ── */
+  .module-info-block {
+    padding: 0 24px;
+  }
+
+  .module-info-section {
+    padding: 20px 0;
+    border-bottom: 1px solid #F0EEEB;
+  }
+
+  .module-info-label {
+    font-family: Lexend, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: #A8A29E;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .module-info-text {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    color: #57534E;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .module-syllabus-section {
+    padding: 20px 0 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-bottom: 1px solid #F0EEEB;
+  }
+
+  .module-syllabus-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .module-syllabus-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .module-syllabus-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #FAFAF9;
+    border: 1px solid #EDE9E3;
+    border-radius: 9px;
+    transition: border-color 0.15s;
+    gap: 10px;
+  }
+
+  .module-syllabus-item:hover {
+    border-color: #D6D3D1;
+  }
+
+  .module-back-row {
+    padding: 16px 0 8px;
+  }
+
+  /* ── Assignment List Section ── */
   .assignment-list-section {
+    padding: 20px 24px 24px;
     width: 100%;
-    margin-top: 18px;
+    box-sizing: border-box;
   }
 
   .assignment-cards {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    width: 100%;
+    gap: 14px;
   }
 
   .assignment-card {
+    border: 1px solid #EDE9E3;
+    border-radius: 14px;
+    background: #FFFFFF;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .assignment-card:hover {
+    box-shadow: 0 4px 20px rgba(146,31,34,0.07), 0 1px 3px rgba(0,0,0,0.04);
+    transform: translateY(-1px);
+  }
+
+  .assignment-card-header {
     display: flex;
-    width: 100%;
-    /* max-width: 956px; */
-    min-height: 571px;
-    padding: 16px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-    flex-shrink: 0;
-    border-radius: 16px;
-    background: #FFF;
-  }
-
-  .assignment-card-row {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    gap: 24px;
-  }
-
-  .assignment-card-row-top {
-    grid-template-columns: 1fr auto;
     align-items: center;
-  }
-
-  .assignment-card-cell {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-
-  .assignment-card-heading {
-    flex-direction: row;
-    align-items: center;
+    justify-content: space-between;
+    padding: 13px 20px;
+    background: #FAFAF9;
+    border-bottom: 1px solid #F0EEEB;
     gap: 12px;
   }
 
-  .assignment-card-heading-icon {
-    width: 16px;
-    height: 20px;
+  .assignment-card-num-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .assignment-card-num-icon {
+    width: 30px;
+    height: 30px;
+    background: #FEF2F2;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
 
-  .assignment-card-heading-icon svg {
-    width: 16px;
-    height: 20px;
-    fill: #921F22;
-  }
-
-  .assignment-card-heading-text {
-    color: #1D1B1A;
+  .assignment-serial-label {
     font-family: Lexend, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 32px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #78716C;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  .assignment-card-status-wrap {
-    flex-direction: row;
+  .assignment-card-actions {
+    display: flex;
     align-items: center;
-    justify-content: flex-start;
     gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .assignment-status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #F0FDF4;
+    color: #15803D;
+    font-family: Lexend, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .assignment-card-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .assignment-card-title-line {
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1C1917;
+    line-height: 1.4;
+  }
+
+  .assignment-card-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
     flex-wrap: wrap;
   }
 
-  .assignment-card-status-label {
-    color: #5D5E61;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 24px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+  .assignment-meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 12px;
+    color: #78716C;
+    font-weight: 500;
   }
 
-  .assignment-card-status-badge {
+  .assignment-card-desc {
+    color: #57534E;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    padding-top: 2px;
+  }
+
+  /* Files section */
+  .assignment-files-section {
+    padding: 0 20px 18px;
     display: flex;
-    padding: 4px 12px;
     flex-direction: column;
-    align-items: flex-start;
-    border-radius: 9999px;
-    background: #3DE5AD;
-    color: #186B4F;
+    gap: 7px;
+  }
+
+  .assignment-files-label {
     font-family: Lexend, sans-serif;
     font-size: 10px;
-    font-style: normal;
     font-weight: 700;
-    line-height: 15px;
-    letter-spacing: 1px;
+    color: #A8A29E;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    padding-bottom: 2px;
   }
 
-  .assignment-card-files-box {
+  .assignment-file-item {
     display: flex;
-    height: 298px;
-    padding: 24px 16px;
-    flex-direction: column;
     align-items: center;
-    gap: 15.25px;
-    align-self: stretch;
-    border-radius: 16px;
-    border: 1px solid #FEF8F5;
-    background: #FFF;
+    gap: 10px;
+    padding: 9px 13px;
+    background: #FAFAF9;
+    border: 1px solid #EDE9E3;
+    border-radius: 8px;
+    transition: border-color 0.15s, background 0.15s;
   }
 
-  .assignment-card-files-header {
-    align-self: stretch;
-    color: #0F172A;
-    font-family: Inter, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 32px;
+  .assignment-file-item:hover {
+    border-color: #D6D3D1;
+    background: #F5F4F2;
   }
 
-  .assignment-card-files-list {
+  .assignment-file-icon {
+    width: 26px;
+    height: 26px;
+    background: #FEF2F2;
+    border-radius: 6px;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
-  .assignment-card-label {
-    align-self: stretch;
-    color: #5D5E61;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-  }
-
-  .assignment-card-value {
-    align-self: stretch;
-    color: #6B7280;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    overflow-wrap: break-word;
-  }
-
-  .assignment-card-description-box {
-    display: flex;
-    width: 100%;
-    padding: 16px;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    align-self: stretch;
-    background: #FFF;
-    /* border-radius: 12px;
-    border: 1px solid #F1F5F9; */
+  }
+
+  .assignment-file-name {
+    flex: 1;
+    min-width: 0;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1C1917;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Submission zone */
+  .assignment-submission-section {
+    padding: 0 20px 18px;
+  }
+
+  .assignment-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: #921F22;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: Lexend, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+  }
+
+  .assignment-submit-btn:hover {
+    background: #7a1a1c;
+  }
+
+  /* Submission result box */
+  .assignment-card-submission-box {
+    margin: 0 20px 20px;
+    padding: 16px;
+    background: #F0FDF4;
+    border: 1px solid #86EFAC;
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* Compat shims for existing HTMX-rendered partials */
+  .assignment-card-description-box {
+    width: 100%;
+    padding: 0;
   }
 
   .assignment-card-description-content {
     width: 100%;
-    color: #6B7280;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+    color: #57534E;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
   }
 
   .assignment-card-empty {
-    min-height: auto;
+    border: 1px solid #EDE9E3;
+    border-radius: 14px;
+    background: #FFFFFF;
+    padding: 48px 24px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
   .form-actions {
@@ -1660,11 +1882,13 @@
   }
 
   .message {
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #ecfeff;
-    border: 1px solid #a5f3fc;
-    color: #155e75;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #7f1d1d;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 14px;
   }
 
   @keyframes fadeIn {
@@ -1701,39 +1925,76 @@
   }
 
   .module-card {
-    border: 1px solid #E7E5E4;
-    border-top: 3px solid #921F22;
-    border-radius: 12px;
-    padding: 22px;
+    border: 1px solid #EDE9E3;
+    border-radius: 14px;
     background: #FFF;
     transition: box-shadow 0.2s ease, transform 0.2s ease;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: 0 2px 8px rgba(146,31,34,0.05), 0 1px 3px rgba(0,0,0,0.04);
     position: relative;
+    overflow: hidden;
   }
 
   .module-card:hover {
-    box-shadow: 0 10px 32px rgba(146,31,34,0.10);
+    box-shadow: 0 10px 32px rgba(146,31,34,0.12), 0 2px 8px rgba(0,0,0,0.05);
     transform: translateY(-3px);
-    border-color: rgba(146,31,34,0.2);
-    border-top-color: #921F22;
+  }
+
+  .module-card-header {
+    background: linear-gradient(135deg, #5a1215 0%, #921F22 60%, #b52a2e 100%);
+    padding: 22px 22px 18px;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .module-card-header::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .module-card-body {
+    padding: 16px 22px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .module-card-footer {
+    padding: 16px 22px 20px;
+    margin-top: auto;
   }
 
   .module-card-title {
     margin: 0;
-    color: #1F2937;
-    font-size: 18px;
-    font-weight: 600;
+    color: #FFFFFF;
+    font-family: Lexend, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
     line-height: 1.4;
+    letter-spacing: -0.01em;
   }
 
   .module-card-subtitle {
     margin: 0;
     color: #64748B;
-    font-size: 14px;
-    line-height: 1.4;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .module-card-info {
@@ -1786,8 +2047,8 @@
 
   .module-card-meta-text {
     color: #475569;
-    font-family: Roboto, sans-serif;
-    font-size: 14px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 13px;
     font-style: normal;
     font-weight: 500;
     line-height: 20px;
@@ -1823,31 +2084,28 @@
     }
   }
 
-  /* Module card button - Figma styling */
+  /* Module card button */
   .module-card-button {
     display: flex;
-    padding: 8px 24px;
-    flex-direction: column;
+    padding: 10px 18px;
     justify-content: center;
     align-items: center;
-    border-radius: 2px;
+    gap: 6px;
+    border-radius: 8px;
     background: #921F22;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     color: #FFF;
     font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     border: none;
     cursor: pointer;
     text-decoration: none;
     width: 100%;
-    margin-top: auto;
-    transition: background 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.15s ease;
   }
 
   .module-card-button:hover {
     background: #7a1a1c;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
   }
 
   @media (max-width: 768px) {
@@ -1864,180 +2122,91 @@
     }
   }
 
-  /* Readings Tab Styling */
-  .readings-container {
-    display: flex;
-    width: 100%;
-    padding: 16px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 21px;
-    border-radius: 16px;
-    background: #FFF;
-    margin-top: 24px;
-  }
+  /* Readings / Resources / Recordings — unified with assignment-card pattern */
 
-  .readings-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .readings-icon {
-    width: 16px;
-    height: 20px;
-    fill: #921F22;
-    flex-shrink: 0;
-  }
-
-  .readings-title {
-    color: #1D1B1A;
-    font-family: Lexend, sans-serif;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 32px;
-    margin: 0;
-  }
-
-  .readings-cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    gap: 24px;
-    align-items: stretch;
-  }
-
-  .reading-card {
-    width: 100%;
-    max-width: none;
-    min-height: 329px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.00);
-    box-shadow: 0 24px 48px -12px rgba(146, 31, 34, 0.06);
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    gap: 16px;
-  }
-
-  /* Reading Card Header (Section 1) */
-  .reading-card-header {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .reading-card-icon {
-    width: 22px;
-    height: 19.5px;
-    flex-shrink: 0;
-  }
-
-  .reading-card-icon svg {
-    width: 22px;
-    height: 19.5px;
-    fill: #921F22;
-  }
-
-  .reading-card-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-  }
-
-  .reading-card-title {
-    color: #1D1B1A;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
-    margin: 0;
-  }
-
-  .reading-card-description {
-    color: #6B7280;
-    font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 18px;
-    margin: 0;
-  }
-
-  /* Reading Card Actions (Section 2) */
-  .reading-card-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: center;
-  }
-
+  /* Upload action icon button in card header */
   .reading-action-icon {
+    width: 30px;
+    height: 30px;
     display: flex;
-    width: 56px;
-    height: 42px;
-    padding: 12px;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    border-radius: 8px;
-    background: #F1F5F9;
+    justify-content: center;
+    background: #FAFAF9;
+    border: 1px solid #EDE9E3;
+    border-radius: 7px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
   }
 
   .reading-action-icon:hover {
-    background: #E2E8F0;
+    background: #F5F4F2;
+    border-color: #D6D3D1;
   }
 
-  .reading-action-icon svg {
-    flex-shrink: 0;
-  }
-
-  .reading-action-icon svg path {
-    transition: fill 0.2s ease;
-  }
-
-  /* Reading Card Add Link (Section 3) */
-  .reading-card-add-link {
-    display: flex;
-    padding: 12px 0;
-    justify-content: center;
+  /* "Add Link" / "Upload PDF" compact button */
+  .reading-add-link-btn {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    align-self: stretch;
-    border-radius: 8px;
-    border: 2px dashed #921F22;
+    gap: 6px;
+    padding: 5px 12px;
+    background: transparent;
+    border: 1px solid #EDE9E3;
+    border-radius: 7px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    font-family: Lexend, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #57534E;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-decoration: none;
   }
 
-  .reading-card-add-link:hover {
-    background: rgba(146, 31, 34, 0.02);
-    border-color: #7A1A1C;
+  .reading-add-link-btn:hover {
+    background: #F5F4F2;
+    border-color: #D6D3D1;
   }
 
-  .add-link-icon {
-    width: 11.667px;
-    height: 7.583px;
+  /* Material file row action area (download / delete) */
+  .material-file-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .material-icon-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    color: #78716C;
+    text-decoration: none;
     flex-shrink: 0;
   }
 
-  .add-link-icon path {
-    fill: #5D5E61;
+  .material-icon-btn:hover {
+    background: #F0EEEB;
   }
 
-  .add-link-text {
-    color: #5D5E61;
-    text-align: center;
-    font-family: Lexend, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 24px;
+  .material-icon-btn-delete:hover {
+    background: #FEF2F2;
+  }
+
+  /* Lecture recording video player */
+  .recording-player {
+    background: #111;
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
   }
 
   /* Link Dialog Modal */
@@ -2179,367 +2348,6 @@
     background: #7A1A1C;
   }
 
-  /* Materials List */
-  .materials-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    margin-top: 16px;
-  }
-
-  .material-card {
-    display: flex;
-    width: 100%;
-    max-width: 386px;
-    height: 53px;
-    padding: 12px;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    border: 1px solid #CBD5E1;
-    background: #F1F5F9;
-  }
-
-  .material-icon {
-    width: 16px;
-    height: 20px;
-    fill: #921F22;
-    flex-shrink: 0;
-  }
-
-  .material-name {
-    flex: 1;
-    color: #1D1B1A;
-    font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 20px;
-    letter-spacing: 0.28px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .material-delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    transition: background 0.2s ease;
-  }
-
-  .material-delete-btn:hover {
-    background: rgba(88, 65, 63, 0.1);
-  }
-
-  .material-delete-btn svg {
-    width: 13.333px;
-    height: 15px;
-    fill: #58413F;
-  }
-
-  /* Mobile Responsive Styles for Material Cards */
-  @media (max-width: 768px) {
-    .materials-list {
-      gap: 8px;
-    }
-
-    .material-card {
-      max-width: 100%;
-      height: auto;
-      min-height: 53px;
-      padding: 10px;
-      gap: 10px;
-    }
-
-    .material-name {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .material-icon {
-      width: 14px;
-      height: 18px;
-    }
-
-    .material-delete-btn svg {
-      width: 12px;
-      height: 13.5px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .materials-list {
-      gap: 6px;
-    }
-
-    .material-card {
-      padding: 8px;
-      gap: 8px;
-    }
-
-    .material-name {
-      font-size: 12px;
-      line-height: 16px;
-    }
-
-    .material-icon {
-      width: 12px;
-      height: 16px;
-    }
-
-    .material-delete-btn {
-      padding: 2px;
-    }
-
-    .material-delete-btn svg {
-      width: 11px;
-      height: 12px;
-    }
-  }
-
-  .resources-panel {
-    padding: 24px;
-  }
-
-  .resources-card {
-    display: flex;
-    width: 100%;
-    max-width: 957px;
-    min-height: 298px;
-    padding: 24px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 15.25px;
-    border-radius: 16px;
-    border: 1px solid #FEF8F5;
-    background: #FFF;
-    box-sizing: border-box;
-  }
-
-  .resources-title-full {
-    width: 100%;
-  }
-
-  .resources-card-content {
-    display: flex;
-    width: 100%;
-    align-items: flex-start;
-    gap: 15.25px;
-  }
-
-  .resources-card-column {
-    display: flex;
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .resources-card-column-left {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 12px;
-    padding-right: 8px;
-  }
-
-  .resources-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .resource-item {
-    display: flex;
-    padding: 16.7px 16px 16px 16px;
-    align-items: center;
-    gap: 16px;
-    align-self: stretch;
-    border-radius: 12px;
-    border: 1px dashed #CBD5E1;
-    text-decoration: none;
-    background: #FFF;
-    transition: border-color 0.2s ease, background 0.2s ease;
-  }
-
-  .resource-item:hover {
-    border-color: #94A3B8;
-    background: #F8FAFC;
-  }
-
-  .resource-item-icon-box {
-    display: flex;
-    width: 48px;
-    height: 48px;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    background: #F1F5F9;
-    flex-shrink: 0;
-  }
-
-  .resource-item-icon-box svg {
-    width: 25px;
-    height: 25px;
-    fill: #921F22;
-    flex-shrink: 0;
-  }
-
-  .resource-item-title {
-    color: #0F172A;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 20px;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .resource-item-download-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .resource-item-download-icon svg {
-    width: 16px;
-    height: 16px;
-    fill: #94A3B8;
-  }
-
-  .resources-empty-state {
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-    border: 1px dashed #CBD5E1;
-    color: #64748B;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    line-height: 20px;
-    background: #FFF;
-  }
-
-  .resources-card-column-right {
-    justify-content: center;
-    align-items: center;
-  }
-
-  .resources-title {
-    margin: 0;
-    color: #0F172A;
-    font-family: Inter, sans-serif;
-    font-size: 20px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 28px;
-  }
-
-  .resources-description {
-    margin: 0;
-    color: #64748B;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-    max-width: 360px;
-  }
-
-  .resources-upload-box {
-    position: relative;
-    display: flex;
-    width: 100%;
-    max-width: 448px;
-    min-height: 181px;
-    padding: 24px 32px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-    border-radius: 16px;
-    border: 2px dashed #E2E8F0;
-    background: rgba(248, 250, 252, 0.50);
-    box-sizing: border-box;
-    text-align: center;
-  }
-
-  .resources-upload-icon {
-    width: 16px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .resources-upload-icon svg {
-    width: 16px;
-    height: 20px;
-    fill: #921F22;
-  }
-
-  .resources-upload-text {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .resources-upload-title {
-    color: #0F172A;
-    text-align: center;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 20px;
-  }
-
-  .resources-upload-subtitle {
-    color: #64748B;
-    text-align: center;
-    font-family: Inter, sans-serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-  }
-
-  .resources-upload-button {
-    width: 167.72px;
-    height: 40px;
-    border: none;
-    border-radius: 8px;
-    background: #921F22;
-    color: #FFF;
-    text-align: center;
-    font-family: Lexend, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.10), 0 2px 4px -2px rgba(0, 0, 0, 0.10);
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
-  }
-
-  .resources-upload-button:hover {
-    background: #7A1A1C;
-    transform: translateY(-1px);
-  }
 
   /* Module Tabs Styling */
   .module-tabs {
@@ -2631,104 +2439,6 @@
       white-space: nowrap;
     }
 
-    .readings-container {
-      padding: 12px;
-      gap: 16px;
-    }
-
-    .readings-title {
-      font-size: 20px;
-      line-height: 28px;
-    }
-
-    .readings-cards {
-      grid-template-columns: 1fr;
-      gap: 16px;
-    }
-
-    .reading-card {
-      width: 100%;
-      height: auto;
-      min-height: 200px;
-      padding: 16px;
-      gap: 12px;
-    }
-
-    .reading-card-header {
-      gap: 10px;
-    }
-
-    .reading-card-title {
-      font-size: 14px;
-      line-height: 20px;
-    }
-
-    .reading-card-description {
-      font-size: 12px;
-      line-height: 16px;
-    }
-
-    .reading-card-actions {
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .reading-action-icon {
-      width: 48px;
-      height: 38px;
-      padding: 10px;
-    }
-
-    .reading-card-add-link {
-      padding: 10px 0;
-      gap: 6px;
-    }
-
-    .add-link-text {
-      font-size: 14px;
-      line-height: 20px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .resources-panel {
-      padding: 16px;
-    }
-
-    .resources-card {
-      min-height: auto;
-      padding: 20px;
-      gap: 20px;
-    }
-
-    .resources-card-content {
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .resources-card-column-left,
-    .resources-card-column-right {
-      width: 100%;
-    }
-
-    .resources-description {
-      max-width: 100%;
-    }
-
-    .resources-list {
-      gap: 10px;
-    }
-
-    .resource-item {
-      padding: 14px;
-      gap: 12px;
-    }
-
-    .resources-upload-box {
-      max-width: 100%;
-      min-height: 181px;
-      padding: 24px;
-    }
   }
 
   @media (max-width: 480px) {
@@ -2756,81 +2466,6 @@
       font-size: 13px !important;
     }
 
-    .readings-container {
-      padding: 10px;
-      gap: 12px;
-    }
-
-    .readings-title {
-      font-size: 18px;
-      line-height: 24px;
-    }
-
-    .reading-card {
-      padding: 12px;
-      gap: 10px;
-    }
-
-    .reading-card-icon {
-      width: 18px;
-      height: 16px;
-    }
-
-    .reading-card-icon svg {
-      width: 18px;
-      height: 16px;
-    }
-
-    .reading-card-title {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .reading-card-description {
-      font-size: 11px;
-      line-height: 14px;
-    }
-
-    .reading-action-icon {
-      width: 44px;
-      height: 36px;
-      padding: 8px;
-    }
-
-    .reading-card-add-link {
-      padding: 8px 0;
-    }
-
-    .add-link-text {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .resources-list {
-      gap: 8px;
-    }
-
-    .resource-item {
-      padding: 12px;
-      gap: 10px;
-      border-radius: 10px;
-    }
-
-    .resource-item-icon-box {
-      width: 40px;
-      height: 40px;
-    }
-
-    .resource-item-icon-box svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .resource-item-title {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
     .module-tab-button {
       padding: 10px 12px;
       font-size: 12px;
@@ -2842,144 +2477,38 @@
       justify-content: flex-start;
     }
 
-    .readings-container {
-      padding: 8px;
-      gap: 12px;
-      border-radius: 12px;
-    }
-
-    .readings-header {
-      gap: 8px;
-    }
-
-    .readings-title {
-      font-size: 18px;
-      line-height: 24px;
-    }
-
-    .readings-icon {
-      width: 14px;
-      height: 18px;
-    }
-
-    .reading-card {
-      min-height: 150px;
-      border-radius: 6px;
-    }
-
-    .resources-panel {
-      padding: 8px;
-    }
-
-    .resources-card {
-      padding: 16px;
-      gap: 16px;
-      border-radius: 12px;
-    }
-
-    .resources-title {
-      font-size: 18px;
-      line-height: 24px;
-    }
-
-    .resources-description {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .resources-list {
-      gap: 8px;
-    }
-
-    .resource-item {
-      padding: 12px;
-      gap: 10px;
-      border-radius: 10px;
-    }
-
-    .resource-item-icon-box {
-      width: 40px;
-      height: 40px;
-    }
-
-    .resource-item-icon-box svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .resource-item-title {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .resources-upload-box {
-      min-height: 170px;
-      padding: 20px 16px;
-      border-radius: 12px;
-    }
-
-    .resources-upload-title {
-      font-size: 13px;
-      line-height: 18px;
-    }
-
-    .resources-upload-subtitle {
-      font-size: 11px;
-      line-height: 14px;
-    }
-
-    .resources-upload-button {
-      width: 100%;
-      max-width: 167.72px;
-      font-size: 13px;
-    }
   }
 
   @media (max-width: 900px) {
-    .assignment-card {
-      min-height: auto;
-      gap: 24px;
-    }
-
-    .assignment-card-row {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    .assignment-card-description-box {
+    .assignment-list-section {
       padding: 16px;
     }
 
-    .assignment-card-submission-box {
-      width: 100% !important;
-      box-sizing: border-box;
+    .assignment-card-body {
+      padding: 14px 16px;
     }
 
+    .assignment-files-section,
     .assignment-submission-section {
-      width: 100%;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .assignment-card-submission-box {
+      margin: 0 16px 16px;
     }
 
     .assignment-submit-btn {
-      max-width: 100% !important;
-      width: 100% !important;
-    }
-
-    .assignment-submission-header {
-      flex-wrap: wrap;
-    }
-
-    .assignment-submission-header h3 {
-      font-size: 20px !important;
-      line-height: 28px !important;
-    }
-
-    .assignment-card-status-actions-row {
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .assignment-card-top-meta {
       width: 100%;
+      justify-content: center;
+    }
+
+    .assignment-card-actions {
+      flex-wrap: wrap;
+    }
+
+    .module-info-block {
+      padding: 0 16px;
     }
   }
 

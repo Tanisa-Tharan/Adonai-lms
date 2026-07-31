@@ -4,7 +4,7 @@
   {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=user.is_faculty_or_admin %}
 
   <!-- Tabs Navigation -->
-  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #E2E8F0; margin-top: 24px;">
+  <div class="module-tabs" style="display: flex; gap: 0; border-bottom: 1px solid #EDE9E3; margin-top: 0; padding-left: 8px;">
     <button class="module-tab-button active" data-tab="assignments-tab" type="button">
       Assignments
     </button>
@@ -47,105 +47,122 @@
 
   <!-- Tab Content: Lecture Recordings -->
   <div id="recordings-tab" class="module-tab-content">
-    <div style="padding: 20px 0;">
+    <div class="assignment-list-section">
       {% if user.is_faculty_or_admin %}
       <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
-        <button type="button" onclick="showVimeoRecordingDialog('{{ module_run.module.id }}')" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; background: #921F22; color: white; border: none; border-radius: 8px; font-family: Lexend, sans-serif; font-size: 14px; font-weight: 500; cursor: pointer;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <button type="button" onclick="showVimeoRecordingDialog('{{ module_run.module.id }}')" class="assignment-submit-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           Add Lecture Recording
         </button>
       </div>
       {% endif %}
       {% if video_materials %}
-        <div style="display: flex; flex-direction: column; gap: 28px;">
-          {% for video in video_materials %}
-          <div style="background: #fafafa; border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden;">
-            <div style="padding: 12px 16px; border-bottom: 1px solid #E2E8F0;">
-              <span style="font-weight: 600; font-size: 14px; color: #1C1917;">{{ video.title }}</span>
-              <span style="margin-left: 10px; font-size: 12px; color: #78716C;">{{ video.created_at|date:"Y-m-d" }}</span>
-              {% if video.uploaded_by %}
-                <span style="margin-left: 6px; font-size: 12px; color: #78716C;">· {{ video.uploaded_by.first_name }} {{ video.uploaded_by.last_name }}</span>
-              {% endif %}
-            </div>
-            <div style="background: #000; display: flex; justify-content: center;">
-              {% if "vimeo" in video.file_url.name %}
-              <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;width:100%;">
-                <iframe src="{{ video.file_url }}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+      <div class="assignment-cards">
+        {% for video in video_materials %}
+        <div class="assignment-card">
+          <div class="assignment-card-header">
+            <div class="assignment-card-num-group">
+              <div class="assignment-card-num-icon" style="display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
               </div>
-              {% else %}
-              <video controls style="width: 100%; max-height: 420px; display: block;" preload="metadata">
-                <source src="{{ video.file_url.url }}" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
-              {% endif %}
+              <span class="assignment-serial-label">Lecture Recording</span>
+            </div>
+            <div class="assignment-card-actions">
+              <span class="assignment-meta-chip">{{ video.created_at|date:"M j, Y" }}</span>
+              {% if video.uploaded_by %}<span class="assignment-meta-chip">{{ video.uploaded_by.first_name }} {{ video.uploaded_by.last_name }}</span>{% endif %}
             </div>
           </div>
-          {% endfor %}
+          <div class="assignment-card-body" style="padding-bottom: 0;">
+            <div class="assignment-card-title-line">{{ video.title }}</div>
+          </div>
+          <div class="recording-player">
+            {% if "vimeo" in video.file_url.name %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+              <iframe src="{{ video.file_url }}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            {% else %}
+            <video controls style="width: 100%; max-height: 420px; display: block;" preload="metadata">
+              <source src="{{ video.file_url.url }}" type="video/mp4">
+            </video>
+            {% endif %}
+          </div>
         </div>
+        {% endfor %}
+      </div>
       {% else %}
-        <div style="text-align: center; padding: 48px 0; color: #78716C;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display: block;">
-            <polygon points="23 7 16 12 23 17 23 7"></polygon>
-            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-          </svg>
-          <p style="font-size: 14px; margin: 0;">No lecture recordings yet.</p>
-        </div>
+      <div class="assignment-card-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 12px; display: block;"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+        <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #A8A29E; margin: 0;">No lecture recordings yet.</p>
+      </div>
       {% endif %}
     </div>
   </div>
 
   <!-- Tab Content: Resources -->
   <div id="resources-tab" class="module-tab-content">
-    <div class="resources-panel">
-      <div class="resources-card">
-        <h4 class="resources-title resources-title-full">Resources</h4>
-        <div class="resources-card-content">
-          <div class="resources-card-column resources-card-column-left">
-          <div class="resources-list">
-            {% for material in resource_materials %}
-            <div class="resource-item">
-              <div class="resource-item-icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-                  <path d="M8.75 13.125H10V10.625H11.25C11.6042 10.625 11.901 10.5052 12.1406 10.2656C12.3802 10.026 12.5 9.72917 12.5 9.375V8.125C12.5 7.77083 12.3802 7.47396 12.1406 7.23438C11.901 6.99479 11.6042 6.875 11.25 6.875H8.75V13.125ZM10 9.375V8.125H11.25V9.375H10ZM13.75 13.125H16.25C16.6042 13.125 16.901 13.0052 17.1406 12.7656C17.3802 12.526 17.5 12.2292 17.5 11.875V8.125C17.5 7.77083 17.3802 7.47396 17.1406 7.23438C16.901 6.99479 16.6042 6.875 16.25 6.875H13.75V13.125ZM15 11.875V8.125H16.25V11.875H15ZM18.75 13.125H20V10.625H21.25V9.375H20V8.125H21.25V6.875H18.75V13.125ZM7.5 20C6.8125 20 6.22396 19.7552 5.73438 19.2656C5.24479 18.776 5 18.1875 5 17.5V2.5C5 1.8125 5.24479 1.22396 5.73438 0.734375C6.22396 0.244792 6.8125 0 7.5 0H22.5C23.1875 0 23.776 0.244792 24.2656 0.734375C24.7552 1.22396 25 1.8125 25 2.5V17.5C25 18.1875 24.7552 18.776 24.2656 19.2656C23.776 19.7552 23.1875 20 22.5 20H7.5ZM7.5 17.5H22.5V2.5H7.5V17.5ZM2.5 25C1.8125 25 1.22396 24.7552 0.734375 24.2656C0.244792 23.776 0 23.1875 0 22.5V5H2.5V22.5H20V25H2.5ZM7.5 2.5V17.5V2.5Z" fill="#921F22"/>
+    <div class="assignment-list-section">
+      <div class="assignment-cards">
+        <div class="assignment-card">
+          <div class="assignment-card-header">
+            <div class="assignment-card-num-group">
+              <div class="assignment-card-num-icon" style="display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="#921F22">
+                  <path d="M7 10.5H8V8.5H9C9.28333 8.5 9.52083 8.40417 9.7125 8.2125C9.90417 8.02083 10 7.78333 10 7.5V6.5C10 6.21667 9.90417 5.97917 9.7125 5.7875C9.52083 5.59583 9.28333 5.5 9 5.5H7V10.5ZM8 7.5V6.5H9V7.5H8ZM11 10.5H13C13.2833 10.5 13.5208 10.4042 13.7125 10.2125C13.9042 10.0208 14 9.78333 14 9.5V6.5C14 6.21667 13.9042 5.97917 13.7125 5.7875C13.5208 5.59583 13.2833 5.5 13 5.5H11V10.5ZM12 9.5V6.5H13V9.5H12ZM15 10.5H16V8.5H17V7.5H16V6.5H17V5.5H15V10.5ZM6 16C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H6ZM6 14H18V2H6V14ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4H2V18H16V20H2ZM6 2V14V2Z"/>
                 </svg>
               </div>
-              <span class="resource-item-title">{{ material.title }}</span>
-              <a href="{{ material.file_url.url }}" download class="resource-item-download-icon" title="Download {{ material.title }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#94A3B8"/>
+              <span class="assignment-serial-label">Resources</span>
+            </div>
+            {% if user.is_faculty_or_admin %}
+            <div class="assignment-card-actions">
+              <label for="resources-upload-{{ module_run.id }}" class="reading-add-link-btn" style="cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Upload PDF
+              </label>
+              <input type="file" id="resources-upload-{{ module_run.id }}" accept=".pdf,application/pdf" style="display: none;" data-material-type="PDF" data-resource-type="RESOURCES" data-module-id="{{ module_run.module.id }}">
+            </div>
+            {% endif %}
+          </div>
+
+          {% if resource_materials %}
+          <div class="assignment-files-section" style="padding-top: 14px;">
+            {% for material in resource_materials %}
+            <div class="assignment-file-item">
+              <div class="assignment-file-icon" style="display:flex;align-items:center;justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="13" viewBox="0 0 16 20" fill="#921F22">
+                  <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"/>
                 </svg>
-              </a>
-              {% if user.is_faculty_or_admin %}
-              <button type="button" class="resource-item-delete-icon" onclick="deleteMaterial('{{ material.id }}', 'resources-tab')" title="Delete {{ material.title }}">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 16C2.45 16 1.97917 15.8042 1.5875 15.4125C1.19583 15.0208 1 14.55 1 14V3H0V1H5V0H11V1H16V3H15V14C15 14.55 14.8042 15.0208 14.4125 15.4125C14.0208 15.8042 13.55 16 13 16H3ZM13 3H3V14H13V3ZM5 12H7V5H5V12ZM9 12H11V5H9V12Z" fill="#BA1A1A"/>
-                </svg>
-              </button>
-              {% endif %}
+              </div>
+              <span class="assignment-file-name">{{ material.title }}</span>
+              <div class="material-file-actions">
+                {% if user.is_faculty_or_admin %}
+                <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}', 'resources-tab')" title="Delete">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 14 15" fill="#B91C1C">
+                    <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
+                  </svg>
+                </button>
+                {% endif %}
+                <a href="{{ material.file_url.url }}" download class="material-icon-btn" title="Download">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 16 16" fill="#78716C">
+                    <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
             {% empty %}
-            <div class="resources-empty-state">No resources uploaded yet.</div>
+            <div style="padding: 20px; text-align: center;">
+              <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #A8A29E; margin: 0;">No resources uploaded yet.</p>
+            </div>
             {% endfor %}
           </div>
-        </div>
-        {% if user.is_faculty_or_admin %}
-        <div class="resources-card-column resources-card-column-right">
-          <input type="file" id="resources-upload-{{ module_run.id }}" accept=".pdf,application/pdf" style="display: none;" data-material-type="PDF" data-resource-type="RESOURCES" data-module-id="{{ module_run.module.id }}">
-          <div class="resources-upload-box" data-module-id="{{ module_run.module.id }}" onclick="document.getElementById('resources-upload-{{ module_run.id }}').click()">
-            <div class="resources-upload-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20" fill="none">
-                <path d="M7 17H9V12.825L10.6 14.425L12 13L8 9L4 13L5.425 14.4L7 12.825V17ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z" fill="#921F22"/>
-              </svg>
-            </div>
-            <div class="resources-upload-text">
-              <span class="resources-upload-title">Click to upload or drag & drop</span>
-              <span class="resources-upload-subtitle">PDF files only (Max. 10MB)</span>
-            </div>
-            <button type="button" class="resources-upload-button">Upload Resources</button>
+          {% else %}
+          <div class="assignment-card-empty" style="border: none; box-shadow: none; padding: 28px 20px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 20 20" fill="none" style="margin: 0 auto 10px; display: block; opacity: 0.2;">
+              <path d="M7 10.5H8V8.5H9C9.28333 8.5 9.52083 8.40417 9.7125 8.2125C9.90417 8.02083 10 7.78333 10 7.5V6.5C10 6.21667 9.90417 5.97917 9.7125 5.7875C9.52083 5.59583 9.28333 5.5 9 5.5H7V10.5ZM8 7.5V6.5H9V7.5H8ZM11 10.5H13C13.2833 10.5 13.5208 10.4042 13.7125 10.2125C13.9042 10.0208 14 9.78333 14 9.5V6.5C14 6.21667 13.9042 5.97917 13.7125 5.7875C13.5208 5.59583 13.2833 5.5 13 5.5H11V10.5ZM12 9.5V6.5H13V9.5H12ZM15 10.5H16V8.5H17V7.5H16V6.5H17V5.5H15V10.5ZM6 16C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H6ZM6 14H18V2H6V14ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4H2V18H16V20H2ZM6 2V14V2Z" fill="#57534E"/>
+            </svg>
+            <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #A8A29E; margin: 0;">No resources uploaded yet.</p>
           </div>
+          {% endif %}
         </div>
-        {% endif %}
-      </div>
       </div>
     </div>
   </div>

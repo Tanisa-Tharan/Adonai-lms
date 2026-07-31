@@ -14,30 +14,32 @@
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
+            <th>Faculty Member</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Join Date</th>
+            <th>Joined</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {% for user in faculty_users %}
           <tr>
-            <td>{{ user.first_name }} {{ user.last_name }}</td>
-            <td>{{ user.email }}</td>
             <td>
-              <span class="role-pill {{ user.role|lower }}">
-                {{ user.get_role_display }}
-              </span>
+              <div class="user-cell">
+                <div class="user-avatar {{ user.role|lower }}">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                <div class="user-cell-info">
+                  <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+                  <div class="user-meta">{{ user.email }}</div>
+                </div>
+              </div>
             </td>
+            <td><span class="role-pill {{ user.role|lower }}">{{ user.get_role_display }}</span></td>
             <td>
               <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
                 {% if user.is_active %}Active{% else %}Inactive{% endif %}
               </span>
             </td>
-            <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+            <td style="font-size:13px; color:#78716C;">{{ user.date_joined|date:"M j, Y" }}</td>
             <td class="actions-cell">
               <button type="button" class="action-menu-button" aria-label="User actions">...</button>
               <div class="action-menu">
@@ -52,8 +54,8 @@
             </td>
           </tr>
           {% empty %}
-          <tr>
-            <td colspan="6">No faculty found</td>
+          <tr class="table-empty-row">
+            <td colspan="5">No faculty found.</td>
           </tr>
           {% endfor %}
         </tbody>
