@@ -17,6 +17,14 @@
               <span style="margin-left: 6px; font-size: 12px; color: #78716C;">· {{ video.uploaded_by.first_name }} {{ video.uploaded_by.last_name }}</span>
             {% endif %}
           </div>
+          {% if user.is_faculty_or_admin %}
+          <button type="button" onclick="deleteRecording('{{ video.id }}', '{{ module_run.id }}')" title="Delete recording"
+            style="display: inline-flex; align-items: center; justify-content: center; padding: 6px; background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 6px; cursor: pointer; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="14" viewBox="0 0 14 15" fill="#B42318">
+              <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
+            </svg>
+          </button>
+          {% endif %}
         </div>
         <div style="background: #000;">
           {% if "vimeo" in video.file_url.name %}

@@ -1,0 +1,60 @@
+{% comment %}
+Delete handler for lecture recordings.
+
+The recordings tab is injected with innerHTML in some places, and inline <script>
+never runs in injected markup — so the handler has to live on the host page and
+the buttons in the tab call it by name.
+{% endcomment %}
+<script>
+window.deleteRecording = function deleteRecording(materialId, moduleRunId) {
+  if (!confirm('Delete this lecture recording? This cannot be undone.')) return;
+
+  var cookieMatch = document.cookie.match(/(^|;)\s*csrftoken=([^;]+)/);
+  var csrfToken = cookieMatch ? cookieMatch[2] : '{{ csrf_token }}';
+
+  fetch('{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', materialId), {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(async function (response) {
+    var contentType = response.headers.get('content-type') || '';
+    var data = contentType.includes('application/json') ? await response.json() : {};
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to delete recording');
+    }
+    window._refreshRecordings(moduleRunId);
+  })
+  .catch(function (err) {
+    alert('Error: ' + (err.message || 'An error occurred while deleting the recording'));
+  });
+};
+
+window._refreshRecordings = function _refreshRecordings(moduleRunId) {
+  // Tab loaded as a fragment — re-fetch just that fragment.
+  var container = document.getElementById('recordings-content-container')
+    || document.getElementById('assignment-recordings-content');
+  if (container && moduleRunId) {
+    fetch('{% url "module_run_recordings" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', moduleRunId), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.text(); })
+    .then(function (html) { container.innerHTML = html; })
+    .catch(function () { location.reload(); });
+    return;
+  }
+
+  // Recordings rendered inside the module detail drawer — reload the drawer.
+  sessionStorage.setItem('activeModuleTab', 'recordings-tab');
+  var drawer = document.getElementById('assignments-detail-drawer')
+    || document.getElementById('faculty-modules-detail-drawer');
+  if (drawer && typeof htmx !== 'undefined' && window._moduleDetailModuleRunId) {
+    htmx.ajax('GET', '/module-runs/' + window._moduleDetailModuleRunId + '/assignments/detail/?from_faculty_assignments=true', {
+      target: '#' + drawer.id,
+      swap: 'innerHTML'
+    });
+    return;
+  }
+
+  location.reload();
+};
+</script>
