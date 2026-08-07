@@ -18,7 +18,7 @@
               <span style="display: block; font-size: 12px; color: #6b7280;">{{ material.get_material_type_display }} &bull; {{ material.created_at|date:"M d, Y" }}</span>
             </div>
           </div>
-          <a href="{{ material.file_url.url }}" target="_blank" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+          <a href="{% url 'download_course_material' material.id %}" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
         </div>
         {% endfor %}
       </div>
@@ -62,7 +62,7 @@
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
-            <a href="{{ material.file_url.url }}" target="_blank" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+            <a href="{% url 'download_course_material' material.id %}" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
             {% if user.is_faculty_or_admin %}
             <button type="button" onclick="deleteMaterial('{{ material.id }}')" title="Delete"
               style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.45; transition: opacity 0.2s;"

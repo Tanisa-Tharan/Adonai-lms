@@ -92,7 +92,7 @@
             </div>
             {% else %}
             <video controls style="width: 100%; max-height: 420px; display: block;" preload="metadata">
-              <source src="{{ video.file_url.url }}" type="video/mp4">
+              <source src="{% url 'download_course_material' video.id %}?inline=1" type="video/mp4">
             </video>
             {% endif %}
           </div>

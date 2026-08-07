@@ -35,9 +35,9 @@
           {% if material.material_type == "LINK" %}
             <a href="{{ material.file_url }}" target="_blank" rel="noopener">Open Link</a>
           {% else %}
-            <a href="{{ material.file_url }}" target="_blank" rel="noopener">Open</a>
+            <a href="{% url 'download_course_material' material.id %}?inline=1" target="_blank" rel="noopener">Open</a>
             &nbsp;|&nbsp;
-            <a href="{{ material.file_url }}" download>Download</a>
+            <a href="{% url 'download_course_material' material.id %}">Download</a>
           {% endif %}
         </td>
       </tr>

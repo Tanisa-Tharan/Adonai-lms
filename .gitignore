@@ -15,6 +15,10 @@ staticfiles/
 venv/
 env/
 
+# Secrets — SSH/deploy keys must never be committed
+*.pem
+*.key
+
 # Mac
 .DS_Store
 

@@ -108,10 +108,10 @@
           <td>{{ material.title }}</td>
           <td><span class="status-pill inactive">{{ material.material_type }}</span></td>
           <td>
-            <a href="{{ material.file_url }}" target="_blank" rel="noopener">Open</a>
+            <a href="{% url 'download_course_material' material.id %}?inline=1" target="_blank" rel="noopener">Open</a>
             {% if material.material_type != "LINK" %}
               &nbsp;|&nbsp;
-              <a href="{{ material.file_url }}" download>Download</a>
+              <a href="{% url 'download_course_material' material.id %}">Download</a>
             {% endif %}
           </td>
           <td>{{ material.uploaded_by.first_name }} {{ material.uploaded_by.last_name }}</td>

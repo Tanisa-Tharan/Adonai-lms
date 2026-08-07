@@ -114,8 +114,8 @@
       <div style="margin-top: 16px;">
         <p style="color: #64748B; font-family: Inter, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; margin: 0 0 8px 0;">Submitted File</p>
         <div style="display: flex; flex-wrap: wrap; gap: 12px;">
-          <a href="{{ submission.file_url.url }}" target="_blank" rel="noopener" class="assignment-view-link">Open File</a>
-          <a href="{{ submission.file_url.url }}" download class="assignment-view-link">Download</a>
+          <a href="{% url 'download_assignment_submission' submission.id %}?inline=1" target="_blank" rel="noopener" class="assignment-view-link">Open File</a>
+          <a href="{% url 'download_assignment_submission' submission.id %}" class="assignment-view-link">Download</a>
         </div>
       </div>
       {% endif %}

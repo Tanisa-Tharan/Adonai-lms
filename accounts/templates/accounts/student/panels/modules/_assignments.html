@@ -44,9 +44,9 @@
             {% if assignment.files.all %}
               {% for file in assignment.files.all %}
                 <div>
-                  <a href="{{ file.file_url }}" target="_blank" rel="noopener">Open</a>
+                  <a href="{% url 'download_assignment_file' file.id %}?inline=1" target="_blank" rel="noopener">Open</a>
                   &nbsp;|&nbsp;
-                  <a href="{{ file.file_url }}" download>Download</a>
+                  <a href="{% url 'download_assignment_file' file.id %}">Download</a>
                   <span class="mini-meta">({{ file.file_name }})</span>
                 </div>
               {% endfor %}

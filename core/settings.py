@@ -126,6 +126,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = "accounts.User"
 
+# Django's default is /accounts/login/, which this project does not serve.
+LOGIN_URL = "/login/"
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -157,17 +160,25 @@ if USE_SPACES:
     AWS_S3_OBJECT_PARAMETERS = {
         'CacheControl': 'max-age=86400',
     }
-    AWS_DEFAULT_ACL = 'public-read'
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
+    # Uploads stay private. Downloads are served by the permission-checked views
+    # in modules/downloads.py, which redirect to short-lived signed URLs.
+    # Note: setting AWS_S3_CUSTOM_DOMAIN would defeat this — django-storages
+    # skips request signing entirely when a custom domain is configured.
+    AWS_DEFAULT_ACL = 'private'
+    AWS_QUERYSTRING_AUTH = True
+    AWS_QUERYSTRING_EXPIRE = int(os.getenv("DO_SPACES_URL_EXPIRY", "3600"))
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_LOCATION = 'media'
-    
+
     # Media files configuration
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com/{AWS_LOCATION}/'
 else:
     # Local media files configuration
     MEDIA_URL = "media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+
+# Always defined so DEBUG-mode media serving in core/urls.py has a document root.
+MEDIA_ROOT = BASE_DIR / "media"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
