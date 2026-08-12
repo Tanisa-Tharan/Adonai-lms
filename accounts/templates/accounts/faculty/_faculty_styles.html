@@ -362,6 +362,21 @@ for headings and figures, Plus Jakarta Sans for prose.
   .btn-draft svg { flex-shrink: 0; }
   .form-actions { flex-wrap: wrap; row-gap: 10px; }
 
+  /* ─── Assignment detail (Assignments ▸ View) ──────────────────── */
+  #assignment-detail-view > .panel-card { padding: 26px 26px 22px; }
+  #assignment-detail-view .module-tabs { margin-top: 20px !important; }
+  #assignment-detail-view #assignment-info-content { padding: 4px 0 0 !important; }
+
+  /* The detail block is built server-side with a fixed 956px width, which
+     overflowed the panel on wider screens. Override without touching the view. */
+  #assignment-info-content > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    gap: 24px !important;
+  }
+  #assignment-info-content > div > div { width: 100%; box-sizing: border-box; }
+
   /* ─── View Class ──────────────────────────────────────────────── */
   .fp-classview .module-info-block { padding: 0 26px 22px; }
   .fp-classview > .welcome-banner { border-radius: 16px 16px 0 0; margin-bottom: 22px; box-shadow: none; }
