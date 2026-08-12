@@ -1,0 +1,33 @@
+{% comment %}
+Refresh the module detail drawer in place after an action such as a delete.
+
+The drawer is loaded by htmx and never appears in the address bar, so
+location.reload() throws the user back out of the module they were working in.
+Callers pass the module run explicitly — reading it from a global breaks as soon
+as another module's panel has rendered.
+{% endcomment %}
+<script>
+window.refreshModuleDrawer = function refreshModuleDrawer(moduleRunId, tab) {
+  // The drawer restores this on render, keeping the user on the tab they used.
+  if (tab) sessionStorage.setItem('activeModuleTab', tab);
+
+  var runId = moduleRunId
+    || window._adminDetailModuleRunId
+    || window._moduleDetailModuleRunId;
+  var drawer = document.getElementById('assignments-detail-drawer')
+    || document.getElementById('faculty-modules-detail-drawer');
+
+  if (!runId || !drawer || typeof htmx === 'undefined') {
+    location.reload();
+    return;
+  }
+
+  // Faculty and admin render the detail from the same view via different templates.
+  var url = '/module-runs/' + runId + '/assignments/detail/';
+  if (window._moduleDetailModuleRunId && !window._adminDetailModuleRunId) {
+    url += '?from_faculty_assignments=true';
+  }
+
+  htmx.ajax('GET', url, { target: '#' + drawer.id, swap: 'innerHTML' });
+};
+</script>

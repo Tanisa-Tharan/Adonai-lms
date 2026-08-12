@@ -91,7 +91,7 @@ function deleteMaterial(materialId) {
   })
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    if (data.success) { location.reload(); }
+    if (data.success) { refreshModuleDrawer('{{ module_run.id }}', 'resources-tab'); }
     else { alert(data.error || 'Delete failed.'); }
   })
   .catch(function() { alert('Delete failed. Please try again.'); });

@@ -54,7 +54,7 @@
           <span class="assignment-file-name">{{ material.title }}</span>
           <div class="material-file-actions">
             {% if user.is_faculty_or_admin %}
-            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}')" title="Delete">
+            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}', 'readings-tab')" title="Delete">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 14 15" fill="#B91C1C">
                 <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
               </svg>
@@ -140,7 +140,7 @@
           <span class="assignment-file-name">{{ material.title }}</span>
           <div class="material-file-actions">
             {% if user.is_faculty_or_admin %}
-            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}')" title="Delete">
+            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}', 'readings-tab')" title="Delete">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 14 15" fill="#B91C1C">
                 <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
               </svg>

@@ -266,16 +266,7 @@ function closeLinkDialog() {
 }
 
 function _adminReloadDrawer(activeTab) {
-  if (activeTab) sessionStorage.setItem('activeModuleTab', activeTab);
-  const drawer = document.getElementById('assignments-detail-drawer');
-  if (drawer && typeof htmx !== 'undefined' && window._adminDetailModuleRunId) {
-    htmx.ajax('GET', '/module-runs/' + window._adminDetailModuleRunId + '/assignments/detail/', {
-      target: '#assignments-detail-drawer',
-      swap: 'innerHTML'
-    });
-  } else {
-    location.reload();
-  }
+  refreshModuleDrawer('{{ module_run.id }}', activeTab);
 }
 
 function submitLink() {
@@ -618,3 +609,5 @@ function deleteMaterial(materialId, returnTab) {
   });
 }
 </script>
+
+{% include 'accounts/shared/_module_refresh_script.html' %}
