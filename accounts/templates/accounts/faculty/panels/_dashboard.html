@@ -4,146 +4,231 @@
   <div class="welcome-banner">
     <div>
       <h3>Welcome Back, {{ request.user.first_name }}</h3>
-      <p>Manage the academic community at Adonai Bible School. Manage assignments and student submissions and grading.</p>
+      <p>Your teaching at a glance — modules you run, students in them, and work waiting on your review.</p>
     </div>
   </div>
 
-  <div class="hero-card">
-    <div class="stats">
-      <div class="stat">
-        <span>Pending Grades</span>
-        <strong>{{ pending_grades_count }}</strong>
+  <!-- ── At a glance ─────────────────────────────────────────── -->
+  <div class="fp-stats">
+    <div class="fp-stat {% if pending_grades_count %}is-attention{% endif %}">
+      <div class="fp-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{% if pending_grades_count %}#921F22{% else %}#8A827C{% endif %}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/>
+        </svg>
       </div>
-      <div class="stat">
-        <span>Modules</span>
-        <strong>{{ modules|length }}</strong>
+      <div class="fp-stat-body">
+        <span class="fp-stat-label">Pending Grades</span>
+        <span class="fp-stat-value">{{ pending_grades_count }}</span>
+        <span class="fp-stat-note">
+          {% if pending_grades_count %}Waiting on your review{% else %}Everything is graded{% endif %}
+        </span>
       </div>
-      <div class="stat">
-        <span>Students</span>
-        <strong>{{ student_modules|length }}</strong>
+    </div>
+
+    <div class="fp-stat">
+      <div class="fp-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A827C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      <div class="fp-stat-body">
+        <span class="fp-stat-label">Modules</span>
+        <span class="fp-stat-value">{{ modules|length }}</span>
+        <span class="fp-stat-note">Assigned to you</span>
+      </div>
+    </div>
+
+    <div class="fp-stat">
+      <div class="fp-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A827C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="fp-stat-body">
+        <span class="fp-stat-label">Students</span>
+        <span class="fp-stat-value">{{ student_modules|length }}</span>
+        <span class="fp-stat-note">Across your modules</span>
       </div>
     </div>
   </div>
 
-  <div class="panel-card">
-    <div class="panel-header">
+  <!-- ── My Modules ──────────────────────────────────────────── -->
+  <div class="fp-section">
+    <div class="fp-section-head">
+      <div class="fp-section-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
       <div>
-        <h3>My Modules</h3>
-        <p>Only modules assigned to you.</p>
+        <h3 class="fp-section-title">My Modules</h3>
+        <p class="fp-section-sub">Module runs assigned to you</p>
       </div>
+      {% if faculty_runs %}<span class="fp-section-count">{{ faculty_runs|length }}</span>{% endif %}
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Module</th>
-          <th>Quarter</th>
-          <th>Run Dates</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div class="fp-card">
+      {% if faculty_runs %}
+      <div class="fp-module-list">
         {% for run in faculty_runs %}
-        <tr>
-          <td>
-            <strong>{{ run.module.title }}</strong>
-            {% if run.module.moduleId %}<br><span class="mini-meta">{{ run.module.moduleId }}</span>{% endif %}
-          </td>
-          <td>{{ run.quarter.name }}<br><span class="mini-meta">{{ run.quarter.academic_year.name }}</span></td>
-          <td>{{ run.start_date }} to {{ run.end_date }}</td>
-          <td><span class="status-pill active">{{ run.get_status_display }}</span></td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="4">No assigned modules.</td></tr>
+        <div class="fp-module-row">
+          <div class="fp-module-mark">{{ run.module.title|slice:":2"|upper }}</div>
+          <div class="fp-module-main">
+            <div class="fp-module-name">{{ run.module.title }}</div>
+            <div class="fp-module-meta">
+              <span>{{ run.quarter.name }}</span>
+              <span class="fp-dot"></span>
+              <span>{{ run.quarter.academic_year.name }}</span>
+              <span class="fp-dot"></span>
+              <span>{{ run.start_date|date:"M j, Y" }} &ndash; {{ run.end_date|date:"M j, Y" }}</span>
+            </div>
+          </div>
+          <span class="fp-pill {% if run.status == 'RUNNING' %}fp-pill-live{% elif run.status == 'SCHEDULED' %}fp-pill-soon{% else %}fp-pill-done{% endif %}">
+            {{ run.get_status_display }}
+          </span>
+          {% comment %}The class view is an htmx fragment, so link to the Modules tab.{% endcomment %}
+          <a href="{% url 'faculty_home' %}?tab=modules" class="fp-btn">
+            View Class
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
+      </div>
+      {% else %}
+      <div class="fp-empty">
+        <div class="fp-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8B1AA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+        </div>
+        <p class="fp-empty-title">No modules assigned yet</p>
+        <p class="fp-empty-text">Module runs assigned to you will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
 
-  <div class="panel-card">
-    <div class="panel-header">
-      <div>
-        <h3>My Students</h3>
-        <p>Students enrolled in modules you teach, with attendance and grading status.</p>
+  <!-- ── My Students ─────────────────────────────────────────── -->
+  <div class="fp-section">
+    <div class="fp-section-head">
+      <div class="fp-section-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
       </div>
+      <div>
+        <h3 class="fp-section-title">My Students</h3>
+        <p class="fp-section-sub">Attendance and grading status across your modules</p>
+      </div>
+      {% if student_modules %}<span class="fp-section-count">{{ student_modules|length }}</span>{% endif %}
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Student</th>
-          <th>Email</th>
-          <th>Module</th>
-          <th>Quarter</th>
-          <th>Attendance %</th>
-          <th>Assignment Graded</th>
-          <th>Grade %</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sm in student_modules %}
-        <tr>
-          <td>{{ sm.enrollment.student.first_name }} {{ sm.enrollment.student.last_name }}</td>
-          <td>{{ sm.enrollment.student.email }}</td>
-          <td>{{ sm.module_run.module.title }}</td>
-          <td>{{ sm.module_run.quarter.name }}</td>
-          <td>
-            {% if sm.attendance_percentage is not None %}
-              {{ sm.attendance_percentage|floatformat:0 }}%
-            {% else %}
-              -
-            {% endif %}
-          </td>
-          <td>
-            {% if sm.id|stringformat:"s" in faculty_student_has_submission %}
-              {% if sm.id|stringformat:"s" in faculty_student_graded %}
-                <span class="status-pill active">Graded</span>
-              {% else %}
-                <span class="status-pill inactive">Not Graded</span>
-              {% endif %}
-            {% else %}
-              <span class="status-pill inactive" style="white-space: nowrap;">No Submission</span>
-            {% endif %}
-          </td>
-          <td>
-            {% with pct=faculty_grade_percentage|get_item:sm.id %}
-              {% if pct is not None %}
-                {{ pct|floatformat:0 }}%
-              {% else %}
-                <span class="mini-meta"></span>
-              {% endif %}
-            {% endwith %}
-          </td>
-          <td>
-            {% with key=sm.id|stringformat:"s" %}
-              {% if key in faculty_student_has_submission and key not in faculty_student_graded %}
-                {% with assignment_id=faculty_next_ungraded_assignment|get_item:key %}
-                  {% if assignment_id %}
-                    <button
-                      type="button"
-                      class="button button-secondary"
-                      hx-get="{% url 'grade_assignment_form' assignment_id sm.id %}"
-                      hx-target="#faculty-grade-drawer"
-                      hx-swap="innerHTML"
-                    >
-                      Grade
-                    </button>
+    <div class="fp-card">
+      {% if student_modules %}
+      <div class="fp-table-wrap">
+        <table class="fp-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Module</th>
+              <th>Quarter</th>
+              <th>Attendance</th>
+              <th>Submission</th>
+              <th>Grade</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sm in student_modules %}
+            <tr>
+              <td>
+                <div class="fp-person">
+                  <div class="fp-avatar">{{ sm.enrollment.student.first_name|slice:":1" }}{{ sm.enrollment.student.last_name|slice:":1" }}</div>
+                  <div style="min-width: 0;">
+                    <div class="fp-person-name">{{ sm.enrollment.student.first_name }} {{ sm.enrollment.student.last_name }}</div>
+                    <div class="fp-person-sub">{{ sm.enrollment.student.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>{{ sm.module_run.module.title }}</td>
+              <td><span class="fp-chip">{{ sm.module_run.quarter.name }}</span></td>
+              <td>
+                {% if sm.attendance_percentage is not None %}
+                <div class="fp-meter">
+                  <div class="fp-meter-track">
+                    <div class="fp-meter-fill {% if sm.attendance_percentage >= 75 %}is-good{% elif sm.attendance_percentage < 50 %}is-low{% endif %}"
+                         style="width: {{ sm.attendance_percentage|floatformat:0 }}%;"></div>
+                  </div>
+                  <span class="fp-meter-value">{{ sm.attendance_percentage|floatformat:0 }}%</span>
+                </div>
+                {% else %}
+                <span class="fp-empty-value">&mdash;</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if sm.id|stringformat:"s" in faculty_student_has_submission %}
+                  {% if sm.id|stringformat:"s" in faculty_student_graded %}
+                    <span class="fp-pill fp-pill-live">Graded</span>
+                  {% else %}
+                    <span class="fp-pill fp-pill-alert">Needs grading</span>
+                  {% endif %}
+                {% else %}
+                  <span class="fp-pill fp-pill-done">No submission</span>
+                {% endif %}
+              </td>
+              <td>
+                {% with pct=faculty_grade_percentage|get_item:sm.id %}
+                  {% if pct is not None %}
+                  <div class="fp-meter">
+                    <div class="fp-meter-track">
+                      <div class="fp-meter-fill {% if pct >= 60 %}is-good{% elif pct < 40 %}is-low{% endif %}"
+                           style="width: {{ pct|floatformat:0 }}%;"></div>
+                    </div>
+                    <span class="fp-meter-value">{{ pct|floatformat:0 }}%</span>
+                  </div>
+                  {% else %}
+                  <span class="fp-empty-value">&mdash;</span>
                   {% endif %}
                 {% endwith %}
-              {% else %}
-                <span class="mini-meta">-</span>
-              {% endif %}
-            {% endwith %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="8">No students found for your modules.</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              </td>
+              <td style="text-align: right;">
+                {% with key=sm.id|stringformat:"s" %}
+                  {% if key in faculty_student_has_submission and key not in faculty_student_graded %}
+                    {% with assignment_id=faculty_next_ungraded_assignment|get_item:key %}
+                      {% if assignment_id %}
+                        <button
+                          type="button"
+                          class="fp-btn fp-btn-primary"
+                          hx-get="{% url 'grade_assignment_form' assignment_id sm.id %}"
+                          hx-target="#faculty-grade-drawer"
+                          hx-swap="innerHTML"
+                        >
+                          Grade
+                        </button>
+                      {% endif %}
+                    {% endwith %}
+                  {% else %}
+                    <span class="fp-empty-value">&mdash;</span>
+                  {% endif %}
+                {% endwith %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="fp-empty">
+        <div class="fp-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8B1AA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p class="fp-empty-title">No students enrolled yet</p>
+        <p class="fp-empty-text">Students enrolled in your module runs will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
 
     <div id="faculty-grade-drawer" class="assignment-drawer"></div>
   </div>

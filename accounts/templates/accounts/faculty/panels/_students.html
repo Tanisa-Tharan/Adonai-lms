@@ -1,39 +1,77 @@
 {% load template_extras %}
 
 <section class="tab-panel {% if active_tab == 'students' %}active{% endif %}" id="students-panel">
-  <div class="panel-card">
-    <div class="panel-header">
-      <div>
-        <h3>My Students</h3>
-        <p>Students enrolled in modules you teach.</p>
+  <div class="welcome-banner">
+    <div>
+      <h3>My Students</h3>
+      <p>Everyone enrolled in the module runs you teach, across every quarter.</p>
+    </div>
+  </div>
+
+  <div class="fp-section">
+    <div class="fp-section-head">
+      <div class="fp-section-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
       </div>
+      <div>
+        <h3 class="fp-section-title">Enrolled Students</h3>
+        <p class="fp-section-sub">Name, ID, and the module each student is taking</p>
+      </div>
+      {% if student_modules %}<span class="fp-section-count">{{ student_modules|length }}</span>{% endif %}
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Student ID</th>
-          <th>Student</th>
-          <th>Module</th>
-          <th>Quarter</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sm in student_modules %}
-        <tr>
-          <td><span class="mini-meta">{{ sm.enrollment.student.serial_number }}</span></td>
-          <td>{{ sm.enrollment.student.first_name }} {{ sm.enrollment.student.last_name }}</td>
-          <td>{{ sm.module_run.module.title }}</td>
-          <td>{{ sm.module_run.quarter.name }}</td>
-          <td>
-            <a href="{% url 'faculty_home' %}?tab=dashboard" class="assignment-view-link">View</a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5">No students yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="fp-card">
+      {% if student_modules %}
+      <div class="fp-table-wrap">
+        <table class="fp-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Student ID</th>
+              <th>Module</th>
+              <th>Quarter</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sm in student_modules %}
+            <tr>
+              <td>
+                <div class="fp-person">
+                  <div class="fp-avatar">{{ sm.enrollment.student.first_name|slice:":1" }}{{ sm.enrollment.student.last_name|slice:":1" }}</div>
+                  <div style="min-width: 0;">
+                    <div class="fp-person-name">{{ sm.enrollment.student.first_name }} {{ sm.enrollment.student.last_name }}</div>
+                    <div class="fp-person-sub">{{ sm.enrollment.student.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="fp-chip fp-num">{{ sm.enrollment.student.serial_number|default:"—" }}</span></td>
+              <td>{{ sm.module_run.module.title }}</td>
+              <td><span class="fp-chip">{{ sm.module_run.quarter.name }}</span></td>
+              <td style="text-align: right;">
+                <a href="{% url 'faculty_home' %}?tab=dashboard" class="fp-btn">
+                  View
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="fp-empty">
+        <div class="fp-empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B8B1AA" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          </svg>
+        </div>
+        <p class="fp-empty-title">No students yet</p>
+        <p class="fp-empty-text">Students enrolled in your module runs will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
 </section>

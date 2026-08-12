@@ -1,7 +1,9 @@
 {% load static %}
 
-<div class="panel-card" style="margin-top: 18px;">
+<div class="panel-card fp-classview" style="margin-top: 18px;">
   {% include "accounts/shared/_module_detail_header.html" with module_run=module_run show_add_button=False %}
+
+  <div class="fp-classview-body">
 
   <!-- Enrolled Students Section -->
   <div id="enrolled-students-section" style="margin-top: 24px;">
@@ -80,6 +82,7 @@
   <!-- Submission Grading View (hidden by default) -->
   <div id="submission-grading-view" style="display: none;">
     <!-- Content will be loaded dynamically -->
+  </div>
   </div>
 </div>
 
