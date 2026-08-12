@@ -25,17 +25,38 @@ class FileCleanupMixin(models.Model):
         super().delete(*args, **kwargs)
     
     def _delete_file(self):
-        """Delete the file from storage"""
+        """Delete the file from storage, unless another record still uses it"""
         file_field = getattr(self, 'file_url', None)
-        if file_field:
-            try:
-                file_field.delete(save=False)
-            except Exception as e:
-                logger.error(
-                    f"Error deleting file for {self.__class__.__name__} "
-                    f"(id={self.pk}): {e}",
-                    exc_info=True
-                )
+        if not file_field or not file_field.name:
+            return
+
+        # LINK-type records keep a plain URL here rather than a stored file.
+        if file_field.name.startswith(('http://', 'https://')):
+            return
+
+        # Uploads to S3 overwrite by default, so older records can share one key.
+        # Removing it here would blank out every other record pointing at it.
+        still_referenced = (
+            type(self)._default_manager
+            .filter(file_url=file_field.name)
+            .exclude(pk=self.pk)
+            .exists()
+        )
+        if still_referenced:
+            logger.info(
+                f"Keeping file {file_field.name!r} — still referenced by another "
+                f"{self.__class__.__name__} record"
+            )
+            return
+
+        try:
+            file_field.delete(save=False)
+        except Exception as e:
+            logger.error(
+                f"Error deleting file for {self.__class__.__name__} "
+                f"(id={self.pk}): {e}",
+                exc_info=True
+            )
 
 
 class TimestampMixin(models.Model):

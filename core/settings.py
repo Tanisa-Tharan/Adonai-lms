@@ -165,6 +165,10 @@ if USE_SPACES:
     # Note: setting AWS_S3_CUSTOM_DOMAIN would defeat this — django-storages
     # skips request signing entirely when a custom domain is configured.
     AWS_DEFAULT_ACL = 'private'
+    # Never let a second upload overwrite an existing key. The default is True on
+    # S3, unlike local storage, which silently made two records share one object —
+    # deleting either then wiped the file out from under the other.
+    AWS_S3_FILE_OVERWRITE = False
     AWS_QUERYSTRING_AUTH = True
     AWS_QUERYSTRING_EXPIRE = int(os.getenv("DO_SPACES_URL_EXPIRY", "3600"))
     AWS_S3_SIGNATURE_VERSION = 's3v4'
