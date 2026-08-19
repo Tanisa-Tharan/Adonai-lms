@@ -100,8 +100,22 @@
 
   // Initialize Quill editors for assignment submissions
   let submissionEditors = {};
-  
+
+  // An htmx swap replaces the editor divs, but this cache is keyed by assignment
+  // id and survives the swap. A cached instance then points at a discarded node,
+  // and the "already initialised" guards below skip the new, empty div — leaving
+  // an editor you cannot type in. Forget any instance no longer in the document.
+  function forgetDetachedEditors() {
+    Object.keys(submissionEditors).forEach(function(assignmentId) {
+      var editor = submissionEditors[assignmentId];
+      if (!editor || !editor.root || !document.body.contains(editor.root)) {
+        delete submissionEditors[assignmentId];
+      }
+    });
+  }
+
   function initSubmissionEditors() {
+    forgetDetachedEditors();
     document.querySelectorAll('[id^="quill-submission-editor-"]').forEach(function(editorContainer) {
       const assignmentId = editorContainer.id.replace('quill-submission-editor-', '');
       const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
@@ -166,6 +180,7 @@
       
       // Initialize editor if not already done
       setTimeout(function() {
+        forgetDetachedEditors();
         const editorContainer = document.getElementById('quill-submission-editor-' + assignmentId);
         const hiddenTextarea = document.getElementById('submission-description-' + assignmentId);
         

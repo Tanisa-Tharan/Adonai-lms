@@ -302,24 +302,41 @@ function submitLink() {
 // Initialize Quill editor
 let quillAssignmentEditor;
 
+// Set the editor up on demand rather than only at DOMContentLoaded: that event
+// never fires again after an htmx swap, so a re-rendered form would be left with
+// a dead editor until the page was reloaded.
+function initAssignmentEditor() {
+  if (typeof Quill === 'undefined') return;
+  const container = document.getElementById('quill-assignment-editor');
+  if (!container) return;
+
+  // Still attached and working — leave it alone.
+  if (quillAssignmentEditor && quillAssignmentEditor.root
+      && document.body.contains(quillAssignmentEditor.root)) return;
+
+  // A swap replaced the container; drop the stale instance and rebuild.
+  if (container.querySelector('.ql-editor')) container.innerHTML = '';
+
+  quillAssignmentEditor = new Quill(container, {
+    theme: 'snow',
+    placeholder: 'Enter assignment description...',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        ['link'],
+        ['clean']
+      ]
+    }
+  });
+}
+
+document.addEventListener('htmx:afterSwap', function() { setTimeout(initAssignmentEditor, 100); });
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Check if Quill is available
-  if (typeof Quill !== 'undefined') {
-    quillAssignmentEditor = new Quill('#quill-assignment-editor', {
-      theme: 'snow',
-      placeholder: 'Enter assignment description...',
-      modules: {
-        toolbar: [
-          [{ 'header': [1, 2, 3, false] }],
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          [{ 'indent': '-1'}, { 'indent': '+1' }],
-          ['link'],
-          ['clean']
-        ]
-      }
-    });
-  }
+  initAssignmentEditor();
 
   // Add change event listeners to all file inputs for readings
   const fileInputs = document.querySelectorAll('input[type="file"][data-material-type]');
