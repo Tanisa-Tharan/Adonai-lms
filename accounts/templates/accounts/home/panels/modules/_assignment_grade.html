@@ -16,71 +16,96 @@
     </div>
   </div>
 
-  {% if not submission %}
-    <div class="messages" style="margin-top: 12px;">
-      <div class="message">No submission found for this student.</div>
-    </div>
-  {% else %}
-    <div style="margin-top: 12px;">
-      <a href="{% url 'download_assignment_submission' submission.id %}?inline=1" target="_blank" rel="noopener">Open Submission</a>
-      &nbsp;|&nbsp;
-      <a href="{% url 'download_assignment_submission' submission.id %}">Download</a>
-    </div>
-  {% endif %}
+  <div style="padding: 20px 24px 24px;">
 
-  {% if grade_error %}
-    <div class="messages" style="margin-top: 12px;">
-      <div class="message">{{ grade_error }}</div>
-    </div>
-  {% endif %}
+    {% if not submission %}
+      <div style="display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: #FAFAF9; border: 1px dashed #E7E5E4; border-radius: 10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>
+        </svg>
+        <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #78716C;">
+          No submission found for this student — there is nothing to grade yet.
+        </span>
+      </div>
+    {% else %}
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; flex-wrap: wrap;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0;">
+          <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="14 2 14 8 20 8" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-family: Lexend, sans-serif; font-size: 13px; font-weight: 650; color: #166534;">Student submission</div>
+          <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 11.5px; color: #4D7C5A; margin-top: 1px;">
+            Submitted {{ submission.submitted_at|date:"M j, Y · g:i A" }}
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+          <a href="{% url 'download_assignment_submission' submission.id %}?inline=1" target="_blank" rel="noopener"
+            style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; background: #FFFFFF; border: 1px solid #BBF7D0; border-radius: 8px; color: #166534; font-family: Lexend, sans-serif; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Open
+          </a>
+          <a href="{% url 'download_assignment_submission' submission.id %}"
+            style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; background: #16A34A; border: 1px solid #16A34A; border-radius: 8px; color: #FFFFFF; font-family: Lexend, sans-serif; font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap;">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="white"/></svg>
+            Download
+          </a>
+        </div>
+      </div>
 
-  {% if grade_success %}
-    <div class="messages" style="margin-top: 12px;">
-      <div class="message">{{ grade_success }}</div>
-    </div>
-  {% endif %}
+      {% if submission.description %}
+      <div style="margin-top: 12px; padding: 14px 16px; background: #FAFAF9; border: 1px solid #EAE6E1; border-radius: 10px;">
+        <div style="font-family: Lexend, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #8A827C; margin-bottom: 6px;">Answer</div>
+        <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #44403C; line-height: 1.6; word-wrap: break-word;">{{ submission.description|safe }}</div>
+      </div>
+      {% endif %}
+    {% endif %}
 
-  <form
-    method="post"
-    hx-post="{% url 'grade_assignment_submission' assignment.id student_module.id %}"
-    hx-target="closest .assignment-drawer"
-    hx-swap="innerHTML"
-    hx-on:htmx:afterRequest="if (event.detail && event.detail.successful) { if (window.htmx && document.getElementById('module-assignments-drawer')) { htmx.ajax('GET', '{% url 'module_assignments_panel' assignment.module_run.id %}', {target:'#module-assignments-drawer', swap:'innerHTML'}); } if (window.htmx && document.getElementById('students-panel')) { htmx.ajax('GET', '{% url 'faculty_students_panel' %}', {target:'#students-panel', swap:'outerHTML'}); } }"
-    style="margin-top: 12px;"
-  >
-    {% csrf_token %}
+    {% if grade_error %}
+      <div style="margin-top: 12px; padding: 12px 16px; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #991B1B;">{{ grade_error }}</div>
+    {% endif %}
 
-    <div class="user-form-grid" style="grid-template-columns: 1fr 1fr;">
-      <section class="user-form-section">
-        <h4>Grade</h4>
+    {% if grade_success %}
+      <div style="margin-top: 12px; padding: 12px 16px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #166534;">{{ grade_success }}</div>
+    {% endif %}
 
-        <div class="field-group">
-          <label for="score">Score (Max: {{ assignment.max_score }})</label>
-          <input type="number" step="0.01" name="score" id="score" max="{{ assignment.max_score }}" value="{% if submission and submission.score is not None %}{{ submission.score }}{% endif %}">
+    <form
+      method="post"
+      hx-post="{% url 'grade_assignment_submission' assignment.id student_module.id %}"
+      hx-target="closest .assignment-drawer"
+      hx-swap="innerHTML"
+      hx-on:htmx:afterRequest="if (event.detail && event.detail.successful) { if (window.htmx && document.getElementById('module-assignments-drawer')) { htmx.ajax('GET', '{% url 'module_assignments_panel' assignment.module_run.id %}', {target:'#module-assignments-drawer', swap:'innerHTML'}); } if (window.htmx && document.getElementById('students-panel')) { htmx.ajax('GET', '{% url 'faculty_students_panel' %}', {target:'#students-panel', swap:'outerHTML'}); } }"
+      style="margin-top: 18px;"
+    >
+      {% csrf_token %}
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; align-items: start;">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="field-group">
+            <label for="score">Score <span style="color: #8A827C; font-weight: 500;">(max {{ assignment.max_score }})</span></label>
+            <input type="number" step="0.01" name="score" id="score" max="{{ assignment.max_score }}" placeholder="0" value="{% if submission and submission.score is not None %}{{ submission.score }}{% endif %}">
+          </div>
+
+          <div class="field-group">
+            <label for="graded_by_id">Graded by</label>
+            <select name="graded_by_id" id="graded_by_id">
+              <option value="" {% if not submission or not submission.graded_by %}selected{% endif %}>&mdash;</option>
+              <option value="{{ faculty.id }}" {% if submission and submission.graded_by and submission.graded_by.id == faculty.id %}selected{% endif %}>
+                {{ faculty.first_name }} {{ faculty.last_name }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <div class="field-group">
-          <label for="graded_by_id">Graded By</label>
-          <select name="graded_by_id" id="graded_by_id">
-            <option value="" {% if not submission or not submission.graded_by %}selected{% endif %}>--</option>
-            <option value="{{ faculty.id }}" {% if submission and submission.graded_by and submission.graded_by.id == faculty.id %}selected{% endif %}>
-              {{ faculty.first_name }} {{ faculty.last_name }}
-            </option>
-          </select>
+          <label for="feedback">Feedback <span style="color: #8A827C; font-weight: 500;">(optional)</span></label>
+          <textarea name="feedback" id="feedback" rows="7" placeholder="Comments for the student…">{% if submission %}{{ submission.feedback }}{% endif %}</textarea>
         </div>
-      </section>
+      </div>
 
-      <section class="user-form-section">
-        <h4>Feedback</h4>
-        <div class="field-group">
-          <label for="feedback">Feedback</label>
-          <textarea name="feedback" id="feedback" rows="6" placeholder="Optional feedback">{% if submission %}{{ submission.feedback }}{% endif %}</textarea>
-        </div>
-      </section>
-    </div>
-
-    <div class="form-actions" style="margin-top: 10px;">
-      <button type="submit" class="button button-primary" {% if not submission %}disabled{% endif %}>Save Grade</button>
-    </div>
-  </form>
+      <div style="display: flex; justify-content: flex-end; margin-top: 18px; padding-top: 16px; border-top: 1px solid #F3F1EE;">
+        <button type="submit" class="button button-primary" {% if not submission %}disabled{% endif %}>Save Grade</button>
+      </div>
+    </form>
+  </div>
 </div>
