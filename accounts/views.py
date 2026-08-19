@@ -1131,6 +1131,23 @@ def student_submit_assignment(request, assignment_id, module_run_id=None):
         return module_assignments_panel(request, module_run_id=module_run_id)
 
 
+def _student_panel_or_redirect(request, module_run_id):
+    """
+    Answer a student action with the panel fragment, or a redirect.
+
+    The panel is a fragment with no <html> or stylesheet. htmx swaps it into the
+    page, but a plain form POST navigates to it, leaving the browser rendering
+    raw unstyled markup — so those requests get a redirect to a real page.
+    """
+    is_fragment = (
+        request.headers.get("HX-Request") == "true"
+        or request.headers.get("x-requested-with") == "XMLHttpRequest"
+    )
+    if is_fragment:
+        return student_module_assignments_panel(request, module_run_id=module_run_id)
+    return redirect("student_home")
+
+
 @login_required
 @student_required
 def student_delete_submission(request, assignment_id, module_run_id):
@@ -1144,10 +1161,10 @@ def student_delete_submission(request, assignment_id, module_run_id):
     )
     assignment = get_object_or_404(Assignment, id=assignment_id, module_run_id=module_run_id)
     if timezone.now() > assignment.due_date:
-        return student_module_assignments_panel(request, module_run_id=module_run_id)
+        return _student_panel_or_redirect(request, module_run_id)
 
     AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).delete()
-    return student_module_assignments_panel(request, module_run_id=module_run_id)
+    return _student_panel_or_redirect(request, module_run_id)
 
 
 @login_required
@@ -1167,7 +1184,7 @@ def student_delete_submission_file(request, submission_id, module_run_id):
     
     # Check if assignment is still open for editing
     if timezone.now() > submission.assignment.due_date:
-        return student_module_assignments_panel(request, module_run_id=module_run_id)
+        return _student_panel_or_redirect(request, module_run_id)
     
     # Delete the file if it exists
     if submission.file_url:
@@ -1178,7 +1195,7 @@ def student_delete_submission_file(request, submission_id, module_run_id):
         submission.file_url = None
         submission.save()
     
-    return student_module_assignments_panel(request, module_run_id=module_run_id)
+    return _student_panel_or_redirect(request, module_run_id)
 
 
 @login_required
