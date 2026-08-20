@@ -58,7 +58,7 @@
           </div>
           <div class="field-group">
             <label for="max_score">Max Score</label>
-            <input type="number" name="max_score" id="max_score" required min="0" step="1" value="{% if editing_assignment %}{{ editing_assignment.max_score }}{% else %}100{% endif %}">
+            <input type="number" name="max_score" id="max_score" required min="1" step="1" value="{% if editing_assignment %}{{ editing_assignment.max_score }}{% else %}100{% endif %}">
           </div>
         </div>
       </section>

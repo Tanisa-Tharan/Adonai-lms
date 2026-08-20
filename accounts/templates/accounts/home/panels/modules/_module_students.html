@@ -1,3 +1,4 @@
+{% load template_extras %}
 <div class="panel-card" style="margin-top: 18px;">
   <div class="panel-header">
     <div>
@@ -81,7 +82,7 @@
               -
             {% endif %}
           </td>
-          <td>{{ student_module.final_grade|default:"-" }}</td>
+          <td>{% with summary=grade_summaries|get_item:student_module.id %}{% if summary.percentage is not None %}{{ summary.earned|floatformat:"-2" }} / {{ summary.possible|floatformat:"-2" }} <span class="mini-meta">({{ summary.percentage|floatformat:0 }}%)</span>{% else %}-{% endif %}{% endwith %}</td>
           <td>
             <form
               method="post"

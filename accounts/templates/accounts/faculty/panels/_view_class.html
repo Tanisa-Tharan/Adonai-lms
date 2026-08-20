@@ -5,6 +5,26 @@
 
   <div class="fp-classview-body">
 
+  <!-- Grades: attendance and participation maxima, and the class marks sheet -->
+  <div id="class-grading-section" style="margin-top: 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px;">
+      <div>
+        <h4 style="margin: 0; font-family: Lexend, sans-serif; font-size: 15px; font-weight: 700; color: #1C1917;">Grades</h4>
+        <p style="margin: 2px 0 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12.5px; color: #8A827C;">
+          Set what attendance and participation are marked out of, and enter each student's marks.
+        </p>
+      </div>
+      <button type="button" class="fp-btn fp-btn-primary"
+        hx-get="{% url 'module_grading_sheet' module_run.id %}"
+        hx-target="#class-grading-sheet" hx-swap="innerHTML"
+        hx-on::after-request="this.style.display='none';">
+        Open grading sheet
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div id="class-grading-sheet"></div>
+  </div>
+
   <!-- Enrolled Students Section -->
   <div id="enrolled-students-section" style="margin-top: 24px;">
     <div class="panel-card">
@@ -23,7 +43,7 @@
           <tr>
             <td><span class="mini-meta">{{ student_module.enrollment.student.serial_number }}</span></td>
             <td>{{ student_module.enrollment.student.first_name }} {{ student_module.enrollment.student.last_name }}</td>
-            <td>{{ student_module.created_at|date:"M d, Y" }}</td>
+            <td>{{ student_module.enrollment.created_at|date:"M d, Y"|default:"—" }}</td>
             <td>{{ module_run.module.title }}</td>
             <td>
               {% if student_module.id in students_with_submissions %}

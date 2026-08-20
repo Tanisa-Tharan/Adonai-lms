@@ -69,9 +69,29 @@ class ModuleRun(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Marks the faculty may award on top of the assignments, out of these totals.
+    # NULL means this module run does not award the component at all — students see
+    # "N/A" and it counts toward neither the earned nor the possible total.
+    # Clearing a max does not erase marks already entered: they stay in the column,
+    # are excluded from every total, and reappear if the component is switched on again.
+    attendance_max_score = models.PositiveIntegerField(null=True, blank=True)
+    participation_max_score = models.PositiveIntegerField(null=True, blank=True)
+
     class Meta:
         db_table = "module_runs"
         ordering = ["-created_at"]
+
+    @property
+    def uses_attendance_mark(self):
+        return self.attendance_max_score is not None and self.attendance_max_score > 0
+
+    @property
+    def uses_participation_mark(self):
+        return self.participation_max_score is not None and self.participation_max_score > 0
+
+    @property
+    def uses_module_marks(self):
+        return self.uses_attendance_mark or self.uses_participation_mark
 
 
 class ModuleSession(models.Model):
@@ -104,15 +124,34 @@ class StudentModule(models.Model):
         related_name="student_modules",
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="NOT_STARTED")
+
+    # Derived from AttendanceRecord rows by save_module_attendance — how much of the
+    # class the student actually turned up to. Not a mark. Do not confuse with
+    # attendance_mark below, which is the score the faculty chooses to award.
     attendance_percentage = models.FloatField(null=True, blank=True)
+
+    # DEPRECATED: never written. Grades are computed on read by
+    # modules.grading.build_grade_summaries so they can never go stale.
     final_grade = models.FloatField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    # Faculty-awarded marks, out of module_run.attendance_max_score /
+    # participation_max_score. NULL means the faculty has not marked this student yet;
+    # whether the component applies at all is decided on the module run, not here.
+    attendance_mark = models.FloatField(null=True, blank=True)
+    participation_mark = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = "student_modules"
         constraints = [
             models.UniqueConstraint(fields=["enrollment", "module_run"], name="uniq_student_module_enrollment_run"),
         ]
+
+    def grade_summary(self, as_of=None):
+        """This student's breakdown and module total. See modules.grading."""
+        from modules.grading import build_grade_summaries
+
+        return build_grade_summaries([self], as_of=as_of)[str(self.id)]
 
 
 class AttendanceRecord(models.Model):

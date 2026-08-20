@@ -41,6 +41,10 @@ from .views import (
     save_module_attendance,
     module_run_readings,
     module_run_recordings,
+    module_grading_sheet,
+    save_module_grading_config,
+    save_module_grading_marks,
+    student_grade_breakdown,
 )
 
 urlpatterns = [
@@ -69,6 +73,10 @@ urlpatterns = [
     ),
     path("module-runs/<uuid:module_run_id>/attendance/", module_attendance_panel, name="module_attendance_panel"),
     path("module-runs/<uuid:module_run_id>/attendance/save/", save_module_attendance, name="save_module_attendance"),
+    path("module-runs/<uuid:module_run_id>/grading/", module_grading_sheet, name="module_grading_sheet"),
+    path("module-runs/<uuid:module_run_id>/grading/config/", save_module_grading_config, name="save_module_grading_config"),
+    path("module-runs/<uuid:module_run_id>/grading/save/", save_module_grading_marks, name="save_module_grading_marks"),
+    path("student/module-runs/<uuid:module_run_id>/grades/", student_grade_breakdown, name="student_grade_breakdown"),
     path("course-materials/", course_materials_panel, name="course_materials_panel"),
     path("course-materials/add/", add_course_material, name="add_course_material"),
     path("course-materials/<uuid:material_id>/delete/", delete_course_material, name="delete_course_material"),

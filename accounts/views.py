@@ -28,6 +28,12 @@ from academics.forms import CreateAcademicYearForm, CreateQuarterForm
 from academics.models import AcademicYear, Enrollment
 from academics.models import Quarter
 from modules.forms import CreateModuleForm
+from modules.grading import (
+    apply_module_marks,
+    build_faculty_student_flags,
+    build_grade_summaries,
+    parse_score,
+)
 from modules.models import (
     Assignment,
     AssignmentFile,
@@ -557,28 +563,14 @@ def faculty_home(request):
         student_module__in=student_modules,
     ).select_related("graded_by", "assignment")
     pending_grades_count = submissions.filter(score__isnull=True, graded_by__isnull=True).count()
-    has_submission = set()
-    graded_by_faculty = set()
-    next_ungraded_assignment_by_student_module = {}
-    grade_percent_sum = {}
-    grade_percent_count = {}
-    for submission in submissions:
-        key = str(submission.student_module_id)
-        has_submission.add(key)
-        if submission.graded_by_id == request.user.id or submission.score is not None:
-            graded_by_faculty.add(key)
-        if submission.score is None and submission.graded_by_id is None and key not in next_ungraded_assignment_by_student_module:
-            next_ungraded_assignment_by_student_module[key] = str(submission.assignment_id)
-        if submission.score is not None and submission.assignment and submission.assignment.max_score:
-            max_score = float(submission.assignment.max_score)
-            if max_score > 0:
-                grade_percent_sum[key] = grade_percent_sum.get(key, 0.0) + (float(submission.score) / max_score) * 100.0
-                grade_percent_count[key] = grade_percent_count.get(key, 0) + 1
-
+    has_submission, graded_by_faculty, next_ungraded_assignment_by_student_module = (
+        build_faculty_student_flags(submissions, request.user)
+    )
+    grade_summaries = build_grade_summaries(student_modules)
     grade_percentage_by_student_module = {
-        sm_id: (grade_percent_sum[sm_id] / grade_percent_count[sm_id])
-        for sm_id in grade_percent_sum
-        if grade_percent_count.get(sm_id)
+        sm_id: summary["percentage"]
+        for sm_id, summary in grade_summaries.items()
+        if summary["percentage"] is not None
     }
 
     faculty_module_items = [
@@ -619,6 +611,7 @@ def faculty_home(request):
             "faculty_student_graded": graded_by_faculty,
             "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
             "faculty_grade_percentage": grade_percentage_by_student_module,
+            "faculty_grade_summaries": grade_summaries,
             "pending_grades_count": pending_grades_count,
             "faculty_module_items": faculty_module_items,
             "faculty_assignments": faculty_assignments,
@@ -645,28 +638,14 @@ def faculty_students_panel(request):
         assignment__module_run__in=faculty_runs,
         student_module__in=student_modules,
     ).select_related("graded_by", "assignment")
-    has_submission = set()
-    graded_by_faculty = set()
-    next_ungraded_assignment_by_student_module = {}
-    grade_percent_sum = {}
-    grade_percent_count = {}
-    for submission in submissions:
-        key = str(submission.student_module_id)
-        has_submission.add(key)
-        if submission.graded_by_id == request.user.id or submission.score is not None:
-            graded_by_faculty.add(key)
-        if submission.score is None and submission.graded_by_id is None and key not in next_ungraded_assignment_by_student_module:
-            next_ungraded_assignment_by_student_module[key] = str(submission.assignment_id)
-        if submission.score is not None and submission.assignment and submission.assignment.max_score:
-            max_score = float(submission.assignment.max_score)
-            if max_score > 0:
-                grade_percent_sum[key] = grade_percent_sum.get(key, 0.0) + (float(submission.score) / max_score) * 100.0
-                grade_percent_count[key] = grade_percent_count.get(key, 0) + 1
-
+    has_submission, graded_by_faculty, next_ungraded_assignment_by_student_module = (
+        build_faculty_student_flags(submissions, request.user)
+    )
+    grade_summaries = build_grade_summaries(student_modules)
     grade_percentage_by_student_module = {
-        sm_id: (grade_percent_sum[sm_id] / grade_percent_count[sm_id])
-        for sm_id in grade_percent_sum
-        if grade_percent_count.get(sm_id)
+        sm_id: summary["percentage"]
+        for sm_id, summary in grade_summaries.items()
+        if summary["percentage"] is not None
     }
 
     return render(
@@ -679,6 +658,7 @@ def faculty_students_panel(request):
             "faculty_student_graded": graded_by_faculty,
             "faculty_next_ungraded_assignment": next_ungraded_assignment_by_student_module,
             "faculty_grade_percentage": grade_percentage_by_student_module,
+            "faculty_grade_summaries": grade_summaries,
         },
     )
 
@@ -865,23 +845,15 @@ def faculty_grade_submission_submit(request, assignment_id, submission_id):
     
     logger.info(f"Form data - Score: {score}, Feedback length: {len(feedback)}, Graded by: {graded_by_id}")
     
-    # Validate score
+    # Validate score. Same rules as every other marking surface — see parse_score.
     if not score:
         logger.error("Score is missing")
         return JsonResponse({"success": False, "error": "Score is required"}, status=400)
-    
-    try:
-        score_value = float(score)
-    except ValueError:
-        logger.error(f"Invalid score value: {score}")
-        return JsonResponse({"success": False, "error": "Invalid score value"}, status=400)
-    
-    if score_value < 0 or score_value > assignment.max_score:
-        logger.error(f"Score out of range: {score_value}, Max: {assignment.max_score}")
-        return JsonResponse({
-            "success": False,
-            "error": f"Score must be between 0 and {assignment.max_score}"
-        }, status=400)
+
+    score_value, score_error = parse_score(score, assignment.max_score)
+    if score_error:
+        logger.error(f"Rejected score {score!r} for assignment {assignment.id}: {score_error}")
+        return JsonResponse({"success": False, "error": score_error}, status=400)
     
     # Verify graded_by is the current user
     if str(graded_by_id) != str(request.user.id):
@@ -1403,7 +1375,7 @@ def module_students_panel(request, module_run_id):
     )
     assigned = (
         StudentModule.objects.filter(module_run=module_run)
-        .select_related("enrollment", "enrollment__student")
+        .select_related("module_run", "enrollment", "enrollment__student")
         .order_by("enrollment__student__first_name", "enrollment__student__last_name")
     )
     available_enrollments = (
@@ -1420,6 +1392,8 @@ def module_students_panel(request, module_run_id):
             "module_run": module_run,
             "assigned_students": assigned,
             "available_enrollments": available_enrollments,
+            # final_grade is never written; the column shows the computed total instead.
+            "grade_summaries": build_grade_summaries(assigned),
         },
     )
 
@@ -2099,6 +2073,7 @@ def grade_assignment_form(request, assignment_id, student_module_id):
         "accounts/home/panels/modules/_assignment_grade.html",
         {
             "assignment": assignment,
+            "module_run": assignment.module_run,
             "student_module": student_module,
             "submission": submission,
             "faculty": assignment.module_run.faculty,
@@ -2117,35 +2092,50 @@ def grade_assignment_submission(request, assignment_id, student_module_id):
     assignment = get_object_or_404(Assignment.objects.select_related("module_run", "module_run__faculty"), id=assignment_id)
     if request.user.role == "FACULTY" and assignment.module_run.faculty_id != request.user.id:
         return redirect("faculty_home")
-    student_module = get_object_or_404(StudentModule, id=student_module_id, module_run=assignment.module_run)
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related("module_run", "enrollment", "enrollment__student"),
+        id=student_module_id,
+        module_run=assignment.module_run,
+    )
     submission = AssignmentSubmission.objects.filter(assignment=assignment, student_module=student_module).first()
+
+    # Attendance and participation belong to the module, not the assignment, so they
+    # are saved even for a student who never submitted anything.
+    mark_changes, mark_errors = apply_module_marks(student_module, request.POST)
+    if mark_changes:
+        student_module.save(update_fields=mark_changes)
+
     if not submission:
-        return module_assignments_panel(request, module_run_id=str(assignment.module_run_id))
-
-    score = request.POST.get("score")
-    feedback = (request.POST.get("feedback") or "").strip()
-    graded_by_id = request.POST.get("graded_by_id")
-
-    try:
-        score_value = float(score) if score not in (None, "") else None
-    except ValueError:
-        score_value = None
-
-    if score_value is not None and score_value > float(assignment.max_score):
-        student_module = get_object_or_404(
-            StudentModule.objects.select_related("enrollment", "enrollment__student"),
-            id=student_module_id,
-            module_run=assignment.module_run,
-        )
         return render(
             request,
             "accounts/home/panels/modules/_assignment_grade.html",
             {
                 "assignment": assignment,
+                "module_run": assignment.module_run,
+                "student_module": student_module,
+                "submission": None,
+                "faculty": assignment.module_run.faculty,
+                "grade_error": " ".join(mark_errors),
+                "grade_success": "" if mark_errors else "Module marks saved.",
+            },
+        )
+
+    score = request.POST.get("score")
+    feedback = (request.POST.get("feedback") or "").strip()
+    graded_by_id = request.POST.get("graded_by_id")
+
+    score_value, score_error = parse_score(score, assignment.max_score)
+    if score_error or mark_errors:
+        return render(
+            request,
+            "accounts/home/panels/modules/_assignment_grade.html",
+            {
+                "assignment": assignment,
+                "module_run": assignment.module_run,
                 "student_module": student_module,
                 "submission": submission,
                 "faculty": assignment.module_run.faculty,
-                "grade_error": f"Score must be less than or equal to {assignment.max_score}.",
+                "grade_error": " ".join(filter(None, [score_error, *mark_errors])),
             },
         )
 
@@ -2165,11 +2155,12 @@ def grade_assignment_submission(request, assignment_id, student_module_id):
         "accounts/home/panels/modules/_assignment_grade.html",
         {
             "assignment": assignment,
+            "module_run": assignment.module_run,
             "student_module": student_module,
             "submission": submission,
             "faculty": assignment.module_run.faculty,
-            "grade_error": "",
-            "grade_success": "Grade saved.",
+            "grade_error": " ".join(mark_errors),
+            "grade_success": "Grade saved." if not mark_errors else "",
         },
     )
 
@@ -2442,3 +2433,203 @@ def faculty_assignment_update(request, assignment_id):
             'success': False,
             'error': f'Error updating assignment: {str(e)}'
         }, status=400)
+
+
+# ---------------------------------------------------------------------------
+# Module marks: attendance and participation alongside the assignment scores.
+# ---------------------------------------------------------------------------
+
+def _grading_module_run_or_none(request, module_run_id):
+    """
+    Fetch a run the user may grade, or None.
+
+    Admins may grade any run; faculty only their own. Supervisors can read the
+    sheet but never edit it, which the caller expresses via can_edit_marks.
+    """
+    module_run = get_object_or_404(
+        ModuleRun.objects.select_related("module", "quarter", "faculty"),
+        id=module_run_id,
+    )
+    if request.user.role == "FACULTY" and module_run.faculty_id != request.user.id:
+        return None
+    return module_run
+
+
+def _grading_sheet_context(request, module_run, errors=None):
+    student_modules = list(
+        StudentModule.objects.filter(module_run=module_run)
+        .select_related("module_run", "enrollment", "enrollment__student")
+        .order_by("enrollment__student__first_name", "enrollment__student__last_name")
+    )
+    assignments = list(
+        Assignment.objects.filter(module_run=module_run, status="PUBLISHED")
+        .order_by("serial_number", "due_date")
+    )
+    summaries = build_grade_summaries(student_modules)
+
+    # Never gate edit UI on is_faculty_or_admin — that property is True for
+    # supervisors, who would then see controls the view refuses.
+    can_edit_marks = request.user.role == "ADMIN" or (
+        request.user.role == "FACULTY" and module_run.faculty_id == request.user.id
+    )
+
+    return {
+        "module_run": module_run,
+        "student_modules": student_modules,
+        "assignments": assignments,
+        "grade_summaries": summaries,
+        "can_edit_marks": can_edit_marks,
+        "grading_errors": errors or [],
+    }
+
+
+@login_required
+@admin_faculty_or_supervisor_required
+def module_grading_sheet(request, module_run_id):
+    """The class grading sheet: every student in the module, marks side by side."""
+    module_run = _grading_module_run_or_none(request, module_run_id)
+    if module_run is None:
+        return redirect("faculty_home")
+    return render(
+        request,
+        "accounts/home/panels/modules/_module_grading.html",
+        _grading_sheet_context(request, module_run),
+    )
+
+
+@login_required
+@admin_or_faculty_required
+def save_module_grading_config(request, module_run_id):
+    """Set (or clear) the attendance and participation maxima for a module run."""
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = _grading_module_run_or_none(request, module_run_id)
+    if module_run is None:
+        return redirect("faculty_home")
+
+    errors = []
+    reset_fields = []
+    for field, label, mark_field in (
+        ("attendance_max_score", "Attendance", "attendance_mark"),
+        ("participation_max_score", "Participation", "participation_mark"),
+    ):
+        previous = getattr(module_run, field)
+        raw = (request.POST.get(field) or "").strip()
+
+        if raw == "":
+            new_value = None
+        else:
+            try:
+                new_value = int(raw)
+            except (TypeError, ValueError):
+                errors.append(f"{label} max must be a whole number.")
+                continue
+            if new_value < 1:
+                errors.append(f"{label} max must be at least 1, or blank if not awarded.")
+                continue
+
+        setattr(module_run, field, new_value)
+        if new_value != previous:
+            # A mark of 8 means nothing once the total it was out of has changed, so
+            # clear the class back to "not marked yet" rather than leave marks that
+            # silently refer to the old maximum.
+            reset_fields.append(mark_field)
+
+    if not errors:
+        module_run.save(update_fields=["attendance_max_score", "participation_max_score"])
+        if reset_fields:
+            StudentModule.objects.filter(module_run=module_run).update(
+                **{field: None for field in reset_fields}
+            )
+
+    if request.headers.get("HX-Request") == "true":
+        return render(
+            request,
+            "accounts/home/panels/modules/_module_grading.html",
+            _grading_sheet_context(request, module_run, errors),
+        )
+    return redirect("module_grading_sheet", module_run_id=module_run.id)
+
+
+@login_required
+@admin_or_faculty_required
+def save_module_grading_marks(request, module_run_id):
+    """
+    Save the whole sheet in one POST.
+
+    Keys are mark__<component>__<student_module_id>, mirroring the att__ format that
+    save_module_attendance already uses. Ids are checked against this run's roster so
+    a crafted POST cannot write marks into someone else's module.
+    """
+    if request.method != "POST":
+        return redirect("home")
+
+    module_run = _grading_module_run_or_none(request, module_run_id)
+    if module_run is None:
+        return redirect("faculty_home")
+
+    student_modules = {
+        str(sm.id): sm
+        for sm in StudentModule.objects.filter(module_run=module_run).select_related(
+            "module_run", "enrollment__student"
+        )
+    }
+
+    errors = []
+    touched = {}
+    for key in request.POST:
+        if not key.startswith("mark__"):
+            continue
+        parts = key.split("__")
+        if len(parts) != 3:
+            continue
+        component, student_module_id = parts[1], parts[2]
+        if component not in {"attendance", "participation"}:
+            continue
+        student_module = student_modules.get(student_module_id)
+        if student_module is None:
+            # Not on this roster — ignore rather than trust the id.
+            continue
+
+        changed, row_errors = apply_module_marks(
+            student_module, {component: request.POST.get(key)}
+        )
+        if changed:
+            touched[student_module_id] = student_module
+        for message in row_errors:
+            student = student_module.enrollment.student
+            errors.append(f"{student.first_name} {student.last_name}: {message}")
+
+    if touched:
+        StudentModule.objects.bulk_update(
+            list(touched.values()), ["attendance_mark", "participation_mark"]
+        )
+
+    if request.headers.get("HX-Request") == "true":
+        return render(
+            request,
+            "accounts/home/panels/modules/_module_grading.html",
+            _grading_sheet_context(request, module_run, errors),
+        )
+    return redirect("module_grading_sheet", module_run_id=module_run.id)
+
+
+@login_required
+@student_required
+def student_grade_breakdown(request, module_run_id):
+    """A student's own marks for one module. Scoped to the requesting student."""
+    student_module = get_object_or_404(
+        StudentModule.objects.select_related("module_run", "module_run__module"),
+        module_run_id=module_run_id,
+        enrollment__student=request.user,
+    )
+    return render(
+        request,
+        "accounts/home/panels/modules/_grade_breakdown.html",
+        {
+            "module_run": student_module.module_run,
+            "student_module": student_module,
+            "summary": student_module.grade_summary(),
+        },
+    )

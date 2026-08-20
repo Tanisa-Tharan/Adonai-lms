@@ -1,0 +1,89 @@
+{% comment %}
+A student's own marks for one module: every published assignment, then the
+attendance and participation components, then the module total.
+
+Three states must stay visually distinct — a mark, "not graded yet", and N/A —
+so a student can tell "my faculty doesn't mark this" from "this isn't marked yet".
+{% endcomment %}
+
+<div class="assignment-list-section">
+  <div class="assignment-card">
+    <div class="assignment-card-header">
+      <div class="assignment-card-num-group">
+        <div class="assignment-card-num-icon" style="display:flex;align-items:center;justify-content:center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>
+          </svg>
+        </div>
+        <span class="assignment-serial-label">My Marks</span>
+      </div>
+      <div class="assignment-card-actions">
+        <span class="assignment-meta-chip">{{ module_run.module.title }}</span>
+      </div>
+    </div>
+
+    <div style="padding: 6px 22px 20px;">
+      <table class="fp-table" style="margin-top: 8px;">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th style="text-align: right;">Mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in summary.items %}
+          <tr>
+            <td>
+              <span style="font-family: Lexend, sans-serif; font-size: 13.5px; font-weight: 600; color: {% if item.state == 'na' %}#A8A29E{% else %}#1C1917{% endif %};">{{ item.label }}</span>
+              {% if item.kind != 'assignment' %}
+              <span class="fp-chip" style="margin-left: 8px;">Module</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right;">
+              {% if item.state == 'na' %}
+                <span class="fp-pill fp-pill-done" title="Not awarded in this module">N/A</span>
+              {% elif item.state == 'graded' %}
+                <strong style="font-family: Lexend, sans-serif; color: #166534;">{{ item.earned|floatformat:"-2" }} / {{ item.possible|floatformat:"-2" }}</strong>
+              {% elif item.state == 'unmarked' %}
+                <span class="fp-empty-value">Not marked yet</span>
+              {% else %}
+                <span class="fp-empty-value">Not graded yet</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="2" style="text-align: center; padding: 26px 20px; color: #A8A29E;">
+              Nothing has been set up for this module yet.
+            </td>
+          </tr>
+          {% endfor %}
+
+          {% if summary.items %}
+          <tr style="border-top: 2px solid #EAE6E1;">
+            <td>
+              <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #1C1917;">Module total</span>
+            </td>
+            <td style="text-align: right;">
+              {% if summary.percentage is not None %}
+                <strong style="font-family: Lexend, sans-serif; font-size: 15px; color: #1C1917;">{{ summary.earned|floatformat:"-2" }} / {{ summary.possible|floatformat:"-2" }}</strong>
+                <div style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #8A827C; margin-top: 2px;">{{ summary.percentage|floatformat:0 }}%</div>
+              {% else %}
+                <span class="fp-empty-value">Not yet available</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      {% if summary.items %}
+      <p style="margin: 14px 0 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12.5px; color: #8A827C; line-height: 1.6;">
+        Based on {{ summary.graded_count }} of {{ summary.total_count }} marked so far.
+        Anything shown as <strong>N/A</strong> isn't awarded in this module and doesn't count
+        toward your total — it isn't a zero.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>

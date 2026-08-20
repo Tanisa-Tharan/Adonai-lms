@@ -128,7 +128,7 @@
 
       <!-- Student Submit Button & Form -->
       {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
-      {% with student_submission=assignment.submissions.all.0 %}
+      {% with student_submission=submission_by_assignment|get_item:assignment.id %}
       <div class="assignment-submission-section" id="submission-section-{{ assignment.id }}">
         <div id="submission-header-{{ assignment.id }}"
           style="display: {% if student_submission and student_submission.student_module.enrollment.student == user %}flex{% else %}none{% endif %}; align-items: center; gap: 8px; margin-bottom: 14px;">
@@ -221,7 +221,7 @@
             {{ submission.submitted_at|date:"M j, Y · g:i A" }}
           </span>
           <span style="display: inline-flex; align-items: center; gap: 5px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #6B7280;">
-            Score: <strong style="color: #166534;">{{ submission.score|default:"Not graded yet" }}</strong>
+            Score: <strong style="color: #166534;">{% if submission.score is not None %}{{ submission.score|floatformat:"-2" }} / {{ assignment.max_score }}{% else %}Not graded yet{% endif %}</strong>
           </span>
         </div>
 

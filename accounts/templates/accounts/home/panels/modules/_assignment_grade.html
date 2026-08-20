@@ -83,7 +83,7 @@
         <div style="display: flex; flex-direction: column; gap: 14px;">
           <div class="field-group">
             <label for="score">Score <span style="color: #8A827C; font-weight: 500;">(max {{ assignment.max_score }})</span></label>
-            <input type="number" step="0.01" name="score" id="score" max="{{ assignment.max_score }}" placeholder="0" value="{% if submission and submission.score is not None %}{{ submission.score }}{% endif %}">
+            <input type="number" step="0.01" min="0" name="score" id="score" max="{{ assignment.max_score }}" placeholder="0" value="{% if submission and submission.score is not None %}{{ submission.score }}{% endif %}">
           </div>
 
           <div class="field-group">
@@ -103,8 +103,41 @@
         </div>
       </div>
 
+      {% if module_run.uses_module_marks %}
+      <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid #F3F1EE;">
+        <div style="font-family: Lexend, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: #8A827C;">Module marks</div>
+        <p style="margin: 4px 0 14px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12.5px; color: #8A827C;">
+          These apply to the whole module, not just this assignment.
+          {% if student_module.attendance_percentage is not None %}
+          Recorded attendance for this student is <strong>{{ student_module.attendance_percentage|floatformat:0 }}%</strong>.
+          {% endif %}
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+          {% if module_run.uses_attendance_mark %}
+          <div class="field-group">
+            <label for="attendance">Attendance <span style="color: #8A827C; font-weight: 500;">(max {{ module_run.attendance_max_score }})</span></label>
+            <input type="number" step="0.01" min="0" max="{{ module_run.attendance_max_score }}"
+                   name="attendance" id="attendance"
+                   value="{{ student_module.attendance_mark|default_if_none:'' }}" placeholder="Not marked">
+          </div>
+          {% endif %}
+          {% if module_run.uses_participation_mark %}
+          <div class="field-group">
+            <label for="participation">Participation <span style="color: #8A827C; font-weight: 500;">(max {{ module_run.participation_max_score }})</span></label>
+            <input type="number" step="0.01" min="0" max="{{ module_run.participation_max_score }}"
+                   name="participation" id="participation"
+                   value="{{ student_module.participation_mark|default_if_none:'' }}" placeholder="Not marked">
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
       <div style="display: flex; justify-content: flex-end; margin-top: 18px; padding-top: 16px; border-top: 1px solid #F3F1EE;">
-        <button type="submit" class="button button-primary" {% if not submission %}disabled{% endif %}>Save Grade</button>
+        {# Enabled without a submission too, so module marks can still be saved. #}
+        <button type="submit" class="button button-primary" {% if not submission and not module_run.uses_module_marks %}disabled{% endif %}>
+          {% if submission %}Save Grade{% else %}Save Module Marks{% endif %}
+        </button>
       </div>
     </form>
   </div>

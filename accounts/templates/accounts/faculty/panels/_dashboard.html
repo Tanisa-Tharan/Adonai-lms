@@ -166,15 +166,20 @@
                 {% endif %}
               </td>
               <td>
-                {% if sm.id|stringformat:"s" in faculty_student_has_submission %}
-                  {% if sm.id|stringformat:"s" in faculty_student_graded %}
+                {% with summary=faculty_grade_summaries|get_item:sm.id %}
+                  {% if summary.all_assignments_graded %}
                     <span class="fp-pill fp-pill-live">Graded</span>
-                  {% else %}
+                  {% elif summary.assignments_graded %}
+                    <span class="fp-pill fp-pill-soon"
+                      title="{{ summary.assignments_graded }} of {{ summary.assignments_total }} assignments graded">
+                      Grading in progress
+                    </span>
+                  {% elif sm.id|stringformat:"s" in faculty_student_has_submission %}
                     <span class="fp-pill fp-pill-alert">Needs grading</span>
+                  {% else %}
+                    <span class="fp-pill fp-pill-done">No submission</span>
                   {% endif %}
-                {% else %}
-                  <span class="fp-pill fp-pill-done">No submission</span>
-                {% endif %}
+                {% endwith %}
               </td>
               <td>
                 {% with pct=faculty_grade_percentage|get_item:sm.id %}

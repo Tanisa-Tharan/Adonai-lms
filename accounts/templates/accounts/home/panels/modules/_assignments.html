@@ -17,6 +17,11 @@
     <button class="module-tab-button" data-tab="recordings-tab" type="button">
       Lecture Recordings
     </button>
+    <button class="module-tab-button" data-tab="grades-tab" type="button"
+      hx-get="{% if user.role == 'STUDENT' %}{% url 'student_grade_breakdown' module_run.id %}{% else %}{% url 'module_grading_sheet' module_run.id %}{% endif %}"
+      hx-target="#grades-tab" hx-swap="innerHTML">
+      Grades
+    </button>
   </div>
 
   <!-- Tab Content: Assignments -->
@@ -104,6 +109,11 @@
       </div>
       {% endif %}
     </div>
+  </div>
+
+  <!-- Tab Content: Grades (loaded on demand; students get their own breakdown) -->
+  <div id="grades-tab" class="module-tab-content">
+    <p style="padding: 20px; text-align: center; color: #64748b;">Loading grades...</p>
   </div>
 
   <!-- Tab Content: Resources -->
