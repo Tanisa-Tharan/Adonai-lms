@@ -1,135 +1,124 @@
 {% load static %}
-<div style="padding: 20px 0;">
+{% comment %}
+Resources tab for the faculty assignment detail. Uses the same assignment-card
+system as the admin module detail so the two portals read alike.
+{% endcomment %}
+<div class="assignment-list-section">
+  <div class="assignment-cards">
 
-  <!-- Syllabus Section -->
-  <div style="margin-bottom: 32px;">
-    <h4 style="font-size: 15px; font-weight: 700; color: #1f2937; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.05em;">Syllabus</h4>
-    {% if syllabus_materials %}
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-        {% for material in syllabus_materials %}
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f9f7f5; border: 1px solid #E7E5E4; border-radius: 8px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <polyline points="14 2 14 8 20 8" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Syllabus -->
+    <div class="assignment-card">
+      <div class="assignment-card-header">
+        <div class="assignment-card-num-group">
+          <div class="assignment-card-num-icon" style="display:flex;align-items:center;justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#921F22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
             </svg>
-            <div>
-              <span style="font-size: 14px; font-weight: 600; color: #1f2937;">{{ material.title }}</span>
-              <span style="display: block; font-size: 12px; color: #6b7280;">{{ material.get_material_type_display }} &bull; {{ material.created_at|date:"M d, Y" }}</span>
-            </div>
           </div>
-          <a href="{% url 'download_course_material' material.id %}" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+          <span class="assignment-serial-label">Syllabus</span>
         </div>
-        {% endfor %}
+        {% if user.is_faculty_or_admin %}
+        <div class="assignment-card-actions">
+          <label for="syllabus-upload-input" class="reading-add-link-btn" style="cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Upload PDF
+          </label>
+          <input type="file" id="syllabus-upload-input" accept=".pdf,application/pdf" style="display: none;"
+                 data-material-type="PDF" data-resource-type="SYLLABUS" data-module-id="{{ module_run.module.id }}">
+        </div>
+        {% endif %}
       </div>
-    {% else %}
-      <p style="font-size: 14px; color: #9ca3af; margin: 0 0 16px 0;">No syllabus uploaded yet.</p>
-    {% endif %}
 
-    <!-- Upload Syllabus Form -->
-    <form id="syllabus-upload-form" enctype="multipart/form-data" style="background: #fff; border: 1px dashed #E7E5E4; border-radius: 8px; padding: 16px;">
-      {% csrf_token %}
-      <input type="hidden" name="module_id" value="{{ module_run.module.id }}">
-      <input type="hidden" name="resource_type" value="SYLLABUS">
-      <p style="font-size: 13px; font-weight: 600; color: #374151; margin: 0 0 12px 0;">Upload Syllabus PDF</p>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <input type="text" name="title" placeholder="Title (optional)"
-          style="padding: 9px 12px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif; outline: none; width: 100%; box-sizing: border-box;">
-        <input type="hidden" name="material_type" value="PDF">
-        <input type="file" name="file_url" accept=".pdf" required
-          style="padding: 8px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; font-family: Lexend, sans-serif;">
-        <button type="submit" class="button button-primary" style="align-self: flex-start;">Upload Syllabus</button>
-      </div>
-      <p id="syllabus-upload-msg" style="margin: 8px 0 0 0; font-size: 13px; display: none;"></p>
-    </form>
-  </div>
-
-  <!-- General Resources Section -->
-  <div>
-    <h4 style="font-size: 15px; font-weight: 700; color: #1f2937; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.05em;">Resources</h4>
-    {% if resource_materials %}
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        {% for material in resource_materials %}
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f9f7f5; border: 1px solid #E7E5E4; border-radius: 8px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <polyline points="14 2 14 8 20 8" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      {% if syllabus_materials %}
+      <div class="assignment-files-section" style="padding-top: 14px;">
+        {% for material in syllabus_materials %}
+        <div class="assignment-file-item">
+          <div class="assignment-file-icon" style="display:flex;align-items:center;justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="13" viewBox="0 0 16 20" fill="#921F22">
+              <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"/>
             </svg>
-            <div>
-              <span style="font-size: 14px; font-weight: 600; color: #1f2937;">{{ material.title }}</span>
-              <span style="display: block; font-size: 12px; color: #6b7280;">{{ material.get_material_type_display }} &bull; {{ material.created_at|date:"M d, Y" }}</span>
-            </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <a href="{% url 'download_course_material' material.id %}" style="font-size: 13px; color: #921F22; text-decoration: none; font-weight: 600;">Download</a>
+          <span class="assignment-file-name">{{ material.title }}</span>
+          <div class="material-file-actions">
             {% if user.is_faculty_or_admin %}
-            <button type="button" onclick="deleteMaterial('{{ material.id }}')" title="Delete"
-              style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; opacity: 0.45; transition: opacity 0.2s;"
-              onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 16 16" fill="none">
-                <path d="M3 16C2.45 16 1.97917 15.8042 1.5875 15.4125C1.19583 15.0208 1 14.55 1 14V3H0V1H5V0H11V1H16V3H15V14C15 14.55 14.8042 15.0208 14.4125 15.4125C14.0208 15.8042 13.55 16 13 16H3ZM13 3H3V14H13V3ZM5 12H7V5H5V12ZM9 12H11V5H9V12Z" fill="#BA1A1A"/>
+            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}', 'resources-tab')" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 14 15" fill="#B91C1C">
+                <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
               </svg>
             </button>
             {% endif %}
+            <a href="{% url 'download_course_material' material.id %}" class="material-icon-btn" title="Download">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 16 16" fill="#78716C">
+                <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z"/>
+              </svg>
+            </a>
           </div>
         </div>
         {% endfor %}
       </div>
-    {% else %}
-      <p style="font-size: 14px; color: #9ca3af; margin: 0;">No additional resources uploaded.</p>
-    {% endif %}
+      {% else %}
+      <div class="assignment-card-empty" style="border: none; box-shadow: none; padding: 26px 20px;">
+        <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #A8A29E; margin: 0;">No syllabus uploaded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Resources -->
+    <div class="assignment-card">
+      <div class="assignment-card-header">
+        <div class="assignment-card-num-group">
+          <div class="assignment-card-num-icon" style="display:flex;align-items:center;justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 20 20" fill="#921F22">
+              <path d="M7 10.5H8V8.5H9C9.28333 8.5 9.52083 8.40417 9.7125 8.2125C9.90417 8.02083 10 7.78333 10 7.5V6.5C10 6.21667 9.90417 5.97917 9.7125 5.7875C9.52083 5.59583 9.28333 5.5 9 5.5H7V10.5ZM8 7.5V6.5H9V7.5H8ZM11 10.5H13C13.2833 10.5 13.5208 10.4042 13.7125 10.2125C13.9042 10.0208 14 9.78333 14 9.5V6.5C14 6.21667 13.9042 5.97917 13.7125 5.7875C13.5208 5.59583 13.2833 5.5 13 5.5H11V10.5ZM12 9.5V6.5H13V9.5H12ZM15 10.5H16V8.5H17V7.5H16V6.5H17V5.5H15V10.5ZM6 16C5.45 16 4.97917 15.8042 4.5875 15.4125C4.19583 15.0208 4 14.55 4 14V2C4 1.45 4.19583 0.979167 4.5875 0.5875C4.97917 0.195833 5.45 0 6 0H18C18.55 0 19.0208 0.195833 19.4125 0.5875C19.8042 0.979167 20 1.45 20 2V14C20 14.55 19.8042 15.0208 19.4125 15.4125C19.0208 15.8042 18.55 16 18 16H6ZM6 14H18V2H6V14ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V4H2V18H16V20H2ZM6 2V14V2Z"/>
+            </svg>
+          </div>
+          <span class="assignment-serial-label">Resources</span>
+        </div>
+        {% if user.is_faculty_or_admin %}
+        <div class="assignment-card-actions">
+          <label for="resources-upload-input" class="reading-add-link-btn" style="cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#57534E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Upload PDF
+          </label>
+          <input type="file" id="resources-upload-input" accept=".pdf,application/pdf" style="display: none;"
+                 data-material-type="PDF" data-resource-type="RESOURCES" data-module-id="{{ module_run.module.id }}">
+        </div>
+        {% endif %}
+      </div>
+
+      {% if resource_materials %}
+      <div class="assignment-files-section" style="padding-top: 14px;">
+        {% for material in resource_materials %}
+        <div class="assignment-file-item">
+          <div class="assignment-file-icon" style="display:flex;align-items:center;justify-content:center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="13" viewBox="0 0 16 20" fill="#921F22">
+              <path d="M4 16H12V14H4V16ZM4 12H12V10H4V12ZM2 20C1.45 20 0.979167 19.8042 0.5875 19.4125C0.195833 19.0208 0 18.55 0 18V2C0 1.45 0.195833 0.979167 0.5875 0.5875C0.979167 0.195833 1.45 0 2 0H10L16 6V18C16 18.55 15.8042 19.0208 15.4125 19.4125C15.0208 19.8042 14.55 20 14 20H2ZM9 7V2H2V18H14V7H9ZM2 2V7V2V7V18V2Z"/>
+            </svg>
+          </div>
+          <span class="assignment-file-name">{{ material.title }}</span>
+          <div class="material-file-actions">
+            {% if user.is_faculty_or_admin %}
+            <button type="button" class="material-icon-btn material-icon-btn-delete" onclick="deleteMaterial('{{ material.id }}', 'resources-tab')" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 14 15" fill="#B91C1C">
+                <path d="M2.5 15C2.04167 15 1.64931 14.8368 1.32292 14.5104C0.996528 14.184 0.833333 13.7917 0.833333 13.3333V2.5H0V0.833333H4.16667V0H9.16667V0.833333H13.3333V2.5H12.5V13.3333C12.5 13.7917 12.3368 14.184 12.0104 14.5104C11.684 14.8368 11.2917 15 10.8333 15H2.5ZM10.8333 2.5H2.5V13.3333H10.8333V2.5ZM4.16667 11.6667H5.83333V4.16667H4.16667V11.6667ZM7.5 11.6667H9.16667V4.16667H7.5V11.6667ZM2.5 2.5V13.3333V2.5Z"/>
+              </svg>
+            </button>
+            {% endif %}
+            <a href="{% url 'download_course_material' material.id %}" class="material-icon-btn" title="Download">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 16 16" fill="#78716C">
+                <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="assignment-card-empty" style="border: none; box-shadow: none; padding: 26px 20px;">
+        <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; color: #A8A29E; margin: 0;">No resources uploaded yet.</p>
+      </div>
+      {% endif %}
+    </div>
+
   </div>
 </div>
-
-<script>
-function deleteMaterial(materialId) {
-  if (!confirm('Are you sure you want to delete this material?')) return;
-  fetch('{% url "delete_course_material" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', materialId), {
-    method: 'POST',
-    headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.success) { refreshModuleDrawer('{{ module_run.id }}', 'resources-tab'); }
-    else { alert(data.error || 'Delete failed.'); }
-  })
-  .catch(function() { alert('Delete failed. Please try again.'); });
-}
-
-(function() {
-  var form = document.getElementById('syllabus-upload-form');
-  if (!form) return;
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    var msg = document.getElementById('syllabus-upload-msg');
-    var formData = new FormData(form);
-    var fileInput = form.querySelector('input[name="file_url"]');
-    if (!formData.get('title') && fileInput && fileInput.files[0]) {
-      formData.set('title', fileInput.files[0].name.replace(/\.pdf$/i, ''));
-    }
-    fetch('{% url "add_course_material" %}', {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
-      body: formData
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      msg.style.display = 'block';
-      if (data.success) {
-        msg.style.color = '#16a34a';
-        msg.textContent = 'Syllabus uploaded successfully.';
-        form.reset();
-      } else {
-        msg.style.color = '#dc2626';
-        msg.textContent = data.error || 'Upload failed.';
-      }
-    })
-    .catch(function() {
-      msg.style.display = 'block';
-      msg.style.color = '#dc2626';
-      msg.textContent = 'Upload failed. Please try again.';
-    });
-  });
-})();
-</script>

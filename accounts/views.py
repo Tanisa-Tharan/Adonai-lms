@@ -2326,97 +2326,10 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     ).order_by('-created_at')
 
     # Render assignment info HTML
-    assignment_html = f'''
-    <div style="display: flex; width: 956px; max-width: 100%; padding: 16px; flex-direction: column; align-items: flex-start; gap: 32px; border-radius: 16px; background: #FFF;">
-      <!-- Due Date, Max Score, Status, and Action Icons -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; gap: 16px;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; flex: 1;">
-          <div>
-            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Due Date</h4>
-            <p style="font-size: 16px; color: #1F2937; margin: 0;">{assignment.due_date.strftime("%B %d, %Y")}</p>
-          </div>
-          <div>
-            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Max Score</h4>
-            <p style="font-size: 16px; color: #1F2937; margin: 0;">{assignment.max_score}</p>
-          </div>
-          <div>
-            <h4 style="font-size: 14px; font-weight: 600; color: #6B7280; margin: 0 0 4px 0;">Status</h4>
-            {'<span class="assignment-status-badge status-draft">Draft</span>' if assignment.status == 'DRAFT' else '<span class="assignment-status-badge status-published">Published</span>'}
-          </div>
-        </div>
-        
-        <!-- Action Icons -->
-        <div style="display: flex; gap: 12px; align-items: center;">
-          <button
-            onclick="editAssignment('{assignment.id}')"
-            title="Edit Assignment"
-            style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; transition: all 0.2s; padding: 0;"
-            onmouseover="this.querySelector('svg path').setAttribute('fill', '#7A1A1C');"
-            onmouseout="this.querySelector('svg path').setAttribute('fill', '#921F22');">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="none">
-              <path d="M2 11.5V14H4.5L11.8733 6.62667L9.37333 4.12667L2 11.5ZM13.8067 4.69333C14.0667 4.43333 14.0667 4.01333 13.8067 3.75333L12.2467 2.19333C11.9867 1.93333 11.5667 1.93333 11.3067 2.19333L10.0867 3.41333L12.5867 5.91333L13.8067 4.69333Z" fill="#921F22"/>
-            </svg>
-          </button>
-          <button
-            onclick="deleteAssignment('{assignment.id}')"
-            title="Delete Assignment"
-            style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; transition: all 0.2s; padding: 0;"
-            onmouseover="this.querySelector('svg path').setAttribute('fill', '#7A1A1C');"
-            onmouseout="this.querySelector('svg path').setAttribute('fill', '#921F22');">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16" fill="none">
-              <path d="M4 12.6667C4 13.4 4.6 14 5.33333 14H10.6667C11.4 14 12 13.4 12 12.6667V4.66667H4V12.6667ZM12.6667 2.66667H10.3333L9.66667 2H6.33333L5.66667 2.66667H3.33333V4H12.6667V2.66667Z" fill="#921F22"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Description -->
-      <div style="width: 100%;">
-        <h4 style="font-size: 16px; font-weight: 600; color: #1F2937; margin: 0 0 12px 0;">Description</h4>
-        <div style="display: flex; height: 422px; flex-direction: column; align-items: flex-start; flex-shrink: 0; align-self: stretch; border-radius: 8px; border: 1px solid #D1D5DB; background: #FFF; padding: 16px; overflow-y: auto; color: #4B5563; line-height: 1.6;">
-          {assignment.description or 'No description provided.'}
-        </div>
-      </div>
-    '''
-    
-    if assignment_files.exists():
-        assignment_html += '''
-      <div class="assignment-card-files-box">
-        <div class="assignment-card-files-header">Uploaded Assignments</div>
-        <div class="assignment-card-files-list">
-    '''
-        for file in assignment_files:
-            file_name = file.file_url.name.split('/')[-1]
-            assignment_html += f'''
-          <div class="resource-item">
-            <div class="resource-item-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 25 25" fill="none">
-                <path d="M8.75 13.125H10V10.625H11.25C11.6042 10.625 11.901 10.5052 12.1406 10.2656C12.3802 10.026 12.5 9.72917 12.5 9.375V8.125C12.5 7.77083 12.3802 7.47396 12.1406 7.23438C11.901 6.99479 11.6042 6.875 11.25 6.875H8.75V13.125ZM10 9.375V8.125H11.25V9.375H10ZM13.75 13.125H16.25C16.6042 13.125 16.901 13.0052 17.1406 12.7656C17.3802 12.526 17.5 12.2292 17.5 11.875V8.125C17.5 7.77083 17.3802 7.47396 17.1406 7.23438C16.901 6.99479 16.6042 6.875 16.25 6.875H13.75V13.125ZM15 11.875V8.125H16.25V11.875H15ZM18.75 13.125H20V10.625H21.25V9.375H20V8.125H21.25V6.875H18.75V13.125ZM7.5 20C6.8125 20 6.22396 19.7552 5.73438 19.2656C5.24479 18.776 5 18.1875 5 17.5V2.5C5 1.8125 5.24479 1.22396 5.73438 0.734375C6.22396 0.244792 6.8125 0 7.5 0H22.5C23.1875 0 23.776 0.244792 24.2656 0.734375C24.7552 1.22396 25 1.8125 25 2.5V17.5C25 18.1875 24.7552 18.776 24.2656 19.2656C23.776 19.7552 23.1875 20 22.5 20H7.5ZM7.5 17.5H22.5V2.5H7.5V17.5ZM2.5 25C1.8125 25 1.22396 24.7552 0.734375 24.2656C0.244792 23.776 0 23.1875 0 22.5V5H2.5V22.5H20V25H2.5ZM7.5 2.5V17.5V2.5Z" fill="#921F22"/>
-              </svg>
-            </div>
-            <span class="resource-item-title">{file_name}</span>
-            <a href="{file.file_url.url}" download class="resource-item-download-icon" title="Download {file_name}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 12L3 7L4.4 5.55L7 8.15V0H9V8.15L11.6 5.55L13 7L8 12ZM2 16C1.45 16 0.979167 15.8042 0.5875 15.4125C0.195833 15.0208 0 14.55 0 14V11H2V14H14V11H16V14C16 14.55 15.8042 15.0208 15.4125 15.4125C15.0208 15.8042 14.55 16 14 16H2Z" fill="#94A3B8"/>
-              </svg>
-            </a>
-          </div>
-    '''
-        assignment_html += '''
-        </div>
-      </div>
-    '''
-    else:
-        assignment_html += '''
-      <div class="assignment-card-files-box">
-        <div class="assignment-card-files-header">Uploaded Assignments</div>
-        <div class="assignment-card-files-list">
-          <div class="resources-empty-state">No assignment files uploaded yet.</div>
-        </div>
-      </div>
-    '''
-    
-    assignment_html += '</div>'
+    assignment_html = render(request, 'accounts/faculty/panels/_assignment_info_tab.html', {
+        'assignment': assignment,
+        'assignment_files': assignment_files,
+    }).content.decode('utf-8')
     
     # Render readings HTML
     readings_context = {
@@ -2448,7 +2361,7 @@ def faculty_assignment_detail_ajax(request, assignment_id):
         files_data.append({
             'id': str(file.id),
             'name': file.file_url.name.split('/')[-1],
-            'url': file.file_url.url
+            'url': reverse('download_assignment_file', args=[file.id])
         })
     
     return JsonResponse({
