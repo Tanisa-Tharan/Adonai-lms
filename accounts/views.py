@@ -397,7 +397,7 @@ def _admin_home_context(
     # Auto-complete any module runs whose end_date has passed
     ModuleRun.objects.filter(
         end_date__lt=date_type.today(),
-    ).exclude(status="COMPLETED").update(status="COMPLETED")
+    ).exclude(status__in=["COMPLETED", "CANCELLED"]).update(status="COMPLETED")
 
     users = User.objects.all().order_by("-created_at").select_related("userprofile")
     academic_years = AcademicYear.objects.all().prefetch_related(
@@ -543,7 +543,7 @@ def faculty_home(request):
     ModuleRun.objects.filter(
         faculty=request.user,
         end_date__lt=date_type.today(),
-    ).exclude(status="COMPLETED").update(status="COMPLETED")
+    ).exclude(status__in=["COMPLETED", "CANCELLED"]).update(status="COMPLETED")
 
     faculty_runs = (
         ModuleRun.objects.filter(faculty=request.user)

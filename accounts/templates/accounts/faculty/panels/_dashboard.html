@@ -83,7 +83,7 @@
               <span>{{ run.start_date|date:"M j, Y" }} &ndash; {{ run.end_date|date:"M j, Y" }}</span>
             </div>
           </div>
-          <span class="fp-pill {% if run.status == 'RUNNING' %}fp-pill-live{% elif run.status == 'SCHEDULED' %}fp-pill-soon{% else %}fp-pill-done{% endif %}">
+          <span class="fp-pill {% if run.status == 'RUNNING' %}fp-pill-live{% elif run.status == 'SCHEDULED' %}fp-pill-soon{% elif run.status == 'CANCELLED' %}fp-pill-alert{% else %}fp-pill-done{% endif %}">
             {{ run.get_status_display }}
           </span>
           {% comment %}The class view is an htmx fragment, so link to the Modules tab.{% endcomment %}

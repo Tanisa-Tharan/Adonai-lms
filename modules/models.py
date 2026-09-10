@@ -53,6 +53,9 @@ class ModuleRun(models.Model):
         ("SCHEDULED", "Scheduled"),
         ("RUNNING", "Running"),
         ("COMPLETED", "Completed"),
+        # A run that will not take place — the faculty fell ill, the quarter was
+        # restructured. Distinct from Completed, which means it ran and finished.
+        ("CANCELLED", "Cancelled"),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

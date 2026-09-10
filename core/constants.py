@@ -63,11 +63,13 @@ class ModuleRunStatus:
     SCHEDULED = 'SCHEDULED'
     RUNNING = 'RUNNING'
     COMPLETED = 'COMPLETED'
-    
+    CANCELLED = 'CANCELLED'
+
     CHOICES = (
         (SCHEDULED, 'Scheduled'),
         (RUNNING, 'Running'),
         (COMPLETED, 'Completed'),
+        (CANCELLED, 'Cancelled'),
     )
 
 

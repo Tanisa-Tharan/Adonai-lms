@@ -62,7 +62,7 @@
               </td>
               <td>{{ run.faculty.first_name }} {{ run.faculty.last_name }}</td>
               <td>{{ run.module.session_count }}</td>
-              <td><span class="status-pill active">{{ run.get_status_display }}</span></td>
+              <td><span class="status-pill {% if run.status == "RUNNING" %}active{% elif run.status == "CANCELLED" %}inactive{% else %}student{% endif %}">{{ run.get_status_display }}</span></td>
               <td>
                 <span class="status-pill {% if run.module.is_active %}active{% else %}inactive{% endif %}">
                   {% if run.module.is_active %}Active{% else %}Inactive{% endif %}
