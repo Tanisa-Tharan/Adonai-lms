@@ -155,10 +155,11 @@
       {% endwith %}
       {% endif %}
 
-      <!-- Submissions list (admin sees all, student sees own) -->
-      {% if user.role == 'ADMIN' or user.role == 'STUDENT' %}
+      <!-- Submissions list: staff see the whole class, a student sees only their own.
+           Faculty reach this panel only for their own module runs (checked in the view). -->
+      {% if user.is_faculty_or_admin or user.role == 'STUDENT' %}
       {% for submission in assignment.submissions.all %}
-      {% if user.role == 'ADMIN' or submission.student_module.enrollment.student == user %}
+      {% if user.is_faculty_or_admin or submission.student_module.enrollment.student == user %}
       <div class="assignment-card-submission-box">
 
         <!-- Submission header row -->
@@ -169,7 +170,7 @@
           {% if user.role == 'ADMIN' %}
           <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #16A34A;">{{ submission.student_module.enrollment.student.first_name }} {{ submission.student_module.enrollment.student.last_name }}</span>
           {% else %}
-          <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #16A34A;">Your Submission</span>
+          <span style="font-family: Lexend, sans-serif; font-size: 14px; font-weight: 700; color: #16A34A;">{% if user.role == 'STUDENT' %}Your Submission{% else %}{{ submission.student_module.enrollment.student.first_name }} {{ submission.student_module.enrollment.student.last_name }}{% endif %}</span>
           {% endif %}
           <div style="margin-left: auto; display: flex; align-items: center; gap: 6px;">
             {% if submission.status == 'draft' %}

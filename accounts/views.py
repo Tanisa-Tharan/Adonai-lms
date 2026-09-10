@@ -561,7 +561,12 @@ def faculty_home(request):
     submissions = AssignmentSubmission.objects.filter(
         assignment__module_run__in=faculty_runs,
         student_module__in=student_modules,
-    ).select_related("graded_by", "assignment")
+    ).select_related("graded_by", "assignment").order_by(
+        # Unordered, the "next ungraded" the dashboard offers was whichever row the
+        # database happened to return first — so faculty landed on an arbitrary
+        # assignment. Work through them in the order students see them.
+        "assignment__serial_number", "assignment__due_date"
+    )
     pending_grades_count = submissions.filter(score__isnull=True, graded_by__isnull=True).count()
     has_submission, graded_by_faculty, next_ungraded_assignment_by_student_module = (
         build_faculty_student_flags(submissions, request.user)
@@ -637,7 +642,12 @@ def faculty_students_panel(request):
     submissions = AssignmentSubmission.objects.filter(
         assignment__module_run__in=faculty_runs,
         student_module__in=student_modules,
-    ).select_related("graded_by", "assignment")
+    ).select_related("graded_by", "assignment").order_by(
+        # Unordered, the "next ungraded" the dashboard offers was whichever row the
+        # database happened to return first — so faculty landed on an arbitrary
+        # assignment. Work through them in the order students see them.
+        "assignment__serial_number", "assignment__due_date"
+    )
     has_submission, graded_by_faculty, next_ungraded_assignment_by_student_module = (
         build_faculty_student_flags(submissions, request.user)
     )
@@ -1672,6 +1682,21 @@ def delete_course_material(request, material_id):
     return course_materials_panel(request)
 
 
+def _submissions_with_students():
+    """
+    Prefetch submissions along with the student behind each one.
+
+    The assignments list shows a submission's author, so without this the template
+    fires a query per assignment and then another per submission.
+    """
+    return Prefetch(
+        "submissions",
+        queryset=AssignmentSubmission.objects.select_related(
+            "student_module__enrollment__student"
+        ).order_by("submitted_at"),
+    )
+
+
 @login_required
 @admin_faculty_or_supervisor_required
 def module_assignments_panel(request, module_run_id):
@@ -1688,7 +1713,7 @@ def module_assignments_panel(request, module_run_id):
         assignments = (
             Assignment.objects.filter(module_run=module_run, id=view_assignment_id)
             .select_related("created_by", "module", "module_run")
-            .prefetch_related("files")
+            .prefetch_related("files", _submissions_with_students())
             .order_by("serial_number")
         )
     else:
@@ -1696,7 +1721,7 @@ def module_assignments_panel(request, module_run_id):
         assignments = (
             Assignment.objects.filter(module_run=module_run)
             .select_related("created_by", "module", "module_run")
-            .prefetch_related("files")
+            .prefetch_related("files", _submissions_with_students())
             .order_by("serial_number")
         )
     assignment_files = AssignmentFile.objects.filter(
