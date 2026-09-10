@@ -918,6 +918,9 @@ def student_home(request):
                 if sm.attendance_percentage is not None
                 else "Attendance not available"
             ),
+            # A cancelled run stays on the student's dashboard with everything that
+            # happened before it stopped — it is marked, not hidden.
+            "is_cancelled": sm.module_run.status == "CANCELLED",
             "action_url": reverse("student_module_assignments_panel", args=[sm.module_run.id]),
             "faculty_name": f"{sm.module_run.faculty.first_name} {sm.module_run.faculty.last_name}",
             "start_date": sm.module_run.start_date,
