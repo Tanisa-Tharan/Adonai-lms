@@ -2784,4 +2784,121 @@
       line-height: 26px !important;
     }
   }
+
+  /* ════════════════════════════════════════════════════════════════
+     Visual refinement — shared by the admin, faculty, student and
+     supervisor portals. Calmer ground, quieter shadows, tighter
+     geometry. Layout and spacing are untouched; only the finish.
+     ════════════════════════════════════════════════════════════════ */
+
+  :root {
+    /* Neutral shadows. Maroon-tinted glows read as decoration; a shadow
+       should suggest elevation, not colour. */
+    --shadow: 0 1px 2px rgba(28,25,23,0.04), 0 2px 8px rgba(28,25,23,0.05);
+    --shadow-hover: 0 2px 4px rgba(28,25,23,0.05), 0 8px 24px rgba(28,25,23,0.09);
+    --radius-lg: 12px;
+    --radius-md: 10px;
+  }
+
+  /* A flat, warm off-white reads as paper. The previous pink gradient
+     tinted every white surface sitting on it. */
+  body {
+    background: #F7F6F4;
+  }
+
+  /* ── Masthead ───────────────────────────────────────────────────
+     Same photograph and brand colour, but darker and flatter, so it
+     sits behind the title rather than competing with it. */
+  .welcome-banner {
+    min-height: 128px;
+    padding: 28px 32px;
+    border-radius: var(--radius-lg);
+    background-image:
+      linear-gradient(100deg, rgba(60,12,14,0.97) 0%, rgba(86,18,21,0.93) 45%, rgba(122,26,29,0.86) 100%),
+      url('/static/accounts/user_welcome_bg_img.png');
+    box-shadow: none;
+    border: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 22px;
+  }
+  /* The decorative bubble was the most toy-like element on the page. */
+  .welcome-banner::before { display: none; }
+
+  .welcome-banner h3 {
+    font-size: 23px;
+    line-height: 31px;
+    font-weight: 650;
+    letter-spacing: -0.015em;
+  }
+  .welcome-banner p {
+    font-size: 13.5px;
+    line-height: 21px;
+    color: rgba(255,255,255,0.78);
+    max-width: 68ch;
+  }
+
+  /* ── Surfaces ──────────────────────────────────────────────────── */
+  .panel-card {
+    border-radius: var(--radius-lg);
+    border-color: #E8E5E1;
+    box-shadow: var(--shadow);
+  }
+  .module-card {
+    border-radius: var(--radius-lg);
+    border-color: #E8E5E1;
+    box-shadow: var(--shadow);
+  }
+  .module-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+  .module-card-header {
+    background: linear-gradient(135deg, #6E1417 0%, #8A1E22 60%, #9C2A2E 100%);
+  }
+  .module-card-header::before { display: none; }
+
+  .stat {
+    border-radius: var(--radius-md);
+    border-top-width: 3px;
+    border-color: #E8E5E1;
+    border-top-color: #921F22;
+    box-shadow: var(--shadow);
+  }
+  .stat:hover {
+    transform: none;
+    box-shadow: var(--shadow-hover);
+  }
+  .stat strong { font-size: 28px; line-height: 36px; font-weight: 700; }
+
+  .sidebar { border-right-color: #EAE7E3; }
+
+  /* ── Type ──────────────────────────────────────────────────────── */
+  .panel-header h3 { font-weight: 650; letter-spacing: -0.01em; }
+
+  /* ── Tables ────────────────────────────────────────────────────── */
+  table thead th {
+    background: #FAF9F7;
+    color: #8A827C;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Status pills ──────────────────────────────────────────────── */
+  .status-pill, .role-pill {
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
+  .status-pill.active   { border-color: #CDEBD8; }
+  .status-pill.inactive { border-color: #F3D4D4; }
+  .status-pill.student  { border-color: #F6E2CC; }
+
+  /* ── Faculty portal: keep its own system in step ───────────────── */
+  .fp-card, .fp-stat, .fp-module-row, .fp-section-head .fp-section-icon {
+    border-color: #E8E5E1;
+  }
+  .fp-card { border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+  .fp-stat { border-radius: var(--radius-md); }
+  .fp-stat:hover { transform: none; box-shadow: var(--shadow-hover); }
+  .fp-stat-value { font-size: 28px; }
+
 </style>
