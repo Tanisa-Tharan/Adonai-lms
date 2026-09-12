@@ -1,3 +1,48 @@
 {# Faculty modules panel - displays teaching modules with "View Class" action #}
 {% include "accounts/shared/_module_grid_panel.html" with panel_tab="modules" panel_id="modules-panel" grid_view_id="faculty-modules-grid-view" grid_id="faculty-modules-grid" module_items=faculty_module_items banner_title="My Teaching Modules" banner_description="Manage materials and assignments for your assigned module runs." action_label="View Class" drawer_target="#faculty-modules-detail-drawer" drawer_id="faculty-modules-detail-drawer" empty_message="No assigned module runs." %}
 
+
+{% comment %}
+Arriving from the dashboard's Grade button: ?module_run=<id>&student_module=<id>
+opens that module's class view and jumps straight to the student's submissions,
+so the faculty lands on the work rather than on the module grid.
+{% endcomment %}
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var moduleRunId = params.get('module_run');
+  var studentModuleId = params.get('student_module');
+  if (!moduleRunId) return;
+
+  function openClassView() {
+    var drawer = document.getElementById('faculty-modules-detail-drawer');
+    var grid = document.getElementById('faculty-modules-grid-view');
+    if (!drawer || typeof htmx === 'undefined') { return; }
+
+    var url = '{% url "faculty_view_class_panel" "00000000-0000-0000-0000-000000000000" %}'
+      .replace('00000000-0000-0000-0000-000000000000', moduleRunId);
+    htmx.ajax('GET', url, {
+      target: '#faculty-modules-detail-drawer',
+      swap: 'innerHTML'
+    }).then(function () {
+      if (grid) { grid.style.display = 'none'; }
+      if (!studentModuleId) return;
+      // showStudentSubmissions is defined by the class-view template just swapped in.
+      var tries = 0;
+      (function attempt() {
+        if (typeof showStudentSubmissions === 'function') {
+          showStudentSubmissions(studentModuleId, moduleRunId);
+          return;
+        }
+        if (tries++ < 20) { setTimeout(attempt, 50); }
+      })();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openClassView);
+  } else {
+    openClassView();
+  }
+})();
+</script>

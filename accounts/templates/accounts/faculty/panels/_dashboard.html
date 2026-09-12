@@ -199,18 +199,15 @@
               <td style="text-align: right;">
                 {% with key=sm.id|stringformat:"s" %}
                   {% if key in faculty_student_has_submission %}
-                    {# Open the whole class view for this module, then jump straight to
-                       this student's submissions — every assignment, not just one. #}
-                    <button
-                      type="button"
+                    {# A real page load to the Modules tab, which then opens this
+                       student's submissions. The class view itself is an htmx
+                       fragment, so it cannot be linked to directly. #}
+                    <a
                       class="fp-btn {% if key not in faculty_student_graded %}fp-btn-primary{% endif %}"
-                      hx-get="{% url 'faculty_view_class_panel' sm.module_run.id %}"
-                      hx-target="#faculty-grade-drawer"
-                      hx-swap="innerHTML"
-                      hx-on::after-settle="window._openStudentSubmissions('{{ sm.id }}', '{{ sm.module_run.id }}');"
+                      href="{% url 'faculty_home' %}?tab=modules&module_run={{ sm.module_run.id }}&student_module={{ sm.id }}"
                     >
                       {% if key not in faculty_student_graded %}Grade{% else %}View work{% endif %}
-                    </button>
+                    </a>
                   {% else %}
                     <span class="fp-empty-value">&mdash;</span>
                   {% endif %}
@@ -237,23 +234,3 @@
     <div id="faculty-grade-drawer" class="assignment-drawer"></div>
   </div>
 </section>
-
-<script>
-/* The Grade button loads the module's class view into the dashboard drawer, then
-   opens that student's submissions inside it. showStudentSubmissions is defined by
-   the class-view template itself, so wait for the swap to bring it in. */
-window._openStudentSubmissions = function (studentModuleId, moduleRunId) {
-  var drawer = document.getElementById('faculty-grade-drawer');
-  if (drawer) {
-    drawer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  var tries = 0;
-  (function attempt() {
-    if (typeof showStudentSubmissions === 'function') {
-      showStudentSubmissions(studentModuleId, moduleRunId);
-      return;
-    }
-    if (tries++ < 20) { setTimeout(attempt, 50); }
-  })();
-};
-</script>
