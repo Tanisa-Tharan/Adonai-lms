@@ -199,9 +199,7 @@
               <td style="text-align: right;">
                 {% with key=sm.id|stringformat:"s" %}
                   {% if key in faculty_student_has_submission %}
-                    {# A real page load to the Modules tab, which then opens this
-                       student's submissions. The class view itself is an htmx
-                       fragment, so it cannot be linked to directly. #}
+                    {% comment %}The class view is an htmx fragment, so link to the Modules tab, which opens the student's submissions from the query parameters.{% endcomment %}
                     <a
                       class="fp-btn {% if key not in faculty_student_graded %}fp-btn-primary{% endif %}"
                       href="{% url 'faculty_home' %}?tab=modules&module_run={{ sm.module_run.id }}&student_module={{ sm.id }}"
