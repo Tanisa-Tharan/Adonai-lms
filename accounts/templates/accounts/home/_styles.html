@@ -2901,4 +2901,34 @@
   .fp-stat:hover { transform: none; box-shadow: var(--shadow-hover); }
   .fp-stat-value { font-size: 28px; }
 
+  /* ── Content sheet ─────────────────────────────────────────────
+     The main column ran straight onto the page background, so it read
+     as loose panels beside the sidebar rather than as a workspace.
+     It now sits on its own sheet with a gutter around it, which also
+     gives the white panels inside something to sit on.
+
+     A faint warm tint rather than pure white: cards inside are white,
+     and white on white would flatten them into the sheet. */
+  .content {
+    padding: 20px 22px 26px;
+  }
+  .shell {
+    background: #FCFBF9;
+    border: 1px solid #E8E5E1;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(28,25,23,0.03), 0 4px 18px rgba(28,25,23,0.05);
+    padding: 22px;
+    min-height: calc(100vh - 46px);
+  }
+  /* The masthead is the top of the sheet, so it loses its own outline. */
+  .shell > .tab-panel > .welcome-banner,
+  .shell .welcome-banner {
+    border: 0;
+  }
+
+  @media (max-width: 900px) {
+    .content { padding: 14px; }
+    .shell { padding: 16px; border-radius: 12px; min-height: 0; }
+  }
+
 </style>
