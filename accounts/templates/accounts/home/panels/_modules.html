@@ -99,11 +99,48 @@
             {% endfor %}
             {% endif %}
             {% endwith %}
-          {% empty %}
+          {% endfor %}
+
+          {% if unscheduled_modules %}
+          <tr>
+            <td colspan="7" style="background:#f9f7f5; padding:10px 16px; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#921F22;">
+              Unscheduled &mdash; no run created yet
+            </td>
+          </tr>
+          {% for module in unscheduled_modules %}
+          <tr>
+            <td>
+              <strong>{{ module.title }}</strong><br>
+              <span class="mini-meta">{{ module.moduleId }} · Order {{ module.order_number }}</span>
+            </td>
+            <td>&mdash;</td>
+            <td>{{ module.session_count }}</td>
+            <td><span class="status-pill student">Not scheduled</span></td>
+            <td>
+              <span class="status-pill {% if module.is_active %}active{% else %}inactive{% endif %}">
+                {% if module.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+            </td>
+            <td>{{ module.created_at|date:"Y-m-d" }}</td>
+            <td class="actions-cell">
+              <button type="button" class="action-menu-button" aria-label="Module actions">...</button>
+              <div class="action-menu">
+                <a href="{% url 'home' %}?tab=modules&mode=edit&module_id={{ module.id }}">Edit Module</a>
+                <form method="post" action="{% url 'delete_module' module.id %}" onsubmit="return confirmDelete('module');">
+                  {% csrf_token %}
+                  <button type="submit" class="danger-item">Delete Module</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+
+          {% if not quarters_with_runs and not unscheduled_modules %}
           <tr>
             <td colspan="7">No modules found</td>
           </tr>
-          {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>

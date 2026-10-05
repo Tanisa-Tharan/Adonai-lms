@@ -413,6 +413,11 @@ def _admin_home_context(
     student_users = users.filter(role="STUDENT")
     active_modules = modules.filter(is_active=True)
 
+    # Modules that exist but have no run scheduled yet. They have no quarter to be
+    # grouped under, so the table lists them separately — without this they are
+    # counted in total_courses but never rendered, and cannot be reached to edit.
+    unscheduled_modules = modules.filter(runs__isnull=True)
+
     # Get module runs with assignment counts, ordered by quarter for grouping
     module_runs = ModuleRun.objects.select_related(
         "module", "quarter", "quarter__academic_year", "faculty"
@@ -470,6 +475,7 @@ def _admin_home_context(
         "module_panel_mode": "table",
         "editing_module": None,
         "module_runs": module_runs,
+        "unscheduled_modules": unscheduled_modules,
         "admin_module_items": admin_module_items,
         "module_stats": {
             "total_courses": modules.count(),
@@ -962,8 +968,8 @@ def student_module_assignments_panel(request, module_run_id):
     
     # Get course materials categorized by resource type
     all_materials = CourseMaterial.objects.filter(module_id=module_run.module.id).select_related("uploaded_by").order_by("-created_at")
-    required_materials = all_materials.filter(resource_type="REQUIRED")
-    recommended_materials = all_materials.filter(resource_type="RECOMMENDED")
+    required_materials = all_materials.filter(resource_type="REQUIRED").exclude(material_type="VIDEO")
+    recommended_materials = all_materials.filter(resource_type="RECOMMENDED").exclude(material_type="VIDEO")
     resource_materials = all_materials.filter(resource_type="RESOURCES")
     video_materials = all_materials.filter(material_type="VIDEO")
     syllabus_materials = all_materials.filter(resource_type="SYLLABUS")
@@ -1756,12 +1762,12 @@ def module_assignments_panel(request, module_run_id):
     required_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type="REQUIRED"
-    ).select_related("uploaded_by").order_by("-created_at")
+    ).exclude(material_type="VIDEO").select_related("uploaded_by").order_by("-created_at")
     
     recommended_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type="RECOMMENDED"
-    ).select_related("uploaded_by").order_by("-created_at")
+    ).exclude(material_type="VIDEO").select_related("uploaded_by").order_by("-created_at")
 
     resource_materials = CourseMaterial.objects.filter(
         module=module_run.module,
@@ -2229,12 +2235,12 @@ def faculty_assignment_detail_view(request, assignment_id):
     required_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type='REQUIRED'
-    ).select_related('uploaded_by').order_by('-created_at')
+    ).exclude(material_type='VIDEO').select_related('uploaded_by').order_by('-created_at')
     
     recommended_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type='RECOMMENDED'
-    ).select_related('uploaded_by').order_by('-created_at')
+    ).exclude(material_type='VIDEO').select_related('uploaded_by').order_by('-created_at')
     
     # Check if this is an HTMX request
     is_htmx = request.headers.get('HX-Request') == 'true'
@@ -2292,12 +2298,12 @@ def module_run_readings(request, module_run_id):
     required_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type='REQUIRED'
-    ).order_by('-created_at')
+    ).exclude(material_type='VIDEO').order_by('-created_at')
     
     recommended_materials = CourseMaterial.objects.filter(
         module=module_run.module,
         resource_type='RECOMMENDED'
-    ).order_by('-created_at')
+    ).exclude(material_type='VIDEO').order_by('-created_at')
     
     context = {
         'module_run': module_run,
@@ -2327,12 +2333,12 @@ def faculty_assignment_detail_ajax(request, assignment_id):
     required_materials = CourseMaterial.objects.filter(
         module=assignment.module_run.module,
         resource_type='REQUIRED'
-    ).order_by('-created_at')
+    ).exclude(material_type='VIDEO').order_by('-created_at')
     
     recommended_materials = CourseMaterial.objects.filter(
         module=assignment.module_run.module,
         resource_type='RECOMMENDED'
-    ).order_by('-created_at')
+    ).exclude(material_type='VIDEO').order_by('-created_at')
 
     resource_materials = CourseMaterial.objects.filter(
         module=assignment.module_run.module,
