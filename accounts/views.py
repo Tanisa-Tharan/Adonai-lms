@@ -1815,7 +1815,11 @@ def module_assignments_panel(request, module_run_id):
             context,
         )
     
-    if from_faculty_assignments:
+    # The create form hard-codes this flag for every role, so it only means
+    # "render the faculty detail" when a faculty member actually asked. Without
+    # the role check an admin is served the faculty template, which carries no
+    # module header and so loses the Add Assignment button after a save.
+    if from_faculty_assignments and request.user.role == "FACULTY":
         return render(
             request,
             "accounts/faculty/panels/modules/_assignments_detail.html",
