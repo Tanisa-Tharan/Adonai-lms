@@ -203,7 +203,7 @@ class CourseMaterial(FileCleanupMixin, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="course_materials")
     title = models.CharField(max_length=255)
-    file_url = models.FileField(upload_to=course_material_upload_path)
+    file_url = models.FileField(upload_to=course_material_upload_path, max_length=500)
     material_type = models.CharField(max_length=10, choices=MATERIAL_TYPE_CHOICES)
     resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPE_CHOICES, default="REQUIRED")
     uploaded_by = models.ForeignKey(
@@ -295,7 +295,7 @@ class Assignment(models.Model):
 class AssignmentFile(FileCleanupMixin, models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name="files")
-    file_url = models.FileField(upload_to=assignment_file_upload_path)
+    file_url = models.FileField(upload_to=assignment_file_upload_path, max_length=500)
     file_name = models.CharField(max_length=255)
     file_type = models.CharField(max_length=100, blank=True)
     file_size = models.IntegerField(default=0)
@@ -326,7 +326,7 @@ class AssignmentSubmission(FileCleanupMixin, models.Model):
         related_name="assignment_submissions",
     )
     description = models.TextField(blank=True)
-    file_url = models.FileField(upload_to=assignment_submission_upload_path)
+    file_url = models.FileField(upload_to=assignment_submission_upload_path, max_length=500)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     submitted_at = models.DateTimeField(auto_now_add=True)
     score = models.FloatField(null=True, blank=True)
